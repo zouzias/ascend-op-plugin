@@ -23,6 +23,17 @@ namespace op_plugin {
 at::Tensor& abs_out(const at::Tensor& self, at::Tensor& result);
 at::Tensor abs(const at::Tensor& self);
 at::Tensor& abs_(at::Tensor& self);
-}  // namespace op_plugin
 
+// __and__
+at::Tensor __and__(const at::Tensor& self, const at::Tensor& other);
+at::Tensor __and__(const at::Tensor& self, const at::Scalar& other);
+
+// fill_
+at::Tensor& fill_(at::Tensor& self, const at::Tensor& other);
+at::Tensor& fill_(at::Tensor& self, const at::Scalar& other);
+
+// __ilshift__
+at::Tensor& __ilshift__(at::Tensor& self, const at::Tensor& other);
+at::Tensor& __ilshift__(at::Tensor& self, const at::Scalar& other);
+}  // namespace op_plugin
 #endif
