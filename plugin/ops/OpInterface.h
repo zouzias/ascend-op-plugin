@@ -23,6 +23,52 @@ namespace op_plugin {
 at::Tensor& abs_out(const at::Tensor& self, at::Tensor& result);
 at::Tensor abs(const at::Tensor& self);
 at::Tensor& abs_(at::Tensor& self);
-}  // namespace op_plugin
 
+// __and__
+at::Tensor __and__(const at::Tensor& self, const at::Tensor& other);
+at::Tensor __and__(const at::Tensor& self, const at::Scalar& other);
+
+// fill_
+at::Tensor& fill_(at::Tensor& self, const at::Tensor& other);
+at::Tensor& fill_(at::Tensor& self, const at::Scalar& other);
+
+// __ilshift__
+at::Tensor& __ilshift__(at::Tensor& self, const at::Tensor& other);
+at::Tensor& __ilshift__(at::Tensor& self, const at::Scalar& other);
+
+// __irshift__
+at::Tensor& __irshift__(at::Tensor& self, const at::Tensor& other);
+at::Tensor& __irshift__(at::Tensor& self, const at::Scalar& other);
+
+// __lshift__
+at::Tensor __lshift__(const at::Tensor& self, const at::Tensor& other);
+at::Tensor __lshift__(const at::Tensor& self, const at::Scalar& other);
+
+// __rshift__
+at::Tensor __rshift__(const at::Tensor& self, const at::Tensor& other);
+at::Tensor __rshift__(const at::Tensor& self, const at::Scalar& other);
+
+// __ior__
+at::Tensor& __ior__(at::Tensor& self, const at::Tensor& other);
+at::Tensor& __ior__(at::Tensor& self, const at::Scalar& other);
+
+// __xor__
+at::Tensor __xor__(const at::Tensor& self, const at::Tensor& other);
+at::Tensor __xor__(const at::Tensor& self, const at::Scalar& other);
+
+//__or__
+at::Tensor __or__(const at::Tensor& self, const at::Tensor& other);
+at::Tensor __or__(const at::Tensor& self, const at::Scalar& other);
+
+// _unique2
+std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
+    const at::Tensor& self_op,
+    bool sorted,
+    bool return_inverse,
+    bool return_counts);
+
+// cast
+at::Tensor& npu_dtype_cast_(at::Tensor &self, const at::Tensor &src);
+at::Tensor npu_dtype_cast(const at::Tensor &self, at::ScalarType dtype);
+}  // namespace op_plugin
 #endif
