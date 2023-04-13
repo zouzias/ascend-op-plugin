@@ -41,7 +41,7 @@ at::Tensor npu_dtype_cast_impl(const at::Tensor &self, at::ScalarType dtype) {
   if (self.dtype() == dtype) {
     return self.clone();
   }
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::ApplyTensor(self.sizes(), self.options().dtype(dtype), self);
   cast_nocheck(result, self);
   return result;
 }
@@ -54,8 +54,8 @@ at::Tensor& npu_dtype_cast_(at::Tensor &self, const at::Tensor &src) {
 
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_preparation::ApplyTensor(self);
-    at::Tensor result = cast_nocheck(contiguous_self, src);
-    npu_utils::format_fresh_view(self, result);
+    cast_nocheck(contiguous_self, src);
+    npu_utils::format_fresh_view(self, contiguous_self);
   } else {
     cast_nocheck(self, src);
   }
