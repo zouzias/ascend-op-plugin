@@ -68,9 +68,9 @@ at::Tensor& fill_(at::Tensor& self, const at::Tensor& other) {
 
 at::Tensor& fill_(at::Tensor& self, const at::Scalar& other) {
   if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguousSelf = npu_utils::format_contiguous(self);
-    fill_out_npu(contiguousSelf, contiguousSelf, other);
-    npu_utils::format_fresh_view(self, contiguousSelf);
+    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+    fill_out_npu(contiguous_self, contiguous_self, other);
+    npu_utils::format_fresh_view(self, contiguous_self);
   } else {
     fill_out_npu(self, self, other);
   }

@@ -21,54 +21,54 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace{
-at::Tensor& ilshift_out_npu(
+at::Tensor& ior_out_npu_nocheck(
     at::Tensor& result,
-    at::Tensor& self,
-    at::Scalar other) {
-  at::Tensor other_tensor = npu_preparation::ApplyTensor(self);
-  at::Tensor other_broadcast = op_plugin::fill_(other_tensor, other);
+    const at::Tensor& self,
+    const at::Tensor& other) {
+  string real_op_name = (self.dtype() == at::ScalarType::Bool) ? "LogicalOr" : "BitwiseOr";
   at_npu::native::OpCommand cmd;
-  cmd.Name("LeftShift")
-     .Input(self)
-     .Input(other_broadcast)
-     .Output(result)
-     .Run();
+  cmd.Name(real_op_name)
+      .Input(self)
+      .Input(other)
+      .Output(result)
+      .Run();
   return result;
 }
 
-at::Tensor& ilshift_out_npu(
+at::Tensor& ior_out_npu_nocheck(
     at::Tensor& result,
-    at::Tensor& self,
-    const at::Tensor& other) {
-    at::Tensor other_broadcast = other.expand(self.sizes());
-    at_npu::native::OpCommand cmd;
-    cmd.Name("LeftShift")
-       .Input(self)
-       .Input(other_broadcast)
-       .Output(result)
-       .Run(); 
+    const at::Tensor& self,
+    at::Scalar other) {
+  string real_op_name = (self.dtype() == at::kBool) ? "LogicalOr" : "BitwiseOr";
+  at_npu::native::OpCommand cmd;
+  cmd.Name(real_op_name)
+      .Input(self)
+      .Input(other, self.scalar_type())
+      .Output(result)
+      .Run();
   return result;
 }
 } // namespace
 
-at::Tensor& __ilshift__(at::Tensor& self, const at::Tensor& other) {
-  if(!npu_utils::check_match(&self)){
+at::Tensor& __ior__(at::Tensor& self, const at::Tensor& other) { 
+  npu_preparation::CheckMemory({self, other}, {self});
+  if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    ilshift_out_npu(contiguous_self, contiguous_self, other);
+    ior_out_npu_nocheck(contiguous_self, contiguous_self, other);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
-    ilshift_out_npu(self, self, other);
+    ior_out_npu_nocheck(self, self, other);
   }
   return self;
 }
 
-at::Tensor& __ilshift__(at::Tensor& self, const at::Scalar& other) {
-  if(!npu_utils::check_match(&self)){
+at::Tensor& __ior__(at::Tensor& self, const at::Scalar& other) {
+  if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    ilshift_out_npu(contiguous_self, contiguous_self, other);
+    ior_out_npu_nocheck(contiguous_self, contiguous_self, other);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
-    ilshift_out_npu(self, self, other);
+    ior_out_npu_nocheck(self, self, other);
   }
   return self;
 }

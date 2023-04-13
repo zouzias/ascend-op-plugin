@@ -21,59 +21,59 @@ using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace{
-at::Tensor and_dest_output(const at::Tensor& self, const at::Tensor& other) {
-  bool isSelfWrapped = calcu_op_util::IsScalarWrappedToTensor(self);
-  if (not isSelfWrapped) {
-    return self;
-  } else {
+at::Tensor or___dest_output(const at::Tensor& self, const at::Tensor& other) {
+  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
+  if (is_self_wrapped) {
     return other;
+  } else {
+    return self;
   }
 }
 
-at::Tensor& and_out_npu_nocheck(
-    at::Tensor& result,
-    const at::Tensor& self,
-    const at::Scalar other) {
+at::Tensor& or___out_scalar_npu(at::Tensor& result, const at::Tensor& self, at::Scalar other) {
+  string real_op_name = (self.dtype() == at::ScalarType::Bool) ? "LogicalOr" : "BitwiseOr";
   at_npu::native::OpCommand cmd;
-  cmd.Name((self.scalar_type() == at::kBool) ? "LogicalAnd" : "BitwiseAnd")
+  cmd.Name(real_op_name)
       .Input(self)
-      .Input(other,self.scalar_type())
+      .Input(other, self.scalar_type())
       .Output(result)
       .Run();
+
   return result;
 }
 
-at::Tensor& and_out_npu_nocheck(
+at::Tensor& or___out_tensor_npu(
     at::Tensor& result,
     const at::Tensor& self,
     const at::Tensor& other) {
   if (other.dim() == 0 && !at_npu::key::isDeviceTensor(other)) {
-    and_out_npu_nocheck(result, self, other.item());
+    or___out_scalar_npu(result, self, other.item());
   } else if (self.dim() == 0 && !at_npu::key::isDeviceTensor(self)) {
-    and_out_npu_nocheck(result, other, self.item());
+    or___out_scalar_npu(result, other, self.item());
   } else {
+    string real_op_name = (self.dtype() == at::kBool) ? "LogicalOr" : "BitwiseOr";
     at_npu::native::OpCommand cmd;
-    cmd.Name((self.scalar_type() == at::ScalarType::Bool) ? "LogicalAnd" : "BitwiseAnd")
+    cmd.Name(real_op_name)
         .Input(self)
         .Input(other)
         .Output(result)
-        .Run(); 
+        .Run();
   }
   return result;
 }
 } // namespace
 
-at::Tensor __and__(const at::Tensor& self, const at::Tensor& other) {
-  at::Tensor outputTensor = and_dest_output(self, other);
+at::Tensor __or__(const at::Tensor& self, const at::Tensor& other) {
+  at::Tensor output_tensor = or___dest_output(self, other);
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::ApplyTensor(outputTensor, output_size);
-  and_out_npu_nocheck(result, self, other);
+  at::Tensor result = npu_preparation::ApplyTensor(output_tensor, output_size);
+  or___out_tensor_npu(result, self, other);
   return result;
 }
 
-at::Tensor __and__(const at::Tensor& self, const at::Scalar& other) {
+at::Tensor __or__(const at::Tensor& self, const at::Scalar& other) {
   at::Tensor result = npu_preparation::ApplyTensor(self);
-  and_out_npu_nocheck(result, self, other);
+  or___out_scalar_npu(result, self, other);
   return result;
 }
 }  // namespace op_plugin
