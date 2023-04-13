@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "plugin/framework/utils/KernelNpuOutputSize.h"
+#include "op_plugin/utils/KernelNpuOutputSize.h"
 
 #include "torch_npu/csrc/framework/OpCommand.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
