@@ -66,5 +66,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
     bool sorted,
     bool return_inverse,
     bool return_counts);
+
+// cast
+at::Tensor& npu_dtype_cast_(at::Tensor &self, const at::Tensor &src);
+at::Tensor npu_dtype_cast(const at::Tensor &self, at::ScalarType dtype);
 }  // namespace op_plugin
 #endif
