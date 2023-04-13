@@ -61,7 +61,7 @@ at::Tensor __or__(const at::Tensor& self, const at::Tensor& other);
 at::Tensor __or__(const at::Tensor& self, const at::Scalar& other);
 
 // _unique2
-tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
+std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
     const at::Tensor& self_op,
     bool sorted,
     bool return_inverse,

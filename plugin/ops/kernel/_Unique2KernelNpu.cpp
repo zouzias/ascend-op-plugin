@@ -45,7 +45,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _unique2_out_npu(
 }
 } // namespace
 
-tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
+std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
     const at::Tensor& self_op,
     bool sorted,
     bool return_inverse,
