@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <torch/csrc/autograd/custom_function.h>
+
 #include "plugin/ops/OpInterface.h"
 #include "plugin/framework/utils/OpAdapter.h"
 
@@ -25,8 +27,8 @@ using tensor_list = std::vector<at::Tensor>;
 
 namespace{
 at::Tensor &cast_nocheck(at::Tensor &result, const at::Tensor &self){
-  int64_t dst_data_type = CalcuOpUtil::ConvertToAclDataType(result.scalar_type());
-  OpCommand cmd;
+  int64_t dst_data_type = at_npu::native::CalcuOpUtil::ConvertToAclDataType(result.scalar_type());
+  at_npu::native::OpCommand cmd;
   cmd.Name("Cast")
       .Input(self)
       .Output(result)

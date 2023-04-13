@@ -31,7 +31,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _unique2_out_npu(
     bool return_inverse,
     bool return_counts) {
   c10::SmallVector<int64_t, N> output_sync_idx = {0, 1, 2};
-  at_npu::native::OpCommand::cmd;
+  at_npu::native::OpCommand cmd;
   cmd.Sync(output_sync_idx)
       .Name("UniqueWithCountsAndSorting")
       .Input(self)
