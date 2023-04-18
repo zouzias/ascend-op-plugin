@@ -146,10 +146,10 @@ std::tuple<at::Tensor, at::Tensor> max(
   at::SmallVector<int64_t, SIZE> indices_size = output_size;
 
   at::Tensor outputs = npu_preparation::ApplyTensorWithFormat(output_size, self_cast.options(), ACL_FORMAT_ND);
-  at::Tensor indices_tmp = npu_preparation::ApplyTensorWithFormat(indices_size, self_cast.options().dtype(at::ScalarType::Int), ACL_FORMAT_ND);
+  at::Tensor indices = npu_preparation::ApplyTensorWithFormat(indices_size, self_cast.options().dtype(at::ScalarType::Int), ACL_FORMAT_ND);
 
-  max_out_npu_nocheck(outputs, indices_tmp, self_cast, dim, keepdim);
-  indices = op_plugin::npu_dtype_cast(indices_tmp, at::ScalarType::Long);
+  max_out_npu_nocheck(outputs, indices, self_cast, dim, keepdim);
+  indices = op_plugin::npu_dtype_cast(indices, at::ScalarType::Long);
 
   if (self.dtype() == at::ScalarType::Bool || self.dtype() == at::ScalarType::Int) {
     outputs = outputs.to(self.dtype());
