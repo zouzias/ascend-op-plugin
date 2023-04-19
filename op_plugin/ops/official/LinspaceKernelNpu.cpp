@@ -22,7 +22,7 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace{
 at::Tensor& linspace_npu_out_nocheck(at::Tensor& result, const at::Scalar& start, const at::Scalar& end, int64_t steps) {
-  if(steps == 0){
+  if(steps == 0) {
     // skip
   } else if (steps == 1) {
     op_plugin::fill_(result, start);
@@ -43,13 +43,10 @@ at::Tensor& linspace_npu_out_nocheck(at::Tensor& result, const at::Scalar& start
 at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t steps, at::Tensor& result) {
   TORCH_CHECK(steps >= 0, "number of steps must be non-negative");
   
-  c10::SmallVector<int64_t, SIZE> output_size = {steps};
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self,
-      output_size);
-
+  if (result.numel() != steps) {
+    result.resize_({steps});
+  }
+  
   at::Tensor result_cast = result;
   if (result.dtype() != at::kFloat) {
     result_cast = op_plugin::npu_dtype_cast(result, at::kFloat);
@@ -60,7 +57,7 @@ at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t
     linspace_npu_out_nocheck(contiguous_result, start, end, steps);
     npu_utils::format_fresh_view(result_cast, contiguous_result);
   } else {
-    linspace_npu_out_nocheck(result_cast, self, dim, index, sparse_grad);
+    linspace_npu_out_nocheck(result_cast, start, end, steps);
   }
 
   if(result_cast.dtype() != result.dtype()) {
@@ -72,7 +69,7 @@ at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t
   return result;
 }
 
-at::Tensor linspace(const at::Scalar& start,const at::Scalar& end,
+at::Tensor linspace(const at::Scalar& start, const at::Scalar& end,
     int64_t steps,
     c10::optional<at::ScalarType> dtype_opt,
     c10::optional<at::Layout> layout_opt,
