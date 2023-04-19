@@ -20,18 +20,12 @@ namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t steps, at::Tensor& result) {
-  TORCH_CHECK(steps >= 0, "number of steps must be non-negative");
-
-  if (result.numel() != steps) {
-    result.resize_({steps});
-  }
-  at::Tensor contiguous_result = result.is_contiguous() ? result : result.contiguous();
-  contiguous_result = op_plugin::npu_dtype_cast(contiguous_result, at::kFloat);
+namespace{
+at::Tensor& linspace_npu_out_nocheck(at::Tensor& result, const at::Scalar& start, const at::Scalar& end, int64_t steps) {
   if(steps == 0){
     // skip
   } else if (steps == 1) {
-    contiguous_result.fill_(start);
+    op_plugin::fill_(result, start);
   } else {
     c10::SmallVector<int64_t, N> size_vec = {steps};
     at_npu::native::OpCommand cmd;
@@ -39,15 +33,43 @@ at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t
         .Input(start, at::ScalarType::Float)
         .Input(end, at::ScalarType::Float)
         .Input(size_vec, at::ScalarType::Int)
-        .Output(contiguous_result)
+        .Output(result)
         .Run();
   }
+  return result;
+}
+} // namespace
 
-  if(contiguous_result.dtype() != result.dtype()) {
-    contiguous_result = contiguous_result.to(result.dtype());
+at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t steps, at::Tensor& result) {
+  TORCH_CHECK(steps >= 0, "number of steps must be non-negative");
+  
+  c10::SmallVector<int64_t, SIZE> output_size = {steps};
+  npu_preparation::CheckOut(
+      {self},
+      result,
+      self,
+      output_size);
+
+  at::Tensor result_cast = result;
+  if (result.dtype() != at::kFloat) {
+    result_cast = op_plugin::npu_dtype_cast(result, at::kFloat);
   }
 
-  return result.copy_(contiguous_result);
+  if (!npu_utils::check_match(&result_cast)) {
+    at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
+    linspace_npu_out_nocheck(contiguous_result, start, end, steps);
+    npu_utils::format_fresh_view(result_cast, contiguous_result);
+  } else {
+    linspace_npu_out_nocheck(result_cast, self, dim, index, sparse_grad);
+  }
+
+  if(result_cast.dtype() != result.dtype()) {
+    result = result_cast.to(result.dtype());
+  } else {
+    result = result_cast;
+  }
+
+  return result;
 }
 
 at::Tensor linspace(const at::Scalar& start,const at::Scalar& end,
@@ -67,15 +89,19 @@ at::Tensor linspace(const at::Scalar& start,const at::Scalar& end,
 
   // construct the output tensor of the NPU
   at::Tensor result = npu_preparation::ApplyTensorWithFormat({steps}, option, ACL_FORMAT_ND);
-  at::Tensor resultCast = op_plugin::npu_dtype_cast(result, at::kFloat);
-
+  at::Tensor result_cast = result;
+  if (result.dtype() != at::kFloat) {
+    result_cast = op_plugin::npu_dtype_cast(result, at::kFloat);
+  }
   // calculate the output result of the NPU
-  op_plugin::linspace_out(start, end, steps, resultCast);
+  op_plugin::linspace_out(start, end, steps, result_cast);
 
-  if(option.dtype() != resultCast.dtype()) {
-    resultCast = resultCast.to(option.dtype());
+  if(result_cast.dtype() != option.dtype()) {
+    result = result_cast.to(option.dtype());
+  } else {
+    result = result_cast;
   }
 
-  return resultCast;
+  return result;
 }
 }  // op_plugin
