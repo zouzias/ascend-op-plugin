@@ -63,9 +63,12 @@ at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t
 
   if (result_cast.dtype() != result.dtype()) {
     result_cast = op_plugin::npu_dtype_cast(result_cast, result.scalar_type());
+    result.copy_(result_cast);
+  } else {
+    result = result_cast;
   }
 
-  return result.copy_(result_cast);
+  return result;
 }
 
 at::Tensor linspace(const at::Scalar& start, const at::Scalar& end, int64_t steps,
@@ -86,8 +89,11 @@ at::Tensor linspace(const at::Scalar& start, const at::Scalar& end, int64_t step
 
   if (result_cast.dtype() != option.dtype()) {
     result_cast = result_cast.to(option.dtype());
+    result.copy_(result_cast);
+  } else {
+    result = result_cast;
   }
 
-  return result.copy_(result_cast);
+  return result;
 }
 }  // namespace op_plugin
