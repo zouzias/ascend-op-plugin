@@ -32,11 +32,18 @@ static inline void grid_assign_positive_check(const at::Tensor& argmax_overlaps,
 }
 }  // namespace
 
-at::Tensor npu_grid_assign_positive(const at::Tensor& assigned_gt_inds, const at::Tensor& overlaps,
-    const at::Tensor& box_responsible_flags, const at::Tensor& max_overlaps,
-    const at::Tensor& argmax_overlaps, const at::Tensor& gt_max_overlaps,
-    const at::Tensor& gt_argmax_overlaps, int64_t num_gts, double pos_iou_thr,
-    double min_pos_iou, bool gt_max_assign_all) {
+at::Tensor npu_grid_assign_positive(
+    const at::Tensor& assigned_gt_inds,
+    const at::Tensor& overlaps,
+    const at::Tensor& box_responsible_flags,
+    const at::Tensor& max_overlaps,
+    const at::Tensor& argmax_overlaps,
+    const at::Tensor& gt_max_overlaps,
+    const at::Tensor& gt_argmax_overlaps,
+    int64_t num_gts,
+    double pos_iou_thr,
+    double min_pos_iou,
+    bool gt_max_assign_all) {
   grid_assign_positive_check(argmax_overlaps, gt_argmax_overlaps);
   at::Tensor result = npu_preparation::ApplyTensor(assigned_gt_inds);
   auto option = assigned_gt_inds.options().dtype(at::kInt);

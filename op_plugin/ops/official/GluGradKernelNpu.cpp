@@ -21,7 +21,11 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace{
-at::Tensor& glu_grad_npu_out_nocheck(at::Tensor &result, const at::Tensor &grad_output, const at::Tensor &self, int64_t dim) {
+at::Tensor& glu_grad_npu_out_nocheck(
+    at::Tensor &result,
+    const at::Tensor &grad_output,
+    const at::Tensor &self,
+    int64_t dim) {
   auto chunkedInput = self.chunk(2, dim);
   at::Tensor firstHalf = chunkedInput[0];
   at::Tensor secondHalf = chunkedInput[1];

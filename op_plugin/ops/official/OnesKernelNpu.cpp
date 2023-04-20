@@ -24,22 +24,36 @@ at::Tensor& ones_out(at::IntArrayRef size, at::Tensor& result) {
   return op_plugin::one_(result);
 }
 
-at::Tensor ones(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt, c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt, c10::optional<bool> pin_memory_opt) {
+at::Tensor ones(
+    at::IntArrayRef size,
+    c10::optional<at::ScalarType> dtype_opt,
+    c10::optional<at::Layout> layout_opt,
+    c10::optional<at::Device> device_opt,
+    c10::optional<bool> pin_memory_opt) {
   auto device = device_or_default(device_opt);
   at::TensorOptions option;
-  option = option.dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
+  option = option.dtype(dtype_opt)
+      .layout(layout_opt)
+      .device(device)
+      .pinned_memory(pin_memory_opt);
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(size, option, ACL_FORMAT_ND);
 
   return op_plugin::one_(result);
 }
 
-at::Tensor ones(at::IntArrayRef size, c10::optional<at::DimnameList> names, c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt, c10::optional<at::Device> device_opt,
+at::Tensor ones(
+    at::IntArrayRef size,
+    c10::optional<at::DimnameList> names,
+    c10::optional<at::ScalarType> dtype_opt,
+    c10::optional<at::Layout> layout_opt,
+    c10::optional<at::Device> device_opt,
     c10::optional<bool> pin_memory_opt) {
   auto device = device_or_default(device_opt);
   at::TensorOptions option;
-  option = option.dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);
+  option = option.dtype(dtype_opt)
+      .layout(layout_opt)
+      .device(device)
+      .pinned_memory(pin_memory_opt);
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(size, option, ACL_FORMAT_ND);
 
   return op_plugin::one_(result);

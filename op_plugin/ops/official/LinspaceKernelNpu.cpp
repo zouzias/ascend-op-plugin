@@ -21,7 +21,10 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& linspace_npu_out_nocheck(at::Tensor& result, const at::Scalar& start, const at::Scalar& end,
+at::Tensor& linspace_npu_out_nocheck(
+    at::Tensor& result,
+    const at::Scalar& start,
+    const at::Scalar& end,
     int64_t steps) {
   if (steps == 0) {
     // skip
@@ -71,9 +74,14 @@ at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t
   return result;
 }
 
-at::Tensor linspace(const at::Scalar& start, const at::Scalar& end, int64_t steps,
-    c10::optional<at::ScalarType> dtype_opt, c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt, c10::optional<bool> pin_memory_opt) {
+at::Tensor linspace(
+    const at::Scalar& start,
+    const at::Scalar& end,
+    int64_t steps,
+    c10::optional<at::ScalarType> dtype_opt,
+    c10::optional<at::Layout> layout_opt,
+    c10::optional<at::Device> device_opt,
+    c10::optional<bool> pin_memory_opt) {
   TORCH_CHECK(steps >= 0, "number of steps must be non-negative");
   auto device = c10::device_or_default(device_opt);
   at::TensorOptions option;
