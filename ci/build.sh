@@ -174,6 +174,11 @@ function main()
     bash ci/build.sh --python=${PY_VERSION}
     mv dist ..
 
+    if [ $? != 0 ]; then 
+        echo "Failed to compile the wheel file. Please check the source code by yourself"
+        exit1
+    fi
+    
     exit 0
 }
 
