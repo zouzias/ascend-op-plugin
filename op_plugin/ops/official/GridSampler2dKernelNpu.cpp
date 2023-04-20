@@ -41,10 +41,11 @@ at::Tensor grid_sampler_2d(
     dtype_cast_of_grid = op_plugin::npu_dtype_cast(dtype_cast_of_grid, c10::ScalarType::Float);
   }
 
-  c10::SmallVector<int64_t, SIZE> output_size = {dtype_cast_of_self.size(0),
-                                                dtype_cast_of_self.size(1),
-                                                dtype_cast_of_grid.size(1),
-                                                dtype_cast_of_grid.size(2)};
+  c10::SmallVector<int64_t, SIZE> output_size = {
+      dtype_cast_of_self.size(0),
+      dtype_cast_of_self.size(1),
+      dtype_cast_of_grid.size(1),
+      dtype_cast_of_grid.size(2)};
 
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(dtype_cast_of_self, output_size, ACL_FORMAT_ND);
   std::string inter_mode[] = {"bilinear", "nearest", "bicubic"};

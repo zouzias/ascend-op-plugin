@@ -32,9 +32,9 @@ at::Tensor ones(at::IntArrayRef size,
   auto device =  device_or_default(device_opt);
   at::TensorOptions option;
   option = option.dtype(dtype_opt)
-                 .layout(layout_opt)
-                 .device(device)
-                 .pinned_memory(pin_memory_opt);
+      .layout(layout_opt)
+      .device(device)
+      .pinned_memory(pin_memory_opt);
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(size, option, ACL_FORMAT_ND);
 
   return op_plugin::one_(result);
@@ -50,9 +50,9 @@ at::Tensor ones(
   auto device = device_or_default(device_opt);
   at::TensorOptions option;
   option = option.dtype(dtype_opt)
-                 .layout(layout_opt)
-                 .device(device)
-                 .pinned_memory(pin_memory_opt);
+      .layout(layout_opt)
+      .device(device)
+      .pinned_memory(pin_memory_opt);
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(size, option, ACL_FORMAT_ND);
 
   return op_plugin::one_(result);

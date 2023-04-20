@@ -77,9 +77,9 @@ at::Tensor linspace(const at::Scalar& start, const at::Scalar& end,
   auto device = c10::device_or_default(device_opt);
   at::TensorOptions option;
   option = option.dtype(dtype_opt)
-                 .layout(layout_opt)
-                 .device(device)
-                 .pinned_memory(pin_memory_opt);
+      .layout(layout_opt)
+      .device(device)
+      .pinned_memory(pin_memory_opt);
 
   at::Tensor result = npu_preparation::ApplyTensorWithFormat({steps}, option, ACL_FORMAT_ND);
   at::Tensor result_cast = result;
