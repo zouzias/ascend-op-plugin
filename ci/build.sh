@@ -20,10 +20,9 @@ SUPPORTED_PY_VERSION=(3.8 3.9)
 SUPPORTED_PYTORCH_VERSION=('master' 'v2.0.0' 'debug_op_plugin')
 PY_VERSION='3.8' # Default supported python version is 3.8
 PYTORCH_VERSION='debug_op_plugin' # Default supported PyTorch version is master
-PR_BRANCH='not existed'
-PR_URL='not existed'
-DEFAULT_SCRIPT_ARGS_NUM_MIN=2 # Default min supported input parameters
-DEFAULT_SCRIPT_ARGS_NUM_MAX=4 # Default max supported input parameters
+PR_CHANGEID='not existed'
+DEFAULT_SCRIPT_ARGS_NUM_MIN=1 # Default min supported input parameters
+DEFAULT_SCRIPT_ARGS_NUM_MAX=3 # Default max supported input parameters
 
 # Parse arguments inside script
 function parse_script_args() {
@@ -46,12 +45,6 @@ function parse_script_args() {
             break
         fi
         if [[ "$(echo "${3}"|cut -b1-|cut -b-2)" == "--" ]]; then
-            args_num=$((args_num+1))
-        fi
-        if [[ "x${4}" = "x" ]]; then
-            break
-        fi
-        if [[ "$(echo "${14}"|cut -b1-|cut -b-2)" == "--" ]]; then
             args_num=$((args_num+1))
         fi
         if [[ ${args_num} -eq ${DEFAULT_SCRIPT_ARGS_NUM_MAX} ]]; then
@@ -78,13 +71,8 @@ function parse_script_args() {
             args_num=$((args_num-1))
             shift
             ;;
-        --branch=*)
+        --changeid=*)
             PR_BRANCH=$(echo "${1}"|cut -d"=" -f2)
-            args_num=$((args_num-1))
-            shift
-            ;;
-        --url=*)
-            PR_URL=$(echo "${1}"|cut -d"=" -f2)
             args_num=$((args_num-1))
             shift
             ;;
@@ -136,15 +124,8 @@ function check_pytorch_version() {
     fi
 }
 
-function check_pr_branch() {
-    if [ ${PR_BRANCH} = 'not existed']; then
-        echo "input the branch of your pr please"
-        exit 1
-    fi
-}
-
-function check_pr_url() {
-    if [ ${PR_URL} = 'not existed']; then
+function check_changeid() {
+    if [ ${PR_CHANGEID} = 'not existed']; then
         echo "input the code base url of your pr please"
         exit 1
     fi
@@ -158,8 +139,7 @@ function main()
     fi
     check_python_version
     check_pytorch_version
-    check_pr_branch
-    check_pr_url
+    check_changeid
     
     #delete primary pytorch code base and download related pytorch code base
     cd ${CUR_DIR}/../
@@ -168,11 +148,19 @@ function main()
     fi
     git clone -b ${PYTORCH_VERSION} https://gitee.com/clinglai/pytorch.git
     cd pytorch/third_party
-    git clone -b ${PR_BRANCH} ${PR_URL}
+
+    git clone https://gitee.com/ascend/op-plugin.git
+    cd op-plugin
+    git cherry-pick ${PR_CHANGEID}
     
-    cd ..
+    cd ../../
     bash ci/build.sh --python=${PY_VERSION}
     mv dist ..
+
+    if [ $? != 0 ]; then 
+        echo "Failed to compile the wheel file. Please check the source code by yourself"
+        exit 1
+    fi
 
     exit 0
 }
