@@ -18,41 +18,29 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
-at::Tensor& acos_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
+namespace {
+at::Tensor& reverse_out_nocheck(
+    at::Tensor& result,
+    const at::Tensor& self,
+    at::IntArrayRef axis) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("Acos")
+  cmd.Name("ReverseV2")
       .Input(self)
+      .Input(axis, at::kInt)
       .Output(result)
       .Run();
+
   return result;
 }
 } // namespace
 
-at::Tensor& acos_out(const at::Tensor& self, at::Tensor& result) {
-  npu_preparation::check_tensor(
-      {self},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    acos_out_npu_nocheck(contiguous_result, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    acos_out_npu_nocheck(result, self);
-  }
+at::Tensor reverse(
+    const at::Tensor& self,
+    at::IntArrayRef axis) {
+  at::Tensor result = npu_preparation::ApplyTensor(self);
+  reverse_out_nocheck(result, self, axis);
+
   return result;
 }
-
-at::Tensor acos(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  acos_out_npu_nocheck(result, self);
-  return result;
-}
-
-at::Tensor& acos_(at::Tensor& self) {
-  return op_plugin::acos_out(self, self);
-}
-}  // namespace op_plugin
+} // namespace op_plugin

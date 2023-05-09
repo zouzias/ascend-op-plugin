@@ -154,7 +154,6 @@ at::Tensor& lt_(at::Tensor& self, const at::Tensor& other) {
 
 at::Tensor& lt_(at::Tensor& self, const at::Scalar& other) {
   npu_preparation::CastBackToOriFormat(self);
-  npu_preparation::CheckMemory({self}, {self});
 
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(
       self.sizes(),
