@@ -34,7 +34,7 @@ at::Tensor& acosh_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
 at::Tensor& acosh_out(
     const at::Tensor& self,
     at::Tensor& result) {
-  npu_preparation::CheckOut(
+  npu_preparation::check_tensor(
       {self},
       result,
       self);
@@ -49,7 +49,7 @@ at::Tensor& acosh_out(
 }
 
 at::Tensor acosh(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   acosh_out_npu_nocheck(result, self);
   return result;
 }
