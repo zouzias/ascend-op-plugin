@@ -17,11 +17,11 @@
 #include <ATen/native/TypeProperties.h>
 #include "torch_npu/csrc/framework/graph/util/GraphModeGuard.h"
 #include "torch_npu/csrc/framework/graph/construct/GraphConstructor.h"
-#include <third_party/acl/inc/op_proto/experiment_ops.h>
 
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/AdvancedIndex.h"
+#include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 
 namespace op_plugin {
 using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
