@@ -119,9 +119,9 @@ function main()
     # clone torch_adapter for ops ut
     PYTORCH_PATH=${CUR_DIR}/../pytorch_ut
     if [ -d ${PYTORCH_PATH} ]; then
-        rm -r ${PYTORCH_PATH}
+        rm -rf ${PYTORCH_PATH}
     fi
-    git clone -b ${PYTORCH_VERSION} https://gitee.com/ascend/pytorch.git ${PYTORCH_PATH}
+    git clone -b ${PYTORCH_VERSION} https://gitee.com/ascend/pytorch.git --recursive ${PYTORCH_PATH}
 
     # copy modify_files.txt to torch_adapter/ci
     cp ${CUR_DIR}/../modify_files.txt ${PYTORCH_PATH}/
@@ -129,6 +129,27 @@ function main()
     # exec ut
     cd ${PYTORCH_PATH}/ci
     python"${PY_VERSION}" access_control_test.py
+
+    # copy op_plugin to torch_adapter/third_party
+    PYTORCH_THIRD_PATH=${PYTORCH_PATH}/third_party/op-plugin
+    if [ -d ${PYTORCH_THIRD_PATH}/op_plugin ]; then
+        rm -r ${PYTORCH_THIRD_PATH}/*
+    else
+        mkdir -p ${PYTORCH_THIRD_PATH}
+    fi
+    OP_PLUGIN_PATH=${CUR_DIR}/../op_plugin
+    cp -rf ${OP_PLUGIN_PATH} ${PYTORCH_THIRD_PATH}/
+
+    # gen libtorch_npu.so
+    cd ${PYTORCH_PATH}
+    python"${PY_VERSION}" build_libtorch_npu.py
+
+    # build ops cpp ut
+    cd ${CUR_DIR}
+    python"${PY_VERSION}" ${CUR_DIR}/build_ops_ut.py
+    # exec ops cpp ut
+    cd ${CUR_DIR}/../test/build
+    ./ops_cpp_utest
 
     exit 0
 }
