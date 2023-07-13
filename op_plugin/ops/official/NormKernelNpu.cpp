@@ -44,20 +44,16 @@ at::Tensor& norm_out_npu_nocheck(
     at::IntArrayRef dim,
     bool keepdim,
     at::ScalarType dtype) {
-  at::Tensor fp32_self(self);
-  if (self.scalar_type() != at::ScalarType::Float) {
-    fp32_self = op_plugin::npu_dtype_cast(fp32_self, at::ScalarType::Float);
-  }
-  auto output_size = op_infer::reduce_ops_npu_output_size(fp32_self, dim, keepdim);
+  auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
   if (output_size.empty()) {
     output_size.push_back(1);
   }
-  at::Tensor result_temp = npu_preparation::ApplyTensorWithSizes(output_size, fp32_self.options());
-  at::Tensor result = npu_preparation::ApplyTensorWithSizes(output_size, fp32_self.options());
+  at::Tensor result_temp = npu_preparation::ApplyTensorWithSizes(output_size, self.options());
+  at::Tensor result = npu_preparation::ApplyTensorWithSizes(output_size, self.options());
   auto pvalue = calculate_p(p);
   at_npu::native::OpCommand cmd1;
   cmd1.Name("LpNormReduce")
-      .Input(fp32_self)
+      .Input(self)
       .Output(result_temp)
       .Attr("p", pvalue)
       .Attr("axes", dim)
