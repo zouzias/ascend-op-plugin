@@ -35,6 +35,22 @@ auto check_and_trans_dim(const at::Tensor& self, at::IntArrayRef dim) {
   return result_dim;
 }
 
+int64_t get_shape_prod(const at::Tensor& self, at::IntArrayRef dim) {
+  int64_t shape_prod = 1;
+  if (self.dim() == 0) {
+    shape_prod = 1;
+  } else if (dim.size() == 0) {
+    for (auto i = 0; i < self.dim(); i++) {
+      shape_prod *= self.size(i);
+    }
+  } else {
+    for(auto i = 0; i < dim.size(); i++) {
+      shape_prod *= self.size(dim[i]);
+    }
+  }
+  return shape_prod;
+}
+
 auto get_result_names(const at::Tensor& self, at::IntArrayRef dim, bool keepdim) {
   auto names = self.names();
   std::vector<at::Dimname> result_names;
@@ -89,7 +105,16 @@ std::tuple<at::Tensor&, at::Tensor&> var_mean_compute(
   if (!keepdim) {
     mean.resize_(mean_output_size_not_keepdim);
   }
-  var_after_out_nocheck(variance, self, mean_broadcast, dim, unbiased, keepdim);
+  auto shape_prod = get_shape_prod(self, dim);
+  if (shape_prod == 0 || (shape_prod <= 1 && shape_prod <= correction)) {
+    variance.fill_(NAN);
+    return std::tuple<at::Tensor&, at::Tensor&>(variance, mean);
+  }
+  if (correction > 1 && shape_prod <= correction) {
+    variance.fill_(INFINITY);
+    return std::tuple<at::Tensor&, at::Tensor&>(variance, mean);
+  }
+  var_after_out_nocheck(variance, self, mean_broadcast, dim, unbiased, keepdim, correction);
   return std::tuple<at::Tensor&, at::Tensor&>(variance, mean);
 }
 
