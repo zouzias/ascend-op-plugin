@@ -96,17 +96,27 @@ at::Tensor& ne_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& 
 }
 
 at::Tensor ne(const at::Tensor& self, const at::Tensor& other) {
-  at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
-  at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
+  if (npu_preparation::IsCPUScalar(other)) {
+    return op_plugin::ne(self, other.item());
+  } else if (npu_preparation::IsCPUScalar(self)) {
+    return op_plugin::ne(other, self.item());
+  } else {
+    TORCH_CHECK(self.device() == other.device(),
+        "Expected all tensors to be on the same device, but found at least two devices, ",
+        self.device(), " and ", other.device());
+    at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
+    at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
 
-  auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
-  at::Tensor result = npu_preparation::ApplyTensor(
-      output_size,
-      format_cast_of_self.options().dtype(at::kBool),
-      format_cast_of_self);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
+    at::Tensor result = npu_preparation::ApplyTensor(
+        output_size,
+        format_cast_of_self.options().dtype(at::kBool),
+        format_cast_of_self);
 
-  ne_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
-  return result;
+    ne_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
+    return result;
+  }
+
 }
 
 at::Tensor ne(const at::Tensor& self, const at::Scalar& other) {
@@ -121,21 +131,31 @@ at::Tensor ne(const at::Tensor& self, const at::Scalar& other) {
 }
 
 at::Tensor& ne_(at::Tensor& self, const at::Tensor& other) {
-  npu_preparation::CastBackToOriFormat(self);
-  npu_preparation::CastBackToOriFormat(other);
-  npu_preparation::CheckMemory({self, other}, {self});
-
-  at::Tensor result = npu_preparation::ApplyTensor(self, self.options().dtype(at::ScalarType::Byte));
-
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    ne_out_npu_nocheck(result, contiguous_self, other);
+  if (npu_preparation::IsCPUScalar(other)) {
+    return op_plugin::ne_(self, other.item());
   } else {
-    ne_out_npu_nocheck(result, self, other);
-  }
+    TORCH_CHECK(self.device() == other.device(),
+        "Expected all tensors to be on the same device, but found at least two devices, ",
+        self.device(), " and ", other.device());
+    npu_preparation::CastBackToOriFormat(self);
+    npu_preparation::CastBackToOriFormat(other);
+    npu_preparation::CheckMemory({self, other}, {self});
 
-  self.copy_(result);
-  return self;
+    at::Tensor result = npu_preparation::ApplyTensor(
+        self,
+        self.options().dtype(at::ScalarType::Byte));
+
+    if (!npu_utils::check_match(&self)) {
+      at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+      ne_out_npu_nocheck(result, contiguous_self, other);
+    } else {
+      ne_out_npu_nocheck(result, self, other);
+    }
+
+    self.copy_(result);
+
+    return self;
+  }
 }
 
 at::Tensor& ne_(at::Tensor& self, const at::Scalar& other) {

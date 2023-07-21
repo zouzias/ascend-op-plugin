@@ -20,7 +20,7 @@ namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& eq_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
@@ -97,17 +97,28 @@ at::Tensor& eq_out(
 at::Tensor eq(
     const at::Tensor& self,
     const at::Tensor& other) {
-  at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
-  at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
 
-  auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
-      output_size,
-      format_cast_of_self.options().dtype(at::kBool),
-      ACL_FORMAT_ND);
-
-  eq_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
-  return result;
+  if (npu_preparation::IsCPUScalar(other)) {
+    return op_plugin::eq(self, other.item());
+  } else if (npu_preparation::IsCPUScalar(self)) {
+    return op_plugin::eq(other, self.item());
+  } else {
+    TORCH_CHECK(self.device() == other.device(),
+        "Expected all tensors to be on the same device, but found at least two devices, ",
+        self.device(), " and ", other.device());
+    at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
+    at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
+    // calculate the output size
+    auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
+    // construct the output tensor of the NPU
+    at::Tensor result = npu_preparation::ApplyTensor(
+        output_size,
+        format_cast_of_self.options().dtype(at::kBool),
+        format_cast_of_self);
+    // calculate the output result of the NPU
+    eq_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
+    return result;
+  }
 }
 
 at::Tensor eq(
