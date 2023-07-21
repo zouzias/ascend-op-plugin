@@ -147,8 +147,8 @@ at::Tensor& le_(at::Tensor& self, const at::Tensor& other) {
     at::Tensor result = npu_preparation::ApplyTensor(
         self,
         self.options().dtype(at::ScalarType::Byte));
-    if (!NpuUtils::check_match(&self)) {
-      at::Tensor contiguous_self = NpuUtils::format_contiguous(self);
+    if (!npu_utils::check_match(&self)) {
+      at::Tensor contiguous_self = npu_utils::format_contiguous(self);
       le_out_npu_nocheck(contiguous_self, ori_other, result);
     } else {
       le_out_npu_nocheck(self, ori_other, result);

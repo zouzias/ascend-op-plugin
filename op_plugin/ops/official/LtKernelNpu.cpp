@@ -159,8 +159,8 @@ at::Tensor& lt_(at::Tensor& self, const at::Tensor& other) {
         self.options().dtype(at::ScalarType::Byte),
         CalcuOpUtil::GetTensorNpuFormat(self));
 
-    if (!NpuUtils::check_match(&self)) {
-      at::Tensor contiguous_self = NpuUtils::format_contiguous(self);
+    if (!npu_utils::check_match(&self)) {
+      at::Tensor contiguous_self = npu_utils::format_contiguous(self);
       lt_out_npu_nocheck(result, contiguous_self, other);
     } else {
       lt_out_npu_nocheck(result, self, other);

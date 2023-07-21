@@ -109,12 +109,12 @@ at::Tensor ge(const at::Tensor& self, const at::Tensor& other) {
         self.device(), " and ", other.device());
     at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
     at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
-    auto output_size = broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
     at::Tensor result = npu_preparation::ApplyTensor(
         output_size,
         format_cast_of_self.options().dtype(at::kBool),
         format_cast_of_self);
-    ge_out_npu_nocheck(format_cast_of_self, format_cast_of_other, result);
+    ge_out_nocheck(format_cast_of_self, format_cast_of_other, result);
     return result;
   }
 }
@@ -144,11 +144,11 @@ at::Tensor& ge_(at::Tensor& self, const at::Tensor& other) {
         self,
         self.options().dtype(at::ScalarType::Byte));
 
-    if (!NpuUtils::check_match(&self)) {
-      at::Tensor contiguous_self = NpuUtils::format_contiguous(self);
-      ge_out_npu_nocheck(contiguous_self, ori_other, result);
+    if (!npu_utils::check_match(&self)) {
+      at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+      ge_out_nocheck(contiguous_self, ori_other, result);
     } else {
-      ge_out_npu_nocheck(self, ori_other, result);
+      ge_out_nocheck(self, ori_other, result);
     }
     self.copy_(result);
     return self;
