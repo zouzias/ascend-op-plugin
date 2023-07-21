@@ -157,7 +157,7 @@ at::Tensor& lt_(at::Tensor& self, const at::Tensor& other) {
     at::Tensor result = npu_preparation::ApplyTensorWithFormat(
         self.sizes(),
         self.options().dtype(at::ScalarType::Byte),
-        CalcuOpUtil::GetTensorNpuFormat(self));
+        calcu_op_util::GetTensorNpuFormat(self));
 
     if (!npu_utils::check_match(&self)) {
       at::Tensor contiguous_self = npu_utils::format_contiguous(self);

@@ -151,12 +151,14 @@ at::Tensor& gt_(at::Tensor& self, const at::Tensor& other) {
         self.device(), " and ", other.device());
     npu_preparation::CastBackToOriFormat(self);
     at::Tensor ori_other = npu_preparation::CastBackToOriFormat(other);
+    c10::SmallVector<at::Tensor, N> inputs = {self, ori_other};
+    c10::SmallVector<at::Tensor, N> outputs = {self};
     calcu_op_util::CheckMemoryOverLaps(inputs, outputs);
 
     at::Tensor result = npu_preparation::ApplyTensorWithFormat(
         self.sizes(),
         self.options().dtype(at::ScalarType::Byte),
-        CalcuOpUtil::GetTensorNpuFormat(self));
+        calcu_op_util::GetTensorNpuFormat(self));
 
     if (!npu_utils::check_match(&self)) {
       at::Tensor contiguous_self = npu_utils::format_contiguous(self);
