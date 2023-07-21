@@ -61,37 +61,49 @@ at::Tensor& gt_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at::S
 } // namespace
 
 at::Tensor& gt_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
-  at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
-  auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
-
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      ACL_FORMAT_ND,
-      result.scalar_type(),
-      output_size);
-
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    gt_out_npu_nocheck(contiguous_result, format_cast_of_self, format_cast_of_other);
-    npu_utils::format_fresh_view(result, contiguous_result);
+  if (npu_preparation::IsCPUScalar(other)) {
+    return op_plugin::gt_out(self, other.item(), result);
+  } else if (npu_preparation::IsCPUScalar(self)) {
+    return op_plugin::lt_out(other, self.item(), result);
   } else {
-    gt_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
-  }
+    TORCH_CHECK(self.device() == other.device(),
+        "Expected all tensors to be on the same device, but found at least two devices, ",
+        self.device(), " and ", other.device());
+    at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
+    at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
+    if (!result.is_same(self)) {
+      npu_preparation::CheckOut(
+          {self},
+          result,
+          ACL_FORMAT_ND,
+          result.scalar_type(),
+          output_size);
+    }
 
-  return result;
+    if (!npu_utils::check_match(&result)) {
+      at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+      gt_out_npu_nocheck(contiguous_result, format_cast_of_self, format_cast_of_other);
+      npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+      gt_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
+    }
+
+    return result;
+  }
 }
 
 at::Tensor& gt_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& result) {
   at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
   auto output_size = format_cast_of_self.sizes();
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      ACL_FORMAT_ND,
-      result.scalar_type(),
-      output_size);
+  if (!result.is_same(self)) {
+    npu_preparation::CheckOut(
+        {self},
+        result,
+        ACL_FORMAT_ND,
+        result.scalar_type(),
+        output_size);
+  }
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
@@ -105,18 +117,27 @@ at::Tensor& gt_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& 
 }
 
 at::Tensor gt(const at::Tensor& self, const at::Tensor& other) {
-  at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
-  at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
+  if (npu_preparation::IsCPUScalar(other)) {
+    return op_plugin::gt(self, other.item());
+  } else if (npu_preparation::IsCPUScalar(self)) {
+    return op_plugin::lt(other, self.item());
+  } else {
+    TORCH_CHECK(self.device() == other.device(),
+        "Expected all tensors to be on the same device, but found at least two devices, ",
+        self.device(), " and ", other.device());
+    at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
+    at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
 
-  auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
-      output_size,
-      format_cast_of_self.options().dtype(at::kBool),
-      ACL_FORMAT_ND);
+    at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+        output_size,
+        format_cast_of_self.options().dtype(at::kBool),
+        ACL_FORMAT_ND);
 
-  gt_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
-  return result;
+    gt_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
+    return result;
+  }
 }
 
 at::Tensor gt(const at::Tensor& self, const at::Scalar& other) {
@@ -133,47 +154,10 @@ at::Tensor gt(const at::Tensor& self, const at::Scalar& other) {
 }
 
 at::Tensor& gt_(at::Tensor& self, const at::Tensor& other) {
-  npu_preparation::CastBackToOriFormat(self);
-  at::Tensor ori_other = npu_preparation::CastBackToOriFormat(other);
-  c10::SmallVector<at::Tensor, N> inputs = {self, ori_other};
-  c10::SmallVector<at::Tensor, N> outputs = {self};
-  calcu_op_util::CheckMemoryOverLaps(inputs, outputs);
-
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
-      self.sizes(),
-      self.options().dtype(at::ScalarType::Byte),
-      calcu_op_util::GetTensorNpuFormat(self));
-
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    gt_out_npu_nocheck(result, contiguous_self, ori_other);
-  } else {
-    gt_out_npu_nocheck(result, self, ori_other);
-  }
-
-  self.copy_(result);
-  return self;
+  return op_plugin::gt_out(self, other, self);
 }
 
 at::Tensor& gt_(at::Tensor& self, const at::Scalar& other) {
-  npu_preparation::CastBackToOriFormat(self);
-  c10::SmallVector<at::Tensor, N> inputs = {self};
-  c10::SmallVector<at::Tensor, N> outputs = {self};
-  calcu_op_util::CheckMemoryOverLaps(inputs, outputs);
-
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
-      self.sizes(),
-      self.options().dtype(at::ScalarType::Byte),
-      calcu_op_util::GetTensorNpuFormat(self));
-
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    gt_out_npu_nocheck(result, contiguous_self, other);
-  } else {
-    gt_out_npu_nocheck(result, self, other);
-  }
-
-  self.copy_(result);
-  return self;
+  return op_plugin::gt_out(self, other, self);
 }
 } // namespace op_plugin

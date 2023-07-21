@@ -57,33 +57,50 @@ at::Tensor& eq_out(
     const at::Tensor& self,
     const at::Tensor& other,
     at::Tensor& result) {
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  npu_preparation::CheckOut(
-      {self, other},
-      result,
-      ACL_FORMAT_ND,
-      result.scalar_type(),
-      output_size);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    eq_out_npu_nocheck(contiguous_result, self, other);
-    npu_utils::format_fresh_view(result, contiguous_result);
+  if (npu_preparation::IsCPUScalar(other)) {
+    return op_plugin::eq_out(self, other.item(), result);
+  } else if (npu_preparation::IsCPUScalar(self)) {
+    return op_plugin::eq_out(other, self.item(), result);
   } else {
-    eq_out_npu_nocheck(result, self, other);
+    TORCH_CHECK(self.device() == other.device(),
+        "Expected all tensors to be on the same device, but found at least two devices, ",
+        self.device(), " and ", other.device());
+    at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
+    at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
+    if (!result.is_same(self)) {
+      npu_preparation::CheckOut(
+          {self, other},
+          result,
+          ACL_FORMAT_ND,
+          result.scalar_type(),
+          output_size);
+    }
+    
+    if (!npu_utils::check_match(&result)) {
+      at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+      eq_out_npu_nocheck(contiguous_result, format_cast_of_self, format_cast_of_other);
+      npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+      eq_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
+    }
+    return result;
   }
-  return result;
 }
 
 at::Tensor& eq_out(
     const at::Tensor& self,
     const at::Scalar& other,
     at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      ACL_FORMAT_ND,
-      result.scalar_type(),
-      self.sizes());
+  if (!result.is_same(self)) {
+    npu_preparation::CheckOut(
+        {self},
+        result,
+        ACL_FORMAT_ND,
+        result.scalar_type(),
+        self.sizes());
+  }
+  
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     eq_out_npu_nocheck(contiguous_result, self, other);
@@ -97,17 +114,26 @@ at::Tensor& eq_out(
 at::Tensor eq(
     const at::Tensor& self,
     const at::Tensor& other) {
-  at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
-  at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
+  if (npu_preparation::IsCPUScalar(other)) {
+    return op_plugin::eq(self, other.item());
+  } else if (npu_preparation::IsCPUScalar(self)) {
+    return op_plugin::eq(other, self.item());
+  } else {
+    TORCH_CHECK(self.device() == other.device(),
+        "Expected all tensors to be on the same device, but found at least two devices, ",
+        self.device(), " and ", other.device());
+    at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
+    at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
 
-  auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
-      output_size,
-      format_cast_of_self.options().dtype(at::kBool),
-      ACL_FORMAT_ND);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
+    at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+        output_size,
+        format_cast_of_self.options().dtype(at::kBool),
+        ACL_FORMAT_ND);
 
-  eq_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
-  return result;
+    eq_out_npu_nocheck(result, format_cast_of_self, format_cast_of_other);
+    return result;
+  }
 }
 
 at::Tensor eq(
@@ -127,14 +153,12 @@ at::Tensor eq(
 at::Tensor& eq_(
     at::Tensor& self,
     const at::Tensor& other) {
-  npu_preparation::CastBackToOriFormat(self);
   return op_plugin::eq_out(self, other, self);
 }
 
 at::Tensor& eq_(
     at::Tensor& self,
     const at::Scalar& other) {
-  npu_preparation::CastBackToOriFormat(self);
   return op_plugin::eq_out(self, other, self);
 }
 } // namespace op_plugin
