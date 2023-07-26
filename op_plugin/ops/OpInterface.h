@@ -1012,7 +1012,10 @@ at::Tensor reflection_pad1d_backward(const at::Tensor & grad_output, const at::T
 at::Tensor & reflection_pad1d_backward_out(const at::Tensor & grad_output, const at::Tensor & input, at::IntArrayRef padding, at::Tensor & grad_input);
 at::Tensor npu_rotary_mul(const at::Tensor& self, const at::Tensor& r1, const at::Tensor& r2);
 ::std::tuple<at::Tensor,at::Tensor,at::Tensor> npu_rotary_mul_backward(const at::Tensor& grad, const at::Tensor& self, const at::Tensor& r1, const at::Tensor& r2);
-
+at::Tensor kl_div(const at::Tensor &self, const at::Tensor &target, int64_t reduction, bool log_target);
+at::Tensor kl_div_backward(const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &target, int64_t reduction, bool log_target);
+at::Tensor l1_loss(const at::Tensor &self, const at::Tensor &target, int64_t reduction);
+at::Tensor l1_loss_backward(const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &target,int64_t reduction);
 }  // namespace op_plugin
 
 #endif
