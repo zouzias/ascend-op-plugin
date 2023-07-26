@@ -46,6 +46,7 @@ at::Tensor embedding_symint(
     c10::SymInt padding_idx,
     bool scale_grad_by_freq,
     bool sparse) {
+  TORCH_CHECK(weight.dim() == 2, "'weight' must be 2-D");
   auto output_size = op_infer::array_to_small_vector(indices.sizes());
   output_size.emplace_back(weight.size(weight.dim() - 1));
   at::Tensor result = npu_preparation::ApplyTensor(weight, output_size);
