@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
@@ -23,9 +21,6 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-using torch::autograd::Function;
-using torch::autograd::AutogradContext;
-
 bool is_transpose_last_two_dims_v2(const at::Tensor& Tensors) {
   if (Tensors.dim() < 2) {
     return false;
@@ -294,12 +289,14 @@ at::Tensor npu_bmmV2_impl(const at::Tensor& self, const at::Tensor& mat2, at::In
   infer_output_size = bmm_v2_output_size(tmp_self, tmp_mat2);
   return pure_bmm_v2(tmp_self, tmp_mat2, infer_output_size).view(expect_output_size);
 }
+} // namespace
 
 at::Tensor npu_bmm_v2_mat1_backward(
     const at::Tensor& grad,
     const at::Tensor& mat1,
     const at::Tensor& mat2,
-    at::IntArrayRef sizes) {
+    c10::SymIntArrayRef size) {
+  auto sizes = c10::asIntArrayRefUnchecked(size);
   // da = grad * b^T
   auto grad_with_full_size = grad;
 
@@ -318,7 +315,8 @@ at::Tensor npu_bmm_v2_mat2_backward(
     const at::Tensor& grad,
     const at::Tensor& mat1,
     const at::Tensor& mat2,
-    at::IntArrayRef sizes) {
+    c10::SymIntArrayRef size) {
+  auto sizes = c10::asIntArrayRefUnchecked(size);
   // db = a^T * grad
   auto grad_with_full_size = grad;
 
@@ -335,33 +333,8 @@ at::Tensor npu_bmm_v2_mat2_backward(
   return npu_bmmV2_impl(mat1.transpose(-2, -1), grad.view(axis_reshape), sizes);
 }
 
-class NPUBmmV2Function : public torch::autograd::Function<NPUBmmV2Function> {
-public:
-  static at::Tensor forward(
-      AutogradContext* ctx,
-      const at::Tensor& self,
-      const at::Tensor& mat2,
-      at::IntArrayRef output_sizes) {
-    at::AutoNonVariableTypeMode g;
-    ctx->save_for_backward({self, mat2});
-    return npu_bmmV2_impl(self, mat2, output_sizes);
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext* ctx, std::vector<at::Tensor> grad_outputs) {
-    auto saved = ctx->get_saved_variables();
-    auto self = saved[0];
-    auto mat2 = saved[1];
-
-    at::Tensor self_grad = npu_bmm_v2_mat1_backward(grad_outputs[0], self, mat2, self.sizes());
-    at::Tensor mat2_grad = npu_bmm_v2_mat2_backward(grad_outputs[0], self, mat2, mat2.sizes());
-    std::vector<at::Tensor> output = {self_grad, mat2_grad, at::Tensor()};
-    return output;
-  }
-};
-}
-
 at::Tensor npu_bmmV2(const at::Tensor& self, const at::Tensor& mat2, at::IntArrayRef output_sizes) {
-  return NPUBmmV2Function::apply(self, mat2, output_sizes);
+  return npu_bmmV2_impl(self, mat2, output_sizes);
 }
 
 } // namespace op_plugin
