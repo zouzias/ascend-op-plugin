@@ -20,7 +20,7 @@ namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
+namespace {
 at::Tensor& embedding_renorm_gather2d_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
@@ -111,16 +111,17 @@ at::Tensor& embedding_renorm_(
   at::checkDim("embedding_renorm_", self_arg, 2);
   at::checkScalarType("embedding_renorm_", indices_arg, at::kLong);
 
+  at::Tensor indices_copy = indices.clone();
   auto num_indices = indices.numel();
-  at::native::resize_(indices, num_indices);
+  at::native::resize_(indices_copy, num_indices);
 
-  npu_preparation::CheckMemory({self, indices}, {self});
+  npu_preparation::CheckMemory({self, indices_copy}, {self});
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    embedding_renorm_out_npu_nocheck(contiguous_self, contiguous_self, indices, max_norm, norm_type);
+    embedding_renorm_out_npu_nocheck(contiguous_self, contiguous_self, indices_copy, max_norm, norm_type);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
-    embedding_renorm_out_npu_nocheck(self, self, indices, max_norm, norm_type);
+    embedding_renorm_out_npu_nocheck(self, self, indices_copy, max_norm, norm_type);
   }
   return self;
 }

@@ -22,7 +22,10 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 inline void adaptive_max_pool2d_check(const at::Tensor& self, at::IntArrayRef output_size) {
-  for (int64_t i = 0; i < self.dim(); i++) {
+  TORCH_CHECK(self.dtype() != at::kLong, "\"adaptive_max_pool2d\" not implemented for 'Long'");
+  TORCH_CHECK(self.dtype() != at::kInt, "\"adaptive_max_pool2d\" not implemented for 'Int'");
+
+  for (int64_t i = 1; i < self.dim(); i++) {
     TORCH_CHECK(
         self.size(i) > 0,
         "adaptive_max_pooling2d(): expected input to have non-empty spatial dimensions, "
@@ -123,16 +126,20 @@ std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool2d_out(
     at::Tensor& output,
     at::Tensor& indices) {
   adaptive_max_pool2d_check(self, output_size);
-  c10::SmallVector<int64_t, SIZE> output_sizes = std::get<0>(adaptive_max_pool2d_infer_size(self, output_size));
-  c10::SmallVector<int64_t, SIZE> indices_size = std::get<1>(adaptive_max_pool2d_infer_size(self, output_size));
+  at::Tensor self_cp = self;
+  if (self.dim() == 3) {
+    self_cp = self.unsqueeze(0);
+  }
+  c10::SmallVector<int64_t, SIZE> output_sizes = std::get<0>(adaptive_max_pool2d_infer_size(self_cp, output_size));
+  c10::SmallVector<int64_t, SIZE> indices_size = std::get<1>(adaptive_max_pool2d_infer_size(self_cp, output_size));
 
   npu_preparation::CheckOut(
-      {self},
+      {self_cp},
       output,
-      self,
+      self_cp,
       output_sizes);
   npu_preparation::CheckOut(
-      {self},
+      {self_cp},
       indices,
       ACL_FORMAT_NC1HWC0,
       at::ScalarType::Long,
@@ -143,7 +150,7 @@ std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool2d_out(
   if (!(output_match && indices_match)) {
     at::Tensor contiguous_output = output_match ? output : npu_utils::format_contiguous(output);
     at::Tensor contiguous_indices = indices_match ? indices : npu_utils::format_contiguous(indices);
-    adaptive_max_pool2d_out_nocheck(contiguous_output, contiguous_indices, self, output_size);
+    adaptive_max_pool2d_out_nocheck(contiguous_output, contiguous_indices, self_cp, output_size);
     if (!output_match) {
       npu_utils::format_fresh_view(output, contiguous_output);
     }
@@ -151,9 +158,13 @@ std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool2d_out(
       npu_utils::format_fresh_view(indices, contiguous_indices);
     }
   } else {
-    adaptive_max_pool2d_out_nocheck(output, indices, self, output_size);
+    adaptive_max_pool2d_out_nocheck(output, indices, self_cp, output_size);
   }
 
+  if (self.dim() == 3) {
+    output.squeeze_(0);
+    indices.squeeze_(0);
+  }
   return std::tuple<at::Tensor&, at::Tensor&>(output, indices);
 }
 
@@ -161,12 +172,21 @@ std::tuple<at::Tensor, at::Tensor> adaptive_max_pool2d(
     const at::Tensor& self,
     at::IntArrayRef output_size) {
   adaptive_max_pool2d_check(self, output_size);
-  c10::SmallVector<int64_t, SIZE> output_sizes = std::get<0>(adaptive_max_pool2d_infer_size(self, output_size));
-  c10::SmallVector<int64_t, SIZE> indices_size = std::get<1>(adaptive_max_pool2d_infer_size(self, output_size));
-  at::Tensor output = npu_preparation::ApplyTensor(self, output_sizes);
-  at::Tensor indices = npu_preparation::ApplyTensorWithFormat(indices_size, self.options().dtype(at::kLong), ACL_FORMAT_NC1HWC0);
-  adaptive_max_pool2d_out_nocheck(output, indices, self, output_size);
+  at::Tensor self_cp = self;
+  if (self.dim() == 3) {
+    self_cp = self.unsqueeze(0);
+  }
+  c10::SmallVector<int64_t, SIZE> output_sizes = std::get<0>(adaptive_max_pool2d_infer_size(self_cp, output_size));
+  c10::SmallVector<int64_t, SIZE> indices_size = std::get<1>(adaptive_max_pool2d_infer_size(self_cp, output_size));
+  at::Tensor output = npu_preparation::ApplyTensor(self_cp, output_sizes);
+  at::Tensor indices =
+      npu_preparation::ApplyTensorWithFormat(indices_size, self_cp.options().dtype(at::kLong), ACL_FORMAT_NC1HWC0);
+  adaptive_max_pool2d_out_nocheck(output, indices, self_cp, output_size);
 
+  if (self.dim() == 3) {
+    output.squeeze_(0);
+    indices.squeeze_(0);
+  }
   return std::tuple<at::Tensor, at::Tensor>(output, indices);
 }
 } // namespace op_plugin
