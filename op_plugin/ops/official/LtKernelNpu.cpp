@@ -63,15 +63,13 @@ at::Tensor& lt_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at::S
 } // namespace
 
 at::Tensor& lt_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
-  at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
+  at::Tensor format_cast_of_self = npu_preparation::cast_to_ori_format(self);
+  at::Tensor format_cast_of_other = npu_preparation::cast_to_ori_format(other);
   auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
 
-  npu_preparation::CheckOut(
+  npu_preparation::check_tensor(
       {self, other},
       result,
-      ACL_FORMAT_ND,
-      result.scalar_type(),
       output_size);
 
   if (!npu_utils::check_match(&result)) {
@@ -86,13 +84,11 @@ at::Tensor& lt_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& 
 }
 
 at::Tensor& lt_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& result) {
-  at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
+  at::Tensor format_cast_of_self = npu_preparation::cast_to_ori_format(self);
   auto output_size = format_cast_of_self.sizes();
-  npu_preparation::CheckOut(
+  npu_preparation::check_tensor(
       {self},
       result,
-      ACL_FORMAT_ND,
-      result.scalar_type(),
       output_size);
 
   if (!npu_utils::check_match(&result)) {
@@ -107,11 +103,11 @@ at::Tensor& lt_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& 
 }
 
 at::Tensor lt(const at::Tensor& self, const at::Tensor& other) {
-  at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
-  at::Tensor format_cast_of_other = npu_preparation::CastBackToOriFormat(other);
+  at::Tensor format_cast_of_self = npu_preparation::cast_to_ori_format(self);
+  at::Tensor format_cast_of_other = npu_preparation::cast_to_ori_format(other);
 
   auto output_size = op_infer::broadcast_ops_npu_output_size(format_cast_of_self, format_cast_of_other);
-  at::Tensor result = npu_preparation::ApplyTensorWithSizes(
+  at::Tensor result = npu_preparation::apply_tensor_with_sizes(
       output_size,
       format_cast_of_self.options().dtype(at::kBool));
 
@@ -120,10 +116,10 @@ at::Tensor lt(const at::Tensor& self, const at::Tensor& other) {
 }
 
 at::Tensor lt(const at::Tensor& self, const at::Scalar& other) {
-  at::Tensor format_cast_of_self = npu_preparation::CastBackToOriFormat(self);
+  at::Tensor format_cast_of_self = npu_preparation::cast_to_ori_format(self);
   auto output_size = op_infer::input_same_output_size(format_cast_of_self);
 
-  at::Tensor result = npu_preparation::ApplyTensorWithSizes(
+  at::Tensor result = npu_preparation::apply_tensor_with_sizes(
       output_size,
       format_cast_of_self.options().dtype(at::kBool));
 
@@ -132,11 +128,11 @@ at::Tensor lt(const at::Tensor& self, const at::Scalar& other) {
 }
 
 at::Tensor& lt_(at::Tensor& self, const at::Tensor& other) {
-  npu_preparation::CastBackToOriFormat(self);
-  npu_preparation::CastBackToOriFormat(other);
-  npu_preparation::CheckMemory({self, other}, {self});
+  npu_preparation::cast_to_ori_format(self);
+  npu_preparation::cast_to_ori_format(other);
+  npu_preparation::check_memory({self, other}, {self});
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       self.sizes(),
       self.options().dtype(at::ScalarType::Byte),
       calcu_op_util::GetTensorNpuFormat(self));
@@ -153,10 +149,9 @@ at::Tensor& lt_(at::Tensor& self, const at::Tensor& other) {
 }
 
 at::Tensor& lt_(at::Tensor& self, const at::Scalar& other) {
-  npu_preparation::CastBackToOriFormat(self);
-  npu_preparation::CheckMemory({self}, {self});
+  npu_preparation::cast_to_ori_format(self);
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
       self.sizes(),
       self.options().dtype(at::ScalarType::Byte),
       calcu_op_util::GetTensorNpuFormat(self));
