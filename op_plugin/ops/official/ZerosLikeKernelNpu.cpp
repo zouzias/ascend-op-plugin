@@ -51,7 +51,16 @@ at::Tensor zeros_like(
                                            .layout(layout_opt)
                                            .pinned_memory(pin_memory_opt);
   auto options = self.options().merge_in(other_options);
-  at::Tensor result = npu_preparation::ApplyTensor(self, options);
+  // Adapt pytorch2.1 faketensor
+  //Dealing with the format issue of converting faketonsor to realsensor npu that cannot recognize faketonsor
+  at::Tensor result{};
+  if(self.data_ptr()==nullptr){
+    result = npu_preparation::ApplyTensorWithFormat(self.sizes(), options, ACL_FORMAT_ND);
+  }
+  else{
+    result = npu_preparation::ApplyTensor(self, options);
+  }
+  
 
   return op_plugin::zero_(result);
 }
