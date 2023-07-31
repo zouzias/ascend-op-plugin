@@ -64,6 +64,8 @@ at::Tensor selu(const at::Tensor& self) {
 }
 
 at::Tensor& selu_(at::Tensor& self) {
+  std::cout << "----this is selu_inplace" << std::endl;
+
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
     at::Tensor result = selu_out_nocheck(contiguous_self);
