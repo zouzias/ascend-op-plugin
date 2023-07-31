@@ -224,6 +224,7 @@ at::Tensor & ceil_(at::Tensor & self);
 at::Tensor & ceil_out(const at::Tensor & self, at::Tensor & out);
 at::Tensor celu(const at::Tensor & self, const at::Scalar & alpha);
 at::Tensor & celu_(at::Tensor & self, const at::Scalar & alpha);
+at::Tensor celu_backward(const at::Tensor & grad_output, const at::Scalar & alpha, const at::Tensor & output)
 at::Tensor channel_shuffle(const at::Tensor & self, int64_t groups);
 at::Tensor clamp(const at::Tensor & self, const c10::optional<at::Scalar> & min, const c10::optional<at::Scalar> & max);
 at::Tensor clamp(const at::Tensor & self, const c10::optional<at::Tensor> & min, const c10::optional<at::Tensor> & max);
