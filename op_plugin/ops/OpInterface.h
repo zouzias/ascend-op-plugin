@@ -291,6 +291,7 @@ at::Tensor & dot_out(const at::Tensor & self, const at::Tensor & tensor, at::Ten
 at::Tensor dropout(const at::Tensor & input, double p, bool train);
 at::Tensor dropout_with_byte_mask(const at::Tensor & self, double p, bool train);
 at::Tensor elu(const at::Tensor & self, const at::Scalar & alpha, const at::Scalar & scale, const at::Scalar & input_scale);
+at::Tensor elu_backward(const at::Tensor & grad_output, const at::Scalar & alpha, const at::Scalar & scale, const at::Scalar & input_scale, const at::Tensor & output);
 at::Tensor & elu_(at::Tensor & self, const at::Scalar & alpha, const at::Scalar & scale, const at::Scalar & input_scale);
 at::Tensor & elu_out(const at::Tensor & self, const at::Scalar & alpha, const at::Scalar & scale, const at::Scalar & input_scale, at::Tensor & out);
 at::Tensor embedding(const at::Tensor & weight, const at::Tensor & indices, int64_t padding_idx, bool scale_grad_by_freq, bool sparse);
@@ -807,6 +808,7 @@ at::Tensor searchsorted(const at::Tensor & sorted_sequence, const at::Scalar & s
 at::Tensor searchsorted(const at::Tensor & sorted_sequence, const at::Tensor & self, bool out_int32, bool right, c10::optional<c10::string_view> side, const c10::optional<at::Tensor> & sorter);
 at::Tensor & searchsorted_out(const at::Tensor & sorted_sequence, const at::Tensor & self, bool out_int32, bool right, c10::optional<c10::string_view> side, const c10::optional<at::Tensor> & sorter, at::Tensor & out);
 at::Tensor selu(const at::Tensor & self);
+at::Tensor selu_backward(const at::Tensor & grad_output, const at::Tensor & result);
 at::Tensor & selu_(at::Tensor & self);
 at::Tensor & set_(at::Tensor & self, at::Storage source);
 at::Tensor & set_(at::Tensor & self, at::Storage source, int64_t storage_offset, at::IntArrayRef size, at::IntArrayRef stride);

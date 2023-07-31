@@ -31,7 +31,7 @@ at::Tensor& celu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, con
   return result;
 }
 
-at::Tensor celu_npu_impl(const at::Tensor& self, const at::Scalar& alpha) {
+at::Tensor celu_out_nocheck(const at::Tensor& self, const at::Scalar& alpha) {
   at::Tensor result = npu_preparation::apply_tensor(self);
   celu_out_npu_nocheck(result, self, alpha);
   return result;
@@ -51,23 +51,22 @@ at::Tensor& celu_backward_out_npu(at::Tensor& grad_input, const at::Tensor& grad
 } // namespace
 
 at::Tensor celu_backward(const at::Tensor& grad_output, const at::Scalar& alpha, const at::Tensor& output) {
-  std::cout << "----this is celu_backward" << std::endl;
   at::Tensor result = npu_preparation::apply_tensor(grad_output);
   celu_backward_out_npu(result, grad_output, alpha, output);
   return result;
 }
 
 at::Tensor celu(const at::Tensor& self, const at::Scalar& alpha) {
-  return celu_npu_impl(self, alpha);
+  return celu_out_nocheck(self, alpha);
 }
 
 at::Tensor& celu_(at::Tensor& self, const at::Scalar& alpha) {
   if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguousSelf = npu_utils::format_contiguous(self);
-    at::Tensor result = celu_npu_impl(contiguousSelf, alpha);
+    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+    at::Tensor result = celu_out_nocheck(contiguous_self, alpha);
     npu_utils::format_fresh_view(self, result);
   } else {
-    auto result = celu_npu_impl(self, alpha);
+    auto result = celu_out_nocheck(self, alpha);
     self.copy_(result);
   }
   return self;
