@@ -13,16 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
-using torch::autograd::AutogradContext;
-using torch::autograd::Function;
 
 namespace{
 at::Tensor& celu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at::Scalar& alpha) {
@@ -36,7 +32,7 @@ at::Tensor& celu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at:
 }
 
 at::Tensor celu_npu_impl(const at::Tensor& self, at::Scalar& alpha) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   celu_out_npu_nocheck(result, self, alpha);
   return result;
 }
@@ -55,7 +51,8 @@ at::Tensor& celu_backward_out_npu(at::Tensor& grad_input, const at::Tensor& grad
 } // namespace
 
 at::Tensor celu_backward(const at::Tensor& grad_output, const at::Scalar& alpha, const at::Tensor& output) {
-  at::Tensor result = npu_preparation::ApplyTensor(grad_output);
+  std::cout << "----this is celu_backward" << std::endl;
+  at::Tensor result = npu_preparation::apply_tensor(grad_output);
   celu_backward_out_npu(result, grad_output, alpha, output);
   return result;
 }
