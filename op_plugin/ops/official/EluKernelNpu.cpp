@@ -77,8 +77,6 @@ at::Tensor elu_backward(
     const at::Scalar& scale,
     const at::Scalar& input_scale,
     const at::Tensor& output) {
-  std::cout << "----this is elu_backward" << std::endl;
-
   at::Tensor result = npu_preparation::apply_tensor(grad_output);
   elu_backward_out_npu(result, grad_output, alpha, scale, input_scale, output);
   return result;

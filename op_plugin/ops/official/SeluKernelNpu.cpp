@@ -52,8 +52,6 @@ at::Tensor& selu_backward_npu_nocheck(
 } // namespace
 
 at::Tensor selu_backward(const at::Tensor& grad_output, const at::Tensor& result) {
-  std::cout << "----this is selu_backward" << std::endl;
-
   at::Tensor grad_input = npu_preparation::apply_tensor(grad_output);
   selu_backward_npu_nocheck(grad_input, grad_output, result);
   return grad_input;
@@ -64,8 +62,6 @@ at::Tensor selu(const at::Tensor& self) {
 }
 
 at::Tensor& selu_(at::Tensor& self) {
-  std::cout << "----this is selu_inplace" << std::endl;
-
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
     at::Tensor result = selu_out_nocheck(contiguous_self);
