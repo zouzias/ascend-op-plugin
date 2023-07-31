@@ -21,7 +21,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace{
-at::Tensor& celu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at::Scalar& alpha) {
+at::Tensor& celu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Scalar& alpha) {
   at_npu::native::OpCommand cmd;
   cmd.Name("CeluV2")
       .Input(self)
@@ -31,14 +31,14 @@ at::Tensor& celu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at:
   return result;
 }
 
-at::Tensor celu_npu_impl(const at::Tensor& self, at::Scalar& alpha) {
+at::Tensor celu_npu_impl(const at::Tensor& self, const at::Scalar& alpha) {
   at::Tensor result = npu_preparation::apply_tensor(self);
   celu_out_npu_nocheck(result, self, alpha);
   return result;
 }
 
 at::Tensor& celu_backward_out_npu(at::Tensor& grad_input, const at::Tensor& grad_output,
-    at::Scalar& alpha, const at::Tensor& output) {
+    const at::Scalar& alpha, const at::Tensor& output) {
   at_npu::native::OpCommand cmd;
   cmd.Name("EluGradV2")
       .Input(grad_output)
