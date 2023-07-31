@@ -32,7 +32,7 @@ at::Tensor& selu_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
 }
 
 at::Tensor selu_out_nocheck(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::appply_tensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(self);
   selu_out_npu_nocheck(result, self);
   return result;
 }
@@ -52,7 +52,7 @@ at::Tensor& selu_backward_npu_nocheck(
 } // namespace
 
 at::Tensor selu_backward(const at::Tensor& grad_output, const at::Tensor& result) {
-  at::Tensor grad_input = npu_preparation::appply_tensor(grad_output);
+  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output);
   selu_backward_npu_nocheck(grad_input, grad_output, result);
   return grad_input;
 }
