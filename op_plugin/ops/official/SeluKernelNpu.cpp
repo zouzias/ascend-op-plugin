@@ -52,6 +52,8 @@ at::Tensor& selu_backward_npu_nocheck(
 } // namespace
 
 at::Tensor selu_backward(const at::Tensor& grad_output, const at::Tensor& result) {
+  std::cout << "----this is selu_backward" << std::endl;
+
   at::Tensor grad_input = npu_preparation::apply_tensor(grad_output);
   selu_backward_npu_nocheck(grad_input, grad_output, result);
   return grad_input;
