@@ -28,16 +28,17 @@ at::Tensor& cumprod_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     int64_t dim) {
+  at::Tensor self_not_0d = (self.dim() == 0) ? self.unsqueeze(0) : self;
   at::Scalar axis = dim;
   at_npu::native::OpCommand cmd;
   cmd.Name("Cumprod")
-      .Input(self)
+      .Input(self_not_0d)
       .Input(axis, at::kLong)
       .Attr("exclusive", (bool)false)
       .Attr("reverse", (bool)false)
       .Output(result)
       .Run();
-
+  result = (self.dim() == 0) ? result.squeeze(0) : result;
   return result;
 }
 } // namespace
@@ -47,13 +48,11 @@ at::Tensor& cumprod_out(
     int64_t dim,
     c10::optional<at::ScalarType> dtype,
     at::Tensor& result) {
-  at::ScalarType dst_type;
+  at::ScalarType dst_type = self.scalar_type();
   if (dtype.has_value()) {
     dst_type = dtype.value();
   } else if (result.defined()) {
     dst_type = result.scalar_type();
-  } else {
-    dst_type = self.scalar_type();
   }
 
   at::Tensor self_cp = self.scalar_type() == dst_type ? self :
@@ -61,7 +60,9 @@ at::Tensor& cumprod_out(
   npu_preparation::CheckOut(
       {self_cp},
       result,
-      self_cp);
+      calcu_op_util::GetTensorNpuFormat(result),
+      dst_type,
+      self_cp.sizes());
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     cumprod_out_nocheck(contiguous_result, self_cp, dim);
@@ -96,5 +97,15 @@ at::Tensor& cumprod_(
 
 at::Tensor& cumprod_(at::Tensor& self, at::Dimname dim, c10::optional<at::ScalarType> dtype) {
   return op_plugin::cumprod_(self, dimname_to_position(self, dim), dtype);
+}
+
+at::Tensor cumprod(
+    const at::Tensor& self,
+    int64_t dim,
+    c10::optional<at::ScalarType> dtype) {
+  at::Tensor self_cast = dtype.has_value() ? op_plugin::npu_dtype_cast(self, dtype.value()) : self;
+  at::Tensor result = npu_preparation::apply_tensor(self_cast);
+  cumprod_out_nocheck(result, self_cast, dim);
+  return result;
 }
 } // namespace op_plugin
