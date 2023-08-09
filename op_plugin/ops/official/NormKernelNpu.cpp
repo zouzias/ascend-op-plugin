@@ -25,10 +25,8 @@ namespace {
 float calculate_p(c10::optional<at::Scalar> p) {
   if (p.has_value()) {
     float val = calcu_op_util::GetScalarFloatValue(p.value());
-    if (val == INFINITY) {
-      return static_cast<float>(INT_MAX); // p = inf
-    } else if (val == -INFINITY) {
-      return static_cast<float>(INT_MIN); // p = -inf
+    if (std::isinf(val)) {
+      return val > 0 ? static_cast<float>(INT_MAX) : static_cast<float>(INT_MIN);
     } else {
       return p.value().toFloat();
     }
