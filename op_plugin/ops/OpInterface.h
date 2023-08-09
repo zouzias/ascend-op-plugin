@@ -617,7 +617,7 @@ at::Tensor & npu_broadcast_out(const at::Tensor & self, at::IntArrayRef size, at
 at::Tensor npu_ciou(const at::Tensor & self, const at::Tensor & gtboxes, bool trans, bool is_cross, int64_t mode, bool atan_sub_flag);
 ::std::tuple<at::Tensor,at::Tensor> npu_ciou_backward(const at::Tensor & grad, const at::Tensor & bboxes, const at::Tensor & gtboxes, const c10::optional<at::Tensor> & atan_sub, bool trans, bool is_cross, int64_t mode);
 at::Tensor npu_confusion_transpose(const at::Tensor & self, at::IntArrayRef perm, at::IntArrayRef shape, bool transpose_first);
-at::Tensor npu_confusion_transpose_backward(const at::Tensor & grad, at::IntArrayRef perm, at::IntArrayRef shape, bool transpose_first);
+at::Tensor npu_confusion_transpose_backward(const at::Tensor & grad, at::IntArrayRef perm, c10::SymIntArrayRef shape, bool transpose_first);
 at::Tensor npu_conv_transpose2d(const at::Tensor & input, const at::Tensor & weight, const c10::optional<at::Tensor> & bias, at::IntArrayRef padding, at::IntArrayRef output_padding, at::IntArrayRef stride, at::IntArrayRef dilation, int64_t groups);
 ::std::tuple<at::Tensor,at::Tensor,at::Tensor> npu_conv_transpose2d_backward(const at::Tensor & input, const at::Tensor & grad_output, const at::Tensor & weight, at::IntArrayRef padding, at::IntArrayRef output_padding, at::IntArrayRef stride, at::IntArrayRef dilation, int64_t groups, ::std::array<bool,3> output_mask);
 ::std::tuple<at::Tensor,at::Tensor,at::Tensor> npu_conv_transpose3d_backward(const at::Tensor & input, const at::Tensor & grad_output, const at::Tensor & weight, at::IntArrayRef padding, at::IntArrayRef output_padding, at::IntArrayRef stride, at::IntArrayRef dilation, int64_t groups, ::std::array<bool,3> output_mask);
@@ -673,10 +673,10 @@ at::Tensor npu_linear(const at::Tensor & input, const at::Tensor & weight, const
 at::Tensor npu_masked_fill_range(const at::Tensor & self, const at::Tensor & start, const at::Tensor & end, const at::Tensor & value, int64_t axis);
 ::std::tuple<at::Tensor,at::Tensor> npu_max(const at::Tensor & self, at::Dimname dim, bool keepdim);
 ::std::tuple<at::Tensor,at::Tensor> npu_max(const at::Tensor & self, int64_t dim, bool keepdim);
-at::Tensor npu_max_backward(const at::Tensor & grad, int64_t dim, const at::Tensor & indices, at::IntArrayRef sizes, bool keepdim);
+at::Tensor npu_max_backward(const at::Tensor & grad, int64_t dim, const at::Tensor & indices, c10::SymIntArrayRef sizes, bool keepdim);
 ::std::tuple<at::Tensor,at::Tensor> npu_min(const at::Tensor & self, int64_t dim, bool keepdim);
 ::std::tuple<at::Tensor,at::Tensor> npu_min(const at::Tensor & self, at::Dimname dim, bool keepdim);
-at::Tensor npu_min_backward(const at::Tensor & grad, int64_t dim, const at::Tensor & indices, at::IntArrayRef sizes, bool keepdim);
+at::Tensor npu_min_backward(const at::Tensor & grad, int64_t dim, const at::Tensor & indices, c10::SymIntArrayRef sizes, bool keepdim);
 at::Tensor npu_mish(const at::Tensor & self);
 at::Tensor npu_mish_backward(const at::Tensor & grad, const at::Tensor & input);
 ::std::vector<at::Tensor> npu_multi_head_attention(const at::Tensor & query, const at::Tensor & key, const at::Tensor & value, const at::Tensor & query_weight, const at::Tensor & key_weight, const at::Tensor & value_weight, const at::Tensor & attn_mask, const at::Tensor & out_proj_weight, const c10::optional<at::Tensor> & query_bias, const c10::optional<at::Tensor> & key_bias, const c10::optional<at::Tensor> & value_bias, const c10::optional<at::Tensor> & out_proj_bias, const c10::optional<at::Tensor> & dropout_mask, int64_t attn_head_num, int64_t attn_dim_per_head, int64_t src_len, int64_t tgt_len, double dropout_prob, bool softmax_use_float);
@@ -688,7 +688,7 @@ at::Tensor npu_normalize_batch(const at::Tensor & self, const at::Tensor & seq_l
 at::Tensor npu_one_hot(const at::Tensor & self, int64_t num_classes, int64_t depth, const at::Scalar & on_value, const at::Scalar & off_value);
 at::Tensor npu_pad(const at::Tensor & input, at::IntArrayRef paddings);
 at::Tensor npu_ps_roi_pooling(const at::Tensor & self, const at::Tensor & rois, double spatial_scale, int64_t group_size, int64_t output_dim);
-at::Tensor npu_ps_roi_pooling_backward(const at::Tensor & output_grad, const at::Tensor & rois, double spatial_scale, int64_t group_size, int64_t output_dim, at::IntArrayRef input_size);
+at::Tensor npu_ps_roi_pooling_backward(const at::Tensor & output_grad, const at::Tensor & rois, double spatial_scale, int64_t group_size, int64_t output_dim, c10::SymIntArrayRef input_size);
 at::Tensor npu_ptiou(const at::Tensor & bboxes, const at::Tensor & gtboxes, int64_t mode);
 ::std::tuple<at::Tensor,at::Tensor> npu_random_choice_with_mask(const at::Tensor & x, int64_t count, int64_t seed, int64_t seed2);
 at::Tensor npu_reshape(const at::Tensor & self, at::IntArrayRef shape, bool can_refresh);
@@ -992,6 +992,8 @@ at::Tensor npu_alloc_float_status(const at::Tensor & self);
 at::Tensor npu_get_float_status(const at::Tensor & self);
 at::Tensor npu_clear_float_status(const at::Tensor & self);
 void npu_enque_tensor(at::TensorList tensors, c10::string_view tensor_name, int64_t capacity);
+at::Tensor npu_bmm_v2_mat1_backward(const at::Tensor & grad, const at::Tensor & mat1, const at::Tensor & mat2, c10::SymIntArrayRef size);
+at::Tensor npu_bmm_v2_mat2_backward(const at::Tensor & grad, const at::Tensor & mat1, const at::Tensor & mat2, c10::SymIntArrayRef size);
 
 // add op_interface for 2.1.
 ::std::tuple<at::Tensor,at::Tensor> _prelu_kernel_backward(const at::Tensor & grad_output, const at::Tensor & self, const at::Tensor & weight);

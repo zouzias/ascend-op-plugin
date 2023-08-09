@@ -13,13 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-using torch::autograd::AutogradContext;
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
@@ -60,8 +57,9 @@ at::Tensor npu_max_backward(
     const at::Tensor& grad,
     int64_t dim,
     const at::Tensor& indices,
-    at::IntArrayRef sizes,
+    c10::SymIntArrayRef size,
     bool keepdim) {
+  auto sizes = c10::asIntArrayRefUnchecked(size);
   at::Tensor new_grad = grad;
   at::Tensor new_indices = indices;
   if (keepdim && sizes.size() > 0) {
@@ -75,41 +73,8 @@ at::Tensor npu_max_backward(
   return grad_input;
 }
 
-class NPUMaxFunction : public torch::autograd::Function<NPUMaxFunction> {
-public:
-  static std::vector<at::Tensor> forward(AutogradContext *ctx,
-      const at::Tensor& self,
-      int64_t dim,
-      bool keepdim) {
-    ctx->saved_data["dim"] = dim;
-    ctx->saved_data["shape"] = self.sizes();
-    ctx->saved_data["keepdim"] = keepdim;
-    at::AutoNonVariableTypeMode g;
-    auto result = npu_max_cal(self, dim, keepdim);
-    auto indices = std::get<1>(result);
-    ctx->save_for_backward({indices});
-    std::vector<at::Tensor> result_list = {std::get<0>(result), indices};
-    return result_list;
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext *ctx,
-      std::vector<at::Tensor> grad_outputs) {
-    auto dim = ctx->saved_data["dim"].toInt();
-    auto sizes = ctx->saved_data["shape"].toIntVector();
-    auto keepdim = ctx->saved_data["keepdim"].toBool();
-    auto saved = ctx->get_saved_variables();
-    auto indices = saved[0];
-    at::Tensor result = op_plugin::npu_max_backward(grad_outputs[0], dim, indices, sizes, keepdim);
-
-    std::vector<at::Tensor> output = {result, at::Tensor(), at::Tensor()};
-    return output;
-  }
-};
-
 std::tuple<at::Tensor, at::Tensor> npu_max(const at::Tensor& self, int64_t dim, bool keepdim) {
-  auto output = NPUMaxFunction::apply(self, dim, keepdim);
-  std::tuple<at::Tensor, at::Tensor> result(output[0], output[1]);
-  return result;
+  return npu_max_cal(self, dim, keepdim);
 }
 
 std::tuple<at::Tensor, at::Tensor> npu_max(const at::Tensor& self, at::Dimname dim, bool keepdim) {

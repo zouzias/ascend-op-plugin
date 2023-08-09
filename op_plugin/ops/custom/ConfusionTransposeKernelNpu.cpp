@@ -13,15 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <torch/csrc/autograd/custom_function.h>
-
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
-using torch::autograd::AutogradContext;
-using torch::autograd::Function;
 
 namespace{
 at::Tensor confusion_transpose_npu(
@@ -38,7 +34,7 @@ at::Tensor confusion_transpose_npu(
     }
   }
 
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
   at_npu::native::OpCommand cmd;
   cmd.Name("ConfusionTransposeD")
       .Input(self)
@@ -55,8 +51,10 @@ at::Tensor confusion_transpose_npu(
 at::Tensor npu_confusion_transpose_backward(
     const at::Tensor& grad,
     at::IntArrayRef perm,
-    at::IntArrayRef shape,
+    c10::SymIntArrayRef size,
     bool transpose_first) {
+  auto shape = c10::asIntArrayRefUnchecked(size);
+
   c10::SmallVector<int64_t, SIZE> svec_shape;
   if (transpose_first) {
     svec_shape = op_infer::array_to_small_vector(shape);
@@ -73,7 +71,7 @@ at::Tensor npu_confusion_transpose_backward(
   }
   vec_perm = std::vector<int64_t>(temp_perm, temp_perm+perm_len);
   perm = at::IntArrayRef(vec_perm);
-  at::Tensor result = npu_preparation::ApplyTensor(grad, shape);
+  at::Tensor result = npu_preparation::apply_tensor(grad, shape);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("ConfusionTransposeD")
@@ -86,36 +84,10 @@ at::Tensor npu_confusion_transpose_backward(
   return result;
 }
 
-class NPUConfusionTransposeFunction : public torch::autograd::Function<NPUConfusionTransposeFunction> {
-public:
-  static at::Tensor forward(AutogradContext *ctx,
-      const at::Tensor& self,
-      at::IntArrayRef perm,
-      at::IntArrayRef shape,
-      bool transpose_first) {
-    ctx->saved_data["perm"] = perm;
-    ctx->saved_data["shape"] = self.sizes();
-    ctx->saved_data["transpose_first"] = !transpose_first;
-    at::AutoNonVariableTypeMode g;
-    return confusion_transpose_npu(self, perm, shape, transpose_first);
-  }
-
-  static std::vector<at::Tensor> backward(AutogradContext* ctx,
-      std::vector<at::Tensor> grad_outputs) {
-    auto perm = ctx->saved_data["perm"].toIntVector();
-    auto shape = ctx->saved_data["shape"].toIntVector();
-    auto transpose_first = ctx->saved_data["transpose_first"].toBool();
-    at::Tensor result = op_plugin::npu_confusion_transpose_backward(grad_outputs[0], perm, shape, transpose_first);
-
-    std::vector<at::Tensor> output = {result, at::Tensor(), at::Tensor(), at::Tensor()};
-    return output;
-  }
-};
-
 at::Tensor npu_confusion_transpose(const at::Tensor& self,
     at::IntArrayRef perm,
     at::IntArrayRef shape,
     bool transpose_first) {
-  return NPUConfusionTransposeFunction::apply(self, perm, shape, transpose_first);
+  return confusion_transpose_npu(self, perm, shape, transpose_first);
 }
 } // namespace op_plugin
