@@ -13,11 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/core/npu/NPUCachingAllocator.h"
-#include "torch_npu/csrc/framework/FormatHelper.h"
-
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+
+#include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 
 namespace op_plugin {
 using npu_format_helper = at_npu::native::FormatHelper;
@@ -38,12 +37,12 @@ at::Tensor& batch_norm_infer_nocheck(
     double eps) {
   at_npu::native::OpCommand cmd;
   cmd.Name("BNInfer")
-      .Input(self, "x", ACL_FORMAT_NCHW)
-      .Input(weight, "scale", ACL_FORMAT_NCHW)
-      .Input(bias, "offset", ACL_FORMAT_NCHW)
-      .Input(running_mean, "mean", ACL_FORMAT_NCHW)
-      .Input(running_var, "variance", ACL_FORMAT_NCHW)
-      .Output(result, "y", ACL_FORMAT_NCHW)
+      .Input(self, "x")
+      .Input(weight, "scale")
+      .Input(bias, "offset")
+      .Input(running_mean, "mean")
+      .Input(running_var, "variance")
+      .Output(result, "y")
       .Attr("epsilon", static_cast<float>(eps))
       .Run();
 
@@ -63,12 +62,10 @@ std::tuple<at::Tensor&, at::Tensor&> batch_norm_training_reduce_nocheck(
     double eps) {
   at_npu::native::OpCommand cmd;
   string name = (self.dim() == 5) ? "BN3DTrainingReduce" : "BNTrainingReduce";
-  auto format = (self.dim() == 5) ? ACL_FORMAT_NCDHW : ACL_FORMAT_NCHW;
-
   cmd.Name(name)
-      .Input(self, "x", format)
-      .Output(sum, "sum", format)
-      .Output(square_sum, "square_sum", format)
+      .Input(self, "x")
+      .Output(sum, "sum")
+      .Output(square_sum, "square_sum")
       .Attr("epsilon", static_cast<float>(eps))
       .Run();
 
@@ -91,21 +88,19 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_training_update_noc
     double eps) {
   at_npu::native::OpCommand cmd;
   string name = (self.dim() == 5) ? "BN3DTrainingUpdate" : "BNTrainingUpdate";
-  auto format = (self.dim() == 5) ? ACL_FORMAT_NCDHW : ACL_FORMAT_NCHW;
-
   cmd.Name(name)
-      .Input(self, "x", format)
-      .Input(sum, "sum", format)
-      .Input(square_sum, "square_sum", format)
-      .Input(weight, "scale", format)
-      .Input(bias, "offset", format)
-      .Input(running_mean, "mean", format)
-      .Input(running_var, "variance", format)
-      .Output(result, "y", format)
-      .Output(const_cast<at::Tensor&>(running_mean), "mean", format)
-      .Output(const_cast<at::Tensor&>(running_var), "variance", format)
-      .Output(save_mean, "batch_mean", format)
-      .Output(save_invstd, "batch_variance", format)
+      .Input(self, "x")
+      .Input(sum, "sum")
+      .Input(square_sum, "square_sum")
+      .Input(weight, "scale")
+      .Input(bias, "offset")
+      .Input(running_mean, "mean")
+      .Input(running_var, "variance")
+      .Output(result, "y")
+      .Output(const_cast<at::Tensor&>(running_mean), "mean")
+      .Output(const_cast<at::Tensor&>(running_var), "variance")
+      .Output(save_mean, "batch_mean")
+      .Output(save_invstd, "batch_variance")
       .Attr("epsilon", static_cast<float>(eps))
       .Attr("factor", static_cast<float>(momentum))
       .Run();

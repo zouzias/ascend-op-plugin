@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/core/npu/NpuVariables.h"
-#include "torch_npu/csrc/framework/FormatHelper.h"
-
 #include "op_plugin/ops/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+
+#include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_plugin {
 using npu_format_helper = at_npu::native::FormatHelper;
@@ -82,10 +82,8 @@ at::Tensor bmm(const at::Tensor& self, const at::Tensor& mat2) {
   if ((self.scalar_type() == at::kHalf)) {
     // check is 16-algined with high-performance
     auto is_aligin = [&]() {
-      return (!(static_cast<uint64_t>(self.size(1)) & 0x0000000F)) &&
-          (!(static_cast<uint64_t>(self.size(2)) & 0x0000000F)) &&
-          (!(static_cast<uint64_t>(mat2.size(1)) & 0x0000000F)) &&
-          (!(static_cast<uint64_t>(mat2.size(2)) & 0x0000000F));
+      return (!(static_cast<uint64_t>(self.size(1)) & 0xF)) && (!(static_cast<uint64_t>(self.size(2)) & 0xF)) &&
+             (!(static_cast<uint64_t>(mat2.size(1)) & 0xF)) && (!(static_cast<uint64_t>(mat2.size(2)) & 0xF));
     };
     static auto mm_bmm_nd = !at_npu::native::env::CheckMmBmmNDDisable();
     static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
