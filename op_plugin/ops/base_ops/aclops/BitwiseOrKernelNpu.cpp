@@ -59,60 +59,60 @@ at::Tensor& bitwise_or_out_npu_nocheck(
 }
 } // namespace
 
-at::Tensor& bitwise_or_out(
-    const at::Tensor& self,
-    const at::Scalar& other,
-    at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    bitwise_or_out_npu_nocheck(contiguous_result, self, other);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    bitwise_or_out_npu_nocheck(result, self, other);
-  }
-  return result;
-}
+// at::Tensor& bitwise_or_out(
+//     const at::Tensor& self,
+//     const at::Scalar& other,
+//     at::Tensor& result) {
+//   npu_preparation::CheckOut(
+//       {self},
+//       result,
+//       self);
+//   if (!npu_utils::check_match(&result)) {
+//     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+//     bitwise_or_out_npu_nocheck(contiguous_result, self, other);
+//     npu_utils::format_fresh_view(result, contiguous_result);
+//   } else {
+//     bitwise_or_out_npu_nocheck(result, self, other);
+//   }
+//   return result;
+// }
 
-at::Tensor& bitwise_or_out(
-    const at::Tensor& self,
-    const at::Tensor& other,
-    at::Tensor& result) {
-  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
-  at::Tensor output_tensor = is_self_wrapped ? other : self;
+// at::Tensor& bitwise_or_out(
+//     const at::Tensor& self,
+//     const at::Tensor& other,
+//     at::Tensor& result) {
+//   bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
+//   at::Tensor output_tensor = is_self_wrapped ? other : self;
 
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  npu_preparation::CheckOut(
-      {self, other},
-      result,
-      output_tensor,
-      output_size);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguousResult = npu_utils::format_contiguous(result);
-    bitwise_or_out_npu_nocheck(contiguousResult, self, other);
-    npu_utils::format_fresh_view(result, contiguousResult);
-  } else {
-    bitwise_or_out_npu_nocheck(result, self, other);
-  }
-  return result;
-}
+//   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+//   npu_preparation::CheckOut(
+//       {self, other},
+//       result,
+//       output_tensor,
+//       output_size);
+//   if (!npu_utils::check_match(&result)) {
+//     at::Tensor contiguousResult = npu_utils::format_contiguous(result);
+//     bitwise_or_out_npu_nocheck(contiguousResult, self, other);
+//     npu_utils::format_fresh_view(result, contiguousResult);
+//   } else {
+//     bitwise_or_out_npu_nocheck(result, self, other);
+//   }
+//   return result;
+// }
 
-at::Tensor bitwise_or(const at::Tensor& self, const at::Tensor& other) {
-  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
-  at::Tensor output_tensor = is_self_wrapped ? other : self;
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+// at::Tensor bitwise_or(const at::Tensor& self, const at::Tensor& other) {
+//   bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
+//   at::Tensor output_tensor = is_self_wrapped ? other : self;
+//   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
 
-  at::Tensor result = npu_preparation::ApplyTensor(output_tensor, output_size);
-  bitwise_or_out_npu_nocheck(result, self, other);
-  return result;
-}
+//   at::Tensor result = npu_preparation::ApplyTensor(output_tensor, output_size);
+//   bitwise_or_out_npu_nocheck(result, self, other);
+//   return result;
+// }
 
-at::Tensor bitwise_or(const at::Tensor& self, const at::Scalar& other) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
-  bitwise_or_out_npu_nocheck(result, self, other);
-  return result;
-}
+// at::Tensor bitwise_or(const at::Tensor& self, const at::Scalar& other) {
+//   at::Tensor result = npu_preparation::ApplyTensor(self);
+//   bitwise_or_out_npu_nocheck(result, self, other);
+//   return result;
+// }
 } // namespace op_plugin

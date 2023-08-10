@@ -85,67 +85,67 @@ at::Tensor elu_backward_npu_impl(
 }
 } // namespace
 
-at::Tensor& elu_out(
-    const at::Tensor& self,
-    const at::Scalar& alpha,
-    const at::Scalar& scale,
-    const at::Scalar& input_scale,
-    at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    elu_out_nocheck(contiguous_result, self, alpha, scale, input_scale);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    elu_out_nocheck(result, self, alpha, scale, input_scale);
-  }
-  return result;
-}
+// at::Tensor& elu_out(
+//     const at::Tensor& self,
+//     const at::Scalar& alpha,
+//     const at::Scalar& scale,
+//     const at::Scalar& input_scale,
+//     at::Tensor& result) {
+//   npu_preparation::CheckOut(
+//       {self},
+//       result,
+//       self);
+//   if (!npu_utils::check_match(&result)) {
+//     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+//     elu_out_nocheck(contiguous_result, self, alpha, scale, input_scale);
+//     npu_utils::format_fresh_view(result, contiguous_result);
+//   } else {
+//     elu_out_nocheck(result, self, alpha, scale, input_scale);
+//   }
+//   return result;
+// }
 
-class NPUEluFunction: public torch::autograd::Function<NPUEluFunction> {
-public:
-  static at::Tensor forward(AutogradContext *ctx,
-      const at::Tensor& self, 
-      at::Scalar alpha, 
-      at::Scalar scale, 
-      at::Scalar input_scale) {
-    ctx->saved_data["alpha"] = alpha;
-    ctx->saved_data["scale"] = scale;
-    ctx->saved_data["input_scale"] = input_scale;
-    at::AutoNonVariableTypeMode g;
-    at::Tensor result = elu_npu_impl(self, alpha, scale, input_scale);
-    ctx->save_for_backward({result});
-    return result;
-  }
+// class NPUEluFunction: public torch::autograd::Function<NPUEluFunction> {
+// public:
+//   static at::Tensor forward(AutogradContext *ctx,
+//       const at::Tensor& self,
+//       at::Scalar alpha,
+//       at::Scalar scale,
+//       at::Scalar input_scale) {
+//     ctx->saved_data["alpha"] = alpha;
+//     ctx->saved_data["scale"] = scale;
+//     ctx->saved_data["input_scale"] = input_scale;
+//     at::AutoNonVariableTypeMode g;
+//     at::Tensor result = elu_npu_impl(self, alpha, scale, input_scale);
+//     ctx->save_for_backward({result});
+//     return result;
+//   }
 
-  static std::vector<at::Tensor> backward(AutogradContext *ctx,
-      std::vector<at::Tensor> grad_outputs) {
-    auto alpha = ctx->saved_data["alpha"].toScalar();
-    auto scale = ctx->saved_data["scale"].toScalar();
-    auto input_scale = ctx->saved_data["input_scale"].toScalar();
-    auto saved = ctx->get_saved_variables();
-    auto result = saved[0];
-    auto grad_input = elu_backward_npu_impl(
-        grad_outputs[0], 
-        alpha,
-        scale,
-        input_scale, 
-        result);
-    std::vector<at::Tensor> output = {grad_input, at::Tensor(), at::Tensor(), at::Tensor()};
-    return output;
-  }
-};
+//   static std::vector<at::Tensor> backward(AutogradContext *ctx,
+//       std::vector<at::Tensor> grad_outputs) {
+//     auto alpha = ctx->saved_data["alpha"].toScalar();
+//     auto scale = ctx->saved_data["scale"].toScalar();
+//     auto input_scale = ctx->saved_data["input_scale"].toScalar();
+//     auto saved = ctx->get_saved_variables();
+//     auto result = saved[0];
+//     auto grad_input = elu_backward_npu_impl(
+//         grad_outputs[0],
+//         alpha,
+//         scale,
+//         input_scale,
+//         result);
+//     std::vector<at::Tensor> output = {grad_input, at::Tensor(), at::Tensor(), at::Tensor()};
+//     return output;
+//   }
+// };
 
-at::Tensor elu(const at::Tensor& self, const at::Scalar& alpha, const at::Scalar& scale, const at::Scalar& input_scale) {
-  return NPUEluFunction::apply(self, alpha, scale, input_scale);
-}
+// at::Tensor elu(const at::Tensor& self, const at::Scalar& alpha, const at::Scalar& scale, const at::Scalar& input_scale) {
+//   return NPUEluFunction::apply(self, alpha, scale, input_scale);
+// }
 
-at::Tensor& elu_(at::Tensor& self, const at::Scalar& alpha, const at::Scalar& scale, const at::Scalar& input_scale) {
-  auto result = NPUEluFunction::apply(self, alpha, scale, input_scale);
-  self.copy_(result);
-  return self;
-}
+// at::Tensor& elu_(at::Tensor& self, const at::Scalar& alpha, const at::Scalar& scale, const at::Scalar& input_scale) {
+//   auto result = NPUEluFunction::apply(self, alpha, scale, input_scale);
+//   self.copy_(result);
+//   return self;
+// }
 } // namespace op_plugin

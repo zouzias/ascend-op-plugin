@@ -61,29 +61,29 @@ at::Tensor& fill_out_nocheck(at::Tensor& self, const at::Tensor& other) {
 }
 } // namespace
 
-at::Tensor& fill_(at::Tensor& self, const at::Tensor& other) {
-  auto other_dim = other.dim();
-  TORCH_CHECK(other_dim <= 1, "fill_ only supports 0 or 1 dimension value tensor but got tensor with ",
-      other_dim, " dimension.");
-  npu_preparation::CheckMemory({self, other}, {self});
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    fill_out_nocheck(contiguous_self, other);
-    npu_utils::format_fresh_view(self, contiguous_self);
-  } else {
-    fill_out_nocheck(self, other);
-  }
-  return self;
-}
+// at::Tensor& fill_(at::Tensor& self, const at::Tensor& other) {
+//   auto other_dim = other.dim();
+//   TORCH_CHECK(other_dim <= 1, "fill_ only supports 0 or 1 dimension value tensor but got tensor with ",
+//       other_dim, " dimension.");
+//   npu_preparation::CheckMemory({self, other}, {self});
+//   if (!npu_utils::check_match(&self)) {
+//     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+//     fill_out_nocheck(contiguous_self, other);
+//     npu_utils::format_fresh_view(self, contiguous_self);
+//   } else {
+//     fill_out_nocheck(self, other);
+//   }
+//   return self;
+// }
 
-at::Tensor& fill_(at::Tensor& self, const at::Scalar& other) {
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    fill_out_nocheck(contiguous_self, contiguous_self, other);
-    npu_utils::format_fresh_view(self, contiguous_self);
-  } else {
-    fill_out_nocheck(self, self, other);
-  }
-  return self;
-}
+// at::Tensor& fill_(at::Tensor& self, const at::Scalar& other) {
+//   if (!npu_utils::check_match(&self)) {
+//     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+//     fill_out_nocheck(contiguous_self, contiguous_self, other);
+//     npu_utils::format_fresh_view(self, contiguous_self);
+//   } else {
+//     fill_out_nocheck(self, self, other);
+//   }
+//   return self;
+// }
 }  // namespace op_plugin

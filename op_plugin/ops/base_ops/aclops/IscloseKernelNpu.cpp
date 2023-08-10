@@ -19,29 +19,29 @@
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor isclose(
-    const at::Tensor& self,
-    const at::Tensor& other,
-    double rtol,
-    double atol,
-    bool equal_nan) {
-  TORCH_CHECK(self.scalar_type() == other.scalar_type(), self.scalar_type(), " did not match ", other.scalar_type());
-  at::Tensor result = npu_preparation::ApplyTensor(self, self.options().dtype(at::kBool));
+// at::Tensor isclose(
+//     const at::Tensor& self,
+//     const at::Tensor& other,
+//     double rtol,
+//     double atol,
+//     bool equal_nan) {
+//   TORCH_CHECK(self.scalar_type() == other.scalar_type(), self.scalar_type(), " did not match ", other.scalar_type());
+//   at::Tensor result = npu_preparation::ApplyTensor(self, self.options().dtype(at::kBool));
 
-  TORCH_NPU_WARN_ONCE("Device do not support double dtype of rtol and atol now, dtype cast repalce with float.");
-  auto rtol1 = static_cast<float>(rtol);
-  auto atol1 = static_cast<float>(atol);
+//   TORCH_NPU_WARN_ONCE("Device do not support double dtype of rtol and atol now, dtype cast repalce with float.");
+//   auto rtol1 = static_cast<float>(rtol);
+//   auto atol1 = static_cast<float>(atol);
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("IsClose")
-      .Input(self)
-      .Input(other)
-      .Attr("rtol", rtol1)
-      .Attr("atol", atol1)
-      .Attr("equal_nan", equal_nan)
-      .Output(result)
-      .Run();
+//   at_npu::native::OpCommand cmd;
+//   cmd.Name("IsClose")
+//       .Input(self)
+//       .Input(other)
+//       .Attr("rtol", rtol1)
+//       .Attr("atol", atol1)
+//       .Attr("equal_nan", equal_nan)
+//       .Output(result)
+//       .Run();
 
-  return result;
-}
+//   return result;
+// }
 } // namespace op_plugin

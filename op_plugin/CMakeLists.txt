@@ -3,6 +3,7 @@ if (NOT DEFINED TORCH_VERSION)
 endif()
 
 FILE(GLOB _OPS_PLUGIN_SRCS
+    ops/*.cpp
     ops/custom/*.cpp
     ops/official/*.cpp)
 

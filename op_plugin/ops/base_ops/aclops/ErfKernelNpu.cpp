@@ -31,29 +31,29 @@ at::Tensor& erf_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
 }
 } // namespace
 
-at::Tensor& erf_out(const at::Tensor& self, at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
+// at::Tensor& erf_out(const at::Tensor& self, at::Tensor& result) {
+//   npu_preparation::CheckOut(
+//       {self},
+//       result,
+//       self);
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    erf_npu_nocheck(contiguous_result, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    erf_npu_nocheck(result, self);
-  }
-  return result;
-}
+//   if (!npu_utils::check_match(&result)) {
+//     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+//     erf_npu_nocheck(contiguous_result, self);
+//     npu_utils::format_fresh_view(result, contiguous_result);
+//   } else {
+//     erf_npu_nocheck(result, self);
+//   }
+//   return result;
+// }
 
-at::Tensor erf(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
-  erf_npu_nocheck(result, self);
-  return result;
-}
+// at::Tensor erf(const at::Tensor& self) {
+//   at::Tensor result = npu_preparation::ApplyTensor(self);
+//   erf_npu_nocheck(result, self);
+//   return result;
+// }
 
-at::Tensor& erf_(at::Tensor& self) {
-  return op_plugin::erf_out(self, self);
-}
+// at::Tensor& erf_(at::Tensor& self) {
+//   return op_plugin::erf_out(self, self);
+// }
 } // namespace op_plugin

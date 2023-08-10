@@ -57,89 +57,89 @@ at::Tensor& bitwise_xor_out_npu_nocheck(
 }
 } // namespace
 
-at::Tensor& bitwise_xor_out(
-    const at::Tensor& self,
-    const at::Scalar& other,
-    at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
-  at::Tensor self_input = (self.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
-  at::Tensor result_cp = (result.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(result, at::kInt) : result;
+// at::Tensor& bitwise_xor_out(
+//     const at::Tensor& self,
+//     const at::Scalar& other,
+//     at::Tensor& result) {
+//   npu_preparation::CheckOut(
+//       {self},
+//       result,
+//       self);
+//   at::Tensor self_input = (self.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
+//   at::Tensor result_cp = (result.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(result, at::kInt) : result;
 
-  if (!npu_utils::check_match(&result_cp)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result_cp);
-    bitwise_xor_out_npu_nocheck(contiguous_result, self_input, other);
-    npu_utils::format_fresh_view(result_cp, contiguous_result);
-  } else {
-    bitwise_xor_out_npu_nocheck(result_cp, self_input, other);
-  }
-  if (self.dtype() == at::kBool) {
-    result_cp = op_plugin::npu_dtype_cast(result_cp, at::kBool);
-    result.copy_(result_cp);
-  }
-  return result;
-}
+//   if (!npu_utils::check_match(&result_cp)) {
+//     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cp);
+//     bitwise_xor_out_npu_nocheck(contiguous_result, self_input, other);
+//     npu_utils::format_fresh_view(result_cp, contiguous_result);
+//   } else {
+//     bitwise_xor_out_npu_nocheck(result_cp, self_input, other);
+//   }
+//   if (self.dtype() == at::kBool) {
+//     result_cp = op_plugin::npu_dtype_cast(result_cp, at::kBool);
+//     result.copy_(result_cp);
+//   }
+//   return result;
+// }
 
-at::Tensor& bitwise_xor_out(
-    const at::Tensor& self,
-    const at::Tensor& other,
-    at::Tensor& result) {
-  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
-  at::Tensor output_tensor = is_self_wrapped ? other : self;
+// at::Tensor& bitwise_xor_out(
+//     const at::Tensor& self,
+//     const at::Tensor& other,
+//     at::Tensor& result) {
+//   bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
+//   at::Tensor output_tensor = is_self_wrapped ? other : self;
 
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  npu_preparation::CheckOut(
-      {self, other},
-      result,
-      output_tensor,
-      output_size);
-  at::Tensor self_input = (self.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
-  at::Tensor other_input = (other.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(other, at::kInt) : other;
-  at::Tensor result_cp = (result.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(result, at::kInt) : result;
+//   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+//   npu_preparation::CheckOut(
+//       {self, other},
+//       result,
+//       output_tensor,
+//       output_size);
+//   at::Tensor self_input = (self.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
+//   at::Tensor other_input = (other.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(other, at::kInt) : other;
+//   at::Tensor result_cp = (result.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(result, at::kInt) : result;
 
-  if (!npu_utils::check_match(&result_cp)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result_cp);
-    bitwise_xor_out_npu_nocheck(contiguous_result, self_input, other_input);
-    npu_utils::format_fresh_view(result_cp, contiguous_result);
-  } else {
-    bitwise_xor_out_npu_nocheck(result_cp, self_input, other_input);
-  }
-  if (self.dtype() == at::kBool) {
-    result_cp = op_plugin::npu_dtype_cast(result_cp, at::kBool);
-    result.copy_(result_cp);
-  }
-  return result;
-}
+//   if (!npu_utils::check_match(&result_cp)) {
+//     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cp);
+//     bitwise_xor_out_npu_nocheck(contiguous_result, self_input, other_input);
+//     npu_utils::format_fresh_view(result_cp, contiguous_result);
+//   } else {
+//     bitwise_xor_out_npu_nocheck(result_cp, self_input, other_input);
+//   }
+//   if (self.dtype() == at::kBool) {
+//     result_cp = op_plugin::npu_dtype_cast(result_cp, at::kBool);
+//     result.copy_(result_cp);
+//   }
+//   return result;
+// }
 
-at::Tensor bitwise_xor(const at::Tensor& self, const at::Tensor& other) {
-  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor output_tensor = is_self_wrapped ? other : self;
+// at::Tensor bitwise_xor(const at::Tensor& self, const at::Tensor& other) {
+//   bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self);
+//   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+//   at::Tensor output_tensor = is_self_wrapped ? other : self;
 
-  at::Tensor self_input = (self.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
-  at::Tensor other_input = (other.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(other, at::kInt) : other;
-  at::Tensor result = output_tensor.dtype() == at::kBool ?
-      npu_preparation::ApplyTensor(output_size, output_tensor.options().dtype(at::kInt), output_tensor) :
-      npu_preparation::ApplyTensor(output_tensor, output_size);
+//   at::Tensor self_input = (self.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
+//   at::Tensor other_input = (other.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(other, at::kInt) : other;
+//   at::Tensor result = output_tensor.dtype() == at::kBool ?
+//       npu_preparation::ApplyTensor(output_size, output_tensor.options().dtype(at::kInt), output_tensor) :
+//       npu_preparation::ApplyTensor(output_tensor, output_size);
 
-  bitwise_xor_out_npu_nocheck(result, self_input, other_input);
-  if (output_tensor.dtype() == at::kBool) {
-    result = op_plugin::npu_dtype_cast(result, at::kBool);
-  }
-  return result;
-}
+//   bitwise_xor_out_npu_nocheck(result, self_input, other_input);
+//   if (output_tensor.dtype() == at::kBool) {
+//     result = op_plugin::npu_dtype_cast(result, at::kBool);
+//   }
+//   return result;
+// }
 
-at::Tensor bitwise_xor(const at::Tensor& self, const at::Scalar& other) {
-  at::Tensor self_input = (self.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
-  at::Tensor result = npu_preparation::ApplyTensor(self_input);
-  bitwise_xor_out_npu_nocheck(result, self_input, other);
-  if (self.dtype() == at::kBool) {
-    result = op_plugin::npu_dtype_cast(result, at::kBool);
-  }
-  return result;
-}
+// at::Tensor bitwise_xor(const at::Tensor& self, const at::Scalar& other) {
+//   at::Tensor self_input = (self.dtype() == at::kBool) ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
+//   at::Tensor result = npu_preparation::ApplyTensor(self_input);
+//   bitwise_xor_out_npu_nocheck(result, self_input, other);
+//   if (self.dtype() == at::kBool) {
+//     result = op_plugin::npu_dtype_cast(result, at::kBool);
+//   }
+//   return result;
+// }
 
 at::Tensor& bitwise_xor_(at::Tensor& self, const at::Tensor& other) {
   return op_plugin::bitwise_xor_out(self, other, self);
