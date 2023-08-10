@@ -18,6 +18,23 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
+using npu_utils = at_npu::native::NpuUtils;
+
+namespace {
+at::Tensor& softmax_out_nocheck(
+    at::Tensor& result,
+    const at::Tensor& self,
+    int64_t dim) {
+  c10::SmallVector<int64_t, N> dim_list = {dim};
+  at_npu::native::OpCommand cmd;
+  cmd.Name("SoftmaxV2")
+      .Input(self)
+      .Output(result)
+      .Attr("axes", dim_list)
+      .Run();
+  return result;
+}
+} // namespace
 
 at::Tensor softmax(
     const at::Tensor &self,
@@ -44,32 +61,54 @@ at::Tensor _softmax(const at::Tensor &self, int64_t dim, bool half_to_float) {
 
   at::Tensor result;
   if (half_to_float) {
-    result = npu_preparation::ApplyTensor(self, self.options().dtype(at::ScalarType::Float));
+    result = npu_preparation::apply_tensor(self, self.options().dtype(at::ScalarType::Float));
   } else {
-    result = npu_preparation::ApplyTensor(self);
+    result = npu_preparation::apply_tensor(self);
   }
 
   c10::optional<at::ScalarType> dtype = result.scalar_type();
-  at::ScalarType dstType;
+  at::ScalarType dst_type;
   if (dtype.has_value()) {
-    dstType = dtype.value();
+    dst_type = dtype.value();
   } else if (result.defined()) {
-    dstType = result.scalar_type();
+    dst_type = result.scalar_type();
   } else {
-    dstType = self.scalar_type();
+    dst_type = self.scalar_type();
   }
-  at::Tensor converted =
-      dstType == self.scalar_type() ? self : op_plugin::npu_dtype_cast(self, dstType);
 
-  c10::SmallVector<int64_t, N> dim_list = {dim};
-  at_npu::native::OpCommand cmd;
-  cmd.Name("SoftmaxV2")
-      .Input(converted)
-      .Output(result)
-      .Attr("axes", dim_list)
-      .Run();
-
+  at::Tensor self_cast = dst_type == self.scalar_type() ? self : op_plugin::npu_dtype_cast(self, dst_type);
+  softmax_out_nocheck(result, self_cast, dim);
   return result;
 }
 
+at::Tensor& _softmax_out(
+    const at::Tensor& self,
+    int64_t dim,
+    bool half_to_float,
+    at::Tensor& result) {
+  auto dst_type = half_to_float ? at::kFloat : self.scalar_type();
+  npu_preparation::CheckOut(
+      {self},
+      result, 
+      calcu_op_util::GetTensorNpuFormat(result),
+      dst_type,
+      self.sizes());
+
+  auto self_dtype = self.scalar_type();
+  if (half_to_float) {
+    TORCH_CHECK(self_dtype == at::kHalf, "conversion is supported for Half type only");
+  } else {
+    TORCH_CHECK(at::isFloatingType(self_dtype), "_softmax_npu not implemented for '", toString(self_dtype), "'");
+  }
+
+  at::Tensor self_cast = dst_type == self.scalar_type() ? self : op_plugin::npu_dtype_cast(self, dst_type);
+  if (!npu_utils::check_match(&result)) {
+    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    softmax_out_nocheck(contiguous_result, self_cast, dim);
+    npu_utils::format_fresh_view(result, contiguous_result);
+  } else {
+    softmax_out_nocheck(result, self_cast, dim);
+  }
+  return result;
+}
 } // namespace op_plugin

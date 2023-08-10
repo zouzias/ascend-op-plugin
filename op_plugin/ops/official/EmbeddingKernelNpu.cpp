@@ -40,17 +40,26 @@ at::Tensor& embedding_out_nocheck(
 }
 } // namespace
 
+at::Tensor embedding(
+    const at::Tensor& weight,
+    const at::Tensor& indices,
+    int64_t padding_idx,
+    bool scale_grad_by_freq,
+    bool sparse) {
+  auto output_size = op_infer::array_to_small_vector(indices.sizes());
+  output_size.emplace_back(weight.size(weight.dim() - 1));
+  at::Tensor result = npu_preparation::apply_tensor(weight, output_size);
+
+  embedding_out_nocheck(result, weight, indices);
+  return result;
+}
+
 at::Tensor embedding_symint(
     const at::Tensor& weight,
     const at::Tensor& indices,
     c10::SymInt padding_idx,
     bool scale_grad_by_freq,
     bool sparse) {
-  auto output_size = op_infer::array_to_small_vector(indices.sizes());
-  output_size.emplace_back(weight.size(weight.dim() - 1));
-  at::Tensor result = npu_preparation::ApplyTensor(weight, output_size);
-
-  embedding_out_nocheck(result, weight, indices);
-  return result;
+  return op_plugin::embedding(weight, indices, padding_idx.guard_int(__FILE__, __LINE__), scale_grad_by_freq, sparse);
 }
 } // namespace op_plugin
