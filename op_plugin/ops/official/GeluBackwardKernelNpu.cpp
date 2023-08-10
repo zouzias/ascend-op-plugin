@@ -36,10 +36,16 @@ at::Tensor& gelu_backward_out_nocheck(
 
 at::Tensor gelu_backward(
     const at::Tensor& grad,
-    const at::Tensor& self,
-    c10::string_view approximate) {
+    const at::Tensor& self) {
   at::Tensor grad_input = at_npu::native::OpPreparation::apply_tensor(self);
   gelu_backward_out_nocheck(grad_input, grad, self);
   return grad_input;
+}
+
+at::Tensor gelu_backward(
+    const at::Tensor& grad,
+    const at::Tensor& self,
+    c10::string_view approximate) {
+  return op_plugin::gelu_backward(grad, self);
 }
 } // namespace op_plugin

@@ -50,8 +50,7 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
     const at::Tensor& grid,
     int64_t interpolation_mode,
     int64_t padding_mode,
-    bool align_corners,
-    std::array<bool,2> output_mask) {
+    bool align_corners) {
   TORCH_CHECK(
       (0 <= interpolation_mode && interpolation_mode <= 2),
       "interpolation_mode must be in range [0~2].")
@@ -79,5 +78,16 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
   grid_sampler_3d_backward_nocheck(format_cast_of_grad, format_cast_of_input, format_cast_of_grid,
       inter_mode_list[interpolation_mode], padding_mode_list[padding_mode], align_corners, dx, dgrid);
   return std::tie(dx, dgrid);
+}
+
+std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
+    const at::Tensor& grad,
+    const at::Tensor& input,
+    const at::Tensor& grid,
+    int64_t interpolation_mode,
+    int64_t padding_mode,
+    bool align_corners,
+    std::array<bool,2> output_mask) {
+  return grid_sampler_3d_backward(grad, input, grid, interpolation_mode, padding_mode, align_corners);
 }
 } // namespace op_plugin
