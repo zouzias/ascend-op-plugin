@@ -165,4 +165,58 @@ at::Tensor inverse(const at::Tensor& self) {
 at::Tensor isclose(const at::Tensor& self, const at::Tensor& other, double rtol, double atol, bool equal_nan) {
     return op_api::isclose(self, other, rtol, atol, equal_nan);
 }
+
+at::Tensor& addcdiv_out(const at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2,
+                        const at::Scalar& value, at::Tensor& result) {
+  return op_api::addcdiv_out(self, tensor1, tensor2, value, result);
+}
+
+at::Tensor addcdiv(const at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2,
+                   const at::Scalar& value) {
+  return op_api::addcdiv(self, tensor1, tensor2, value);
+}
+
+at::Tensor& addcdiv_(at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2, const at::Scalar& value) {
+  return op_api::addcdiv_(self, tensor1, tensor2, value);
+}
+
+at::Tensor embedding(const at::Tensor& weight, const at::Tensor& indices, int64_t padding_idx, bool scale_grad_by_freq,
+                     bool sparse) {
+  return op_api::embedding(weight, indices, padding_idx, scale_grad_by_freq, sparse);
+}
+
+at::Tensor embedding_dense_backward(const at::Tensor& grad_weight, const at::Tensor& indices, int64_t num_weights,
+                                    int64_t padding_idx, bool scale_grad_by_freq) {
+  return op_api::embedding_dense_backward(grad_weight, indices, num_weights, padding_idx, scale_grad_by_freq);
+}
+
+at::Tensor embedding_backward(const at::Tensor& grad, const at::Tensor& indices, int64_t num_weights,
+                              int64_t padding_idx, bool scale_grad_by_freq, bool sparse) {
+  return op_api::embedding_backward(grad, indices, num_weights, padding_idx, scale_grad_by_freq, sparse);
+}
+
+at::Tensor grid_sampler_2d(const at::Tensor& self, const at::Tensor& grid, int64_t interpolation_mode,
+                           int64_t padding_mode, bool align_corners) {
+  return op_api::grid_sampler_2d(self, grid, interpolation_mode, padding_mode, align_corners);
+}
+
+std::tuple<at::Tensor, at::Tensor> grid_sampler_2d_backward(const at::Tensor& grad, const at::Tensor& input,
+                                                            const at::Tensor& grid, int64_t interpolation_mode,
+                                                            int64_t padding_mode, bool align_corners,
+                                                            std::array<bool,2> output_mask) {
+  return op_api::grid_sampler_2d_backward(grad, input, grid, interpolation_mode, padding_mode, align_corners,
+                                          output_mask);
+}
+
+at::Tensor& erfc_out(const at::Tensor& self, at::Tensor& result) {
+  return op_api::erfc_out(self, result);
+}
+
+at::Tensor& erfc_(at::Tensor& self) {
+  return op_api::erfc_(self);
+}
+
+at::Tensor erfc(const at::Tensor& self) {
+  return op_api::erfc(self);
+}
 } // namespace op_plugin

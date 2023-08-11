@@ -21,64 +21,64 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& addcdiv_npu_nocheck(
-    at::Tensor& result,
-    const at::Tensor& self,
-    const at::Tensor& tensor1,
-    const at::Tensor& tensor2,
-    at::Scalar value) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Addcdiv")
-      .Input(self)
-      .Input(tensor1)
-      .Input(tensor2)
-      .Input(value, self.scalar_type())
-      .Output(result)
-      .Run();
-  return result;
-}
-} // namespace
+// at::Tensor& addcdiv_npu_nocheck(
+//     at::Tensor& result,
+//     const at::Tensor& self,
+//     const at::Tensor& tensor1,
+//     const at::Tensor& tensor2,
+//     at::Scalar value) {
+//   at_npu::native::OpCommand cmd;
+//   cmd.Name("Addcdiv")
+//       .Input(self)
+//       .Input(tensor1)
+//       .Input(tensor2)
+//       .Input(value, self.scalar_type())
+//       .Output(result)
+//       .Run();
+//   return result;
+// }
+// } // namespace
 
-at::Tensor& addcdiv_out(
-    const at::Tensor& self,
-    const at::Tensor& tensor1,
-    const at::Tensor& tensor2,
-    const at::Scalar& value,
-    at::Tensor& result) {
-  auto div_output_size = op_infer::broadcast_ops_npu_output_size(tensor1, tensor2);
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self.sizes(), div_output_size);
-  npu_preparation::CheckOut(
-      {self, tensor1, tensor2},
-      result,
-      self,
-      output_size);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    addcdiv_npu_nocheck(contiguous_result, self, tensor1, tensor2, value);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    addcdiv_npu_nocheck(result, self, tensor1, tensor2, value);
-  }
-  return result;
-}
+// at::Tensor& addcdiv_out(
+//     const at::Tensor& self,
+//     const at::Tensor& tensor1,
+//     const at::Tensor& tensor2,
+//     const at::Scalar& value,
+//     at::Tensor& result) {
+//   auto div_output_size = op_infer::broadcast_ops_npu_output_size(tensor1, tensor2);
+//   auto output_size = op_infer::broadcast_ops_npu_output_size(self.sizes(), div_output_size);
+//   npu_preparation::CheckOut(
+//       {self, tensor1, tensor2},
+//       result,
+//       self,
+//       output_size);
+//   if (!npu_utils::check_match(&result)) {
+//     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+//     addcdiv_npu_nocheck(contiguous_result, self, tensor1, tensor2, value);
+//     npu_utils::format_fresh_view(result, contiguous_result);
+//   } else {
+//     addcdiv_npu_nocheck(result, self, tensor1, tensor2, value);
+//   }
+//   return result;
+// }
 
-at::Tensor addcdiv(
-    const at::Tensor& self,
-    const at::Tensor& tensor1,
-    const at::Tensor& tensor2,
-    const at::Scalar& value) {
-  auto div_output_size = op_infer::broadcast_ops_npu_output_size(tensor1, tensor2);
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self.sizes(), div_output_size);
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
-  addcdiv_npu_nocheck(result, self, tensor1, tensor2, value);
-  return result;
-}
+// at::Tensor addcdiv(
+//     const at::Tensor& self,
+//     const at::Tensor& tensor1,
+//     const at::Tensor& tensor2,
+//     const at::Scalar& value) {
+//   auto div_output_size = op_infer::broadcast_ops_npu_output_size(tensor1, tensor2);
+//   auto output_size = op_infer::broadcast_ops_npu_output_size(self.sizes(), div_output_size);
+//   at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+//   addcdiv_npu_nocheck(result, self, tensor1, tensor2, value);
+//   return result;
+// }
 
-at::Tensor& addcdiv_(
-    at::Tensor& self,
-    const at::Tensor& tensor1,
-    const at::Tensor& tensor2,
-    const at::Scalar& value) {
-  return op_plugin::addcdiv_out(self, tensor1, tensor2, value, self);
-}
+// at::Tensor& addcdiv_(
+//     at::Tensor& self,
+//     const at::Tensor& tensor1,
+//     const at::Tensor& tensor2,
+//     const at::Scalar& value) {
+//   return op_plugin::addcdiv_out(self, tensor1, tensor2, value, self);
+// }
 }  // namespace op_plugin
