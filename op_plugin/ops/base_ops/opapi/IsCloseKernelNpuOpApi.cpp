@@ -20,7 +20,7 @@
 // #include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace aclnn {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor isclose(const at::Tensor& self, const at::Tensor& other, double rtol, double atol, bool equal_nan) {
@@ -37,4 +37,4 @@ at::Tensor isclose(const at::Tensor& self, const at::Tensor& other, double rtol,
   EXEC_NPU_CMD(aclnnIsClose, self, other, rtol, atol, equal_nan, out);
   return out;
 }
-} // namespace aclnn
+} // namespace op_api

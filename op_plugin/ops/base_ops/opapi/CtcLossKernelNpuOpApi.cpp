@@ -22,6 +22,7 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
+using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 std::tuple<at::Tensor, at::Tensor> _ctc_loss(
     const at::Tensor& log_probs,
@@ -41,7 +42,7 @@ std::tuple<at::Tensor, at::Tensor> _ctc_loss(
   }
 
   // calculate the output size
-  auto outputSizes = ctc_loss_npu_output_size(log_probs, max_length);
+  auto outputSizes = op_infer::ctc_loss_npu_output_size(log_probs, max_length);
 
   // construct the output tensor of the NPU
   at::Tensor neg_log_likelihood = npu_preparation::apply_tensor_without_format(log_probs, std::get<0>(outputSizes));
@@ -81,7 +82,7 @@ at::Tensor ctc_loss(
 
   if (reduction == at::Reduction::Mean) {
     std::vector<int64_t> target_lengths_vector = target_lengths_list.vec();
-    auto target_lengths_tensor = CalcuOpUtil::CopyTensorHostToDevice(
+    auto target_lengths_tensor = calcu_op_util::CopyTensorHostToDevice(
         at::from_blob(target_lengths_vector.data(), {target_lengths_vector.size()}, at::kLong)).clamp_min(1);
     at::Tensor target_lengths_tensor_ = target_lengths_tensor.to(res.dtype());
     return (res / target_lengths_tensor_).mean();

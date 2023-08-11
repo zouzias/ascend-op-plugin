@@ -20,7 +20,7 @@
 // #include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace aclnn {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& dot_out(const at::Tensor& self, const at::Tensor& tensor, at::Tensor& result) {
@@ -42,4 +42,4 @@ at::Tensor dot(const at::Tensor& self, const at::Tensor& tensor) {
   EXEC_NPU_CMD(aclnnDot, self, tensor, result);
   return result;
 }
-} // namespace aclnn
+} // namespace op_api

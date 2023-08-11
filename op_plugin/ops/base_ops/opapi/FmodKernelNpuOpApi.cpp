@@ -20,7 +20,7 @@
 // #include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace aclnn {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& fmod_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
@@ -45,16 +45,14 @@ at::Tensor fmod(const at::Tensor& self, const at::Tensor& other) {
   return result;
 }
 
-at::Tensor &fmod_out(const at::Tensor &self, const at::Scalar& other, at::Tensor &result)
-{
+at::Tensor& fmod_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& result) {
   // DO_COMPATIBILITY(aclnnFmodScalar, acl_op::fmod_out(self, other, result));
   result.resize_(self.sizes());
   EXEC_NPU_CMD(aclnnFmodScalar, self, other, result);
   return result;
 }
 
-at::Tensor fmod(const at::Tensor &self, const at::Scalar& other)
-{
+at::Tensor fmod(const at::Tensor &self, const at::Scalar& other) {
   // DO_COMPATIBILITY(aclnnFmodScalar, acl_op::fmod(self, other));
   at::Tensor result = npu_preparation::apply_tensor_without_format(self);
   EXEC_NPU_CMD(aclnnFmodScalar, self, other, result);
@@ -72,4 +70,4 @@ at::Tensor& fmod_(at::Tensor& self, const at::Scalar& other) {
   EXEC_NPU_CMD(aclnnInplaceFmodScalar, self, other);
   return self;
 }
-} // namespace aclnn
+} // namespace op_api

@@ -36,10 +36,10 @@ at::Tensor _ctc_loss_backward(
   // DO_COMPATIBILITY(aclnnCtcLossBackward, NPUNativeFunctions::_ctc_loss_backward(grad_out, log_probs, targets,
   //     input_lengths, target_lengths, neg_log_likelihood, log_alpha, blank, zeroInfinity));
 
-  auto outputSize = input_same_output_size(log_probs);
+  auto output_size = op_infer::input_same_output_size(log_probs);
 
   // construct the output tensor of the NPU
-  at::Tensor grad = npu_preparation::apply_tensor_without_format(grad_out, outputSize);
+  at::Tensor grad = npu_preparation::apply_tensor_without_format(grad_out, output_size);
 
   // calculate the output result of the NPU
   EXEC_NPU_CMD(aclnnCtcLossBackward, grad_out, log_probs, targets, input_lengths, target_lengths,

@@ -19,7 +19,7 @@
 #include "op_plugin/ops/op_api/op_api_common.h"
 // #include "op_plugin/utils/op_api_common.h"
 
-namespace aclnn {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor flip(const at::Tensor& self, at::IntArrayRef dims) {
@@ -28,4 +28,4 @@ at::Tensor flip(const at::Tensor& self, at::IntArrayRef dims) {
   EXEC_NPU_CMD(aclnnFlip, self, dims, result);
   return result;
 }
-} // namespace aclnn
+} // namespace op_api

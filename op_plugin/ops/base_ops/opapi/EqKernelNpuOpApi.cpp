@@ -22,11 +22,12 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
+using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 at::Tensor& eq_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
   // DO_COMPATIBILITY(aclnnEqTensor, NPUNativeFunctions::eq_out(self, other, result));
   auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
-  npu_preparation::check_tensor({self, other}, result, ACL_FORMAT_ND, result.scalar_type(), at::IntArrayRef(outputSize));
+  npu_preparation::check_tensor({self, other}, result, at::IntArrayRef(outputSize));
   EXEC_NPU_CMD(aclnnEqTensor, self, other, result);
   return result;
 }
@@ -58,7 +59,7 @@ at::Tensor eq(const at::Tensor& self, const at::Scalar& other) {
   at::Tensor formatCastOfSelf = npu_preparation::CastBackToOriFormat(self);
 
   // calculate the output size
-  auto outputSize = input_same_output_size(formatCastOfSelf);
+  auto outputSize = op_infer::input_same_output_size(formatCastOfSelf);
 
   // construct the output tensor of the NPU
   at::Tensor result =
@@ -71,7 +72,7 @@ at::Tensor eq(const at::Tensor& self, const at::Scalar& other) {
 
 at::Tensor& eq_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& result) {
   // DO_COMPATIBILITY(aclnnEqScalar, NPUNativeFunctions::eq_out(self, other, result));
-  npu_preparation::check_tensor({self}, result, ACL_FORMAT_ND, result.scalar_type(), self.sizes());
+  npu_preparation::check_tensor({self}, result, self.sizes());
 
   eq_out_npu_scalar(result, self, other);
 
@@ -81,9 +82,9 @@ at::Tensor& eq_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& 
 at::Tensor& eq_(at::Tensor &self, const at::Tensor &other) {
   // DO_COMPATIBILITY(aclnnInplaceEqTensor, NPUNativeFunctions::eq_(self, other));
 
-  c10::SmallVector<at::Tensor, N> inputs = {self, other};
-  c10::SmallVector<at::Tensor, N> outputs = {self};
-  CalcuOpUtil::CheckMemoryOverLaps(inputs, outputs);
+  c10::SmallVector<at::Tensor, op_infer::N> inputs = {self, other};
+  c10::SmallVector<at::Tensor, op_infer::N> outputs = {self};
+  calcu_op_util::CheckMemoryOverLaps(inputs, outputs);
 
   EXEC_NPU_CMD(aclnnInplaceEqTensor, self, other);
   return self;

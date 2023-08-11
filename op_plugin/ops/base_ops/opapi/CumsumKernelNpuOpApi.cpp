@@ -19,7 +19,7 @@
 #include "op_plugin/ops/op_api/op_api_common.h"
 // #include "op_plugin/utils/op_api_common.h"
 
-namespace aclnn {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 
@@ -62,4 +62,4 @@ at::Tensor cumsum(const at::Tensor& self, int64_t dim, c10::optional<at::ScalarT
   cumsum_out(self, dim, dtype, result);
   return result;
 }
-} // namespace aclnn
+} // namespace op_api

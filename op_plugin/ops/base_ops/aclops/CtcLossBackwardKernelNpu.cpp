@@ -17,48 +17,48 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-using npu_preparation = at_npu::native::OpPreparation;
+// using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor _ctc_loss_backward(
-    const at::Tensor& grad_out,
-    const at::Tensor& log_probs,
-    const at::Tensor& targets,
-    at::IntArrayRef input_lengths,
-    at::IntArrayRef target_lengths,
-    const at::Tensor& neg_log_likelihood,
-    const at::Tensor& log_alpha,
-    int64_t blank,
-    bool zeroInfinity) {
-  at::Tensor grad_out_cast = grad_out.scalar_type() == at::kHalf ?
-      op_plugin::npu_dtype_cast(grad_out, at::kFloat) : grad_out;
-  at::Tensor log_probs_cast = log_probs.scalar_type() == at::kHalf ?
-      op_plugin::npu_dtype_cast(log_probs, at::kFloat) : log_probs;
-  at::Tensor neg_log_likelihood_cast = neg_log_likelihood.scalar_type() == at::kHalf ?
-      op_plugin::npu_dtype_cast(neg_log_likelihood, at::kFloat) : neg_log_likelihood;
-  at::Tensor log_alpha_cast = log_alpha.scalar_type() == at::kHalf ?
-      op_plugin::npu_dtype_cast(log_alpha, at::kFloat) : log_alpha;
+// at::Tensor _ctc_loss_backward(
+//     const at::Tensor& grad_out,
+//     const at::Tensor& log_probs,
+//     const at::Tensor& targets,
+//     at::IntArrayRef input_lengths,
+//     at::IntArrayRef target_lengths,
+//     const at::Tensor& neg_log_likelihood,
+//     const at::Tensor& log_alpha,
+//     int64_t blank,
+//     bool zeroInfinity) {
+//   at::Tensor grad_out_cast = grad_out.scalar_type() == at::kHalf ?
+//       op_plugin::npu_dtype_cast(grad_out, at::kFloat) : grad_out;
+//   at::Tensor log_probs_cast = log_probs.scalar_type() == at::kHalf ?
+//       op_plugin::npu_dtype_cast(log_probs, at::kFloat) : log_probs;
+//   at::Tensor neg_log_likelihood_cast = neg_log_likelihood.scalar_type() == at::kHalf ?
+//       op_plugin::npu_dtype_cast(neg_log_likelihood, at::kFloat) : neg_log_likelihood;
+//   at::Tensor log_alpha_cast = log_alpha.scalar_type() == at::kHalf ?
+//       op_plugin::npu_dtype_cast(log_alpha, at::kFloat) : log_alpha;
 
-  auto input_lengths_tensor = at::tensor(input_lengths, targets.options());
-  auto target_lengths_tensor = at::tensor(target_lengths, targets.options());
-  at::Tensor grad = npu_preparation::ApplyTensor(log_probs_cast);
+//   auto input_lengths_tensor = at::tensor(input_lengths, targets.options());
+//   auto target_lengths_tensor = at::tensor(target_lengths, targets.options());
+//   at::Tensor grad = npu_preparation::ApplyTensor(log_probs_cast);
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("CTCLossV2Grad")
-      .Input(grad_out_cast)
-      .Input(log_probs_cast)
-      .Input(targets)
-      .Input(input_lengths_tensor)
-      .Input(target_lengths_tensor)
-      .Input(neg_log_likelihood_cast)
-      .Input(log_alpha_cast)
-      .Output(grad)
-      .Attr("blank", blank)
-      .Attr("zero_infinity", zeroInfinity)
-      .Run();
+//   at_npu::native::OpCommand cmd;
+//   cmd.Name("CTCLossV2Grad")
+//       .Input(grad_out_cast)
+//       .Input(log_probs_cast)
+//       .Input(targets)
+//       .Input(input_lengths_tensor)
+//       .Input(target_lengths_tensor)
+//       .Input(neg_log_likelihood_cast)
+//       .Input(log_alpha_cast)
+//       .Output(grad)
+//       .Attr("blank", blank)
+//       .Attr("zero_infinity", zeroInfinity)
+//       .Run();
 
-  if (grad_out.scalar_type() == at::kHalf) {
-    grad = op_plugin::npu_dtype_cast(grad, at::kHalf);
-  }
-  return grad;
-}
+//   if (grad_out.scalar_type() == at::kHalf) {
+//     grad = op_plugin::npu_dtype_cast(grad, at::kHalf);
+//   }
+//   return grad;
+// }
 } // namespace op_plugin

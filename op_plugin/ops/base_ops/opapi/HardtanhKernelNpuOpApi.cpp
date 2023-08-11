@@ -19,7 +19,7 @@
 #include "op_plugin/ops/op_api/op_api_common.h"
 // #include "op_plugin/utils/op_api_common.h"
 
-namespace aclnn {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor hardtanh(const at::Tensor& self, const at::Scalar& min, const at::Scalar& max) {
@@ -34,4 +34,4 @@ at::Tensor& hardtanh_(at::Tensor& self, const at::Scalar& min, const at::Scalar&
   EXEC_NPU_CMD(aclnnInplaceHardtanh, self, min, max);
   return self;
 }
-} // namespace aclnn
+} // namespace op_api

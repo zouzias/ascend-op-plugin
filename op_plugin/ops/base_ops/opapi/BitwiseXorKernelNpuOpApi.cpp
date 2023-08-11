@@ -20,7 +20,7 @@
 // #include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace aclnn {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -82,4 +82,4 @@ at::Tensor bitwise_xor(const at::Tensor& self, const at::Tensor& other) {
   bitwise_xor_out_nocheck(result, self, other);
   return result;
 }
-} // namespace aclnn
+} // namespace op_api

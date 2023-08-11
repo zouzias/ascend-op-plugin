@@ -19,7 +19,7 @@
 #include "op_plugin/ops/op_api/op_api_common.h"
 // #include "op_plugin/utils/op_api_common.h"
 
-namespace aclnn {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& exp_out(const at::Tensor& self, at::Tensor& result) {
@@ -48,4 +48,4 @@ at::Tensor exp(const at::Tensor& self) {
   EXEC_NPU_CMD(aclnnExp, self, result);
   return result;
 }
-} // namespace aclnn
+} // namespace op_api

@@ -17,33 +17,33 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-using npu_preparation = at_npu::native::OpPreparation;
+// using npu_preparation = at_npu::native::OpPreparation;
 
-bool equal(const at::Tensor& self, const at::Tensor& other) {
-  if(self.sizes() != other.sizes()) {
-    return false;
-  }
+// bool equal(const at::Tensor& self, const at::Tensor& other) {
+//   if(self.sizes() != other.sizes()) {
+//     return false;
+//   }
 
-  TORCH_CHECK(
-      self.scalar_type() == other.scalar_type(),
-      "Expected object of scalar type ",
-      self.scalar_type(),
-      ", but got ",
-      other.scalar_type(),
-      " for argument #2 'other' in call to equal_npu");
+//   TORCH_CHECK(
+//       self.scalar_type() == other.scalar_type(),
+//       "Expected object of scalar type ",
+//       self.scalar_type(),
+//       ", but got ",
+//       other.scalar_type(),
+//       " for argument #2 'other' in call to equal_npu");
 
-  at::Tensor result = npu_preparation::ApplyTensorWithFormat(
-      {1},
-      self.options().dtype(at::kBool),
-      ACL_FORMAT_ND);
+//   at::Tensor result = npu_preparation::ApplyTensorWithFormat(
+//       {1},
+//       self.options().dtype(at::kBool),
+//       ACL_FORMAT_ND);
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("TensorEqual")
-      .Input(self)
-      .Input(other)
-      .Output(result)
-      .Run();
+//   at_npu::native::OpCommand cmd;
+//   cmd.Name("TensorEqual")
+//       .Input(self)
+//       .Input(other)
+//       .Output(result)
+//       .Run();
 
-  return result.item().to<bool>();
-}
+//   return result.item().to<bool>();
+// }
 } // namespace op_plugin
