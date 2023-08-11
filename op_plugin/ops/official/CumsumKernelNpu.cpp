@@ -48,40 +48,40 @@ at::Tensor& cumsum_out_nocheck(
 }
 } // namespace
 
-at::Tensor& cumsum_out(
-    const at::Tensor& self,
-    int64_t dim,
-    c10::optional<at::ScalarType> dtype,
-    at::Tensor& result) {
-  at::ScalarType dst_type;
-  if (dtype.has_value()) {
-    dst_type = dtype.value();
-  } else if (result.defined()) {
-    dst_type = result.scalar_type();
-  } else {
-    dst_type = self.scalar_type();
-  }
-  at::Tensor self_cp = self.scalar_type() == dst_type ? self :
-      op_plugin::npu_dtype_cast(self, dst_type);
-  npu_preparation::CheckOut(
-      {self_cp},
-      result,
-      self_cp);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    cumsum_out_nocheck(contiguous_result, self_cp, dim);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    cumsum_out_nocheck(result, self_cp, dim);
-  }
-  return result;
-}
+// at::Tensor& cumsum_out(
+//     const at::Tensor& self,
+//     int64_t dim,
+//     c10::optional<at::ScalarType> dtype,
+//     at::Tensor& result) {
+//   at::ScalarType dst_type;
+//   if (dtype.has_value()) {
+//     dst_type = dtype.value();
+//   } else if (result.defined()) {
+//     dst_type = result.scalar_type();
+//   } else {
+//     dst_type = self.scalar_type();
+//   }
+//   at::Tensor self_cp = self.scalar_type() == dst_type ? self :
+//       op_plugin::npu_dtype_cast(self, dst_type);
+//   npu_preparation::CheckOut(
+//       {self_cp},
+//       result,
+//       self_cp);
+//   if (!npu_utils::check_match(&result)) {
+//     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+//     cumsum_out_nocheck(contiguous_result, self_cp, dim);
+//     npu_utils::format_fresh_view(result, contiguous_result);
+//   } else {
+//     cumsum_out_nocheck(result, self_cp, dim);
+//   }
+//   return result;
+// }
 
-at::Tensor& cumsum_out(
-    const at::Tensor& self,
-    at::Dimname dim,
-    c10::optional<at::ScalarType> dtype,
-    at::Tensor& result) {
-  return op_plugin::cumsum_out(self, dimname_to_position(self, dim), dtype, result);
-}
+// at::Tensor& cumsum_out(
+//     const at::Tensor& self,
+//     at::Dimname dim,
+//     c10::optional<at::ScalarType> dtype,
+//     at::Tensor& result) {
+//   return op_plugin::cumsum_out(self, dimname_to_position(self, dim), dtype, result);
+// }
 } // namespace op_plugin

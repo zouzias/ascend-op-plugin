@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2023, Facebook CORPORATION.
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -19,32 +19,32 @@
 #include "op_plugin/ops/op_api/op_api_common.h"
 // #include "op_plugin/utils/op_api_common.h"
 
-namespace aclnn {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& erf_out(const at::Tensor& self, at::Tensor& result) {
-  // DO_COMPATIBILITY(aclnnErf, acl_op::erf_out(self, result));
+at::Tensor& erfc_out(const at::Tensor& self, at::Tensor& result) {
+  // DO_COMPATIBILITY(aclnnErfc, acl_op::erfc_out(self, result));
   result.resize_(self.sizes());
-  EXEC_NPU_CMD(aclnnErf, self, result);
+  EXEC_NPU_CMD(aclnnErfc, self, result);
   return result;
 }
 
-at::Tensor& erf_(at::Tensor& self) {
-  // DO_COMPATIBILITY(aclnnInplaceErf, acl_op::erf_(self));
-  EXEC_NPU_CMD(aclnnInplaceErf, self);
+at::Tensor& erfc_(at::Tensor& self) {
+  // DO_COMPATIBILITY(aclnnInplaceErfc, acl_op::erfc_(self));
+  EXEC_NPU_CMD(aclnnInplaceErfc, self);
   return self;
 }
 
-at::Tensor erf(const at::Tensor& self) {
-  // DO_COMPATIBILITY(aclnnErf, acl_op::erf(self));
+at::Tensor erfc(const at::Tensor& self) {
+  // DO_COMPATIBILITY(aclnnErfc, acl_op::erfc(self));
   at::Tensor result;
-  if (self.scalar_type() == at::ScalarType::Bool || self.scalar_type() == at::ScalarType::Long ||
-      self.scalar_type() == at::ScalarType::Int) {
+  if (self.scalar_type() == at::ScalarType::Bool || self.scalar_type() == at::ScalarType::Long
+      || self.scalar_type() == at::ScalarType::Int) {
     result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kFloat));
   } else {
     result = npu_preparation::apply_tensor_without_format(self);
   }
-  EXEC_NPU_CMD(aclnnErf, self, result);
+  EXEC_NPU_CMD(aclnnErfc, self, result);
   return result;
 }
-} // namespace aclnn
+} // namespace op_api

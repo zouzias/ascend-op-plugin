@@ -48,8 +48,7 @@ at::Tensor fmod(const at::Tensor& self, const at::Tensor& other) {
 at::Tensor &fmod_out(const at::Tensor &self, const at::Scalar& other, at::Tensor &result)
 {
   // DO_COMPATIBILITY(aclnnFmodScalar, acl_op::fmod_out(self, other, result));
-  auto output_size = self.sizes();
-  result.resize_(output_size);
+  result.resize_(self.sizes());
   EXEC_NPU_CMD(aclnnFmodScalar, self, other, result);
   return result;
 }
