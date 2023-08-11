@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2023, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -13,25 +14,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
+// #include "op_plugin/ops/AclOpsInterface.h"
+#include "op_plugin/ops/OpApiInterface.h"
+#include "op_plugin/ops/op_api/op_api_common.h"
+// #include "op_plugin/utils/op_api_common.h"
 
-namespace op_plugin {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-// at::Tensor flip(const at::Tensor& self, at::IntArrayRef dims) {
-//   if (dims.size() == 0) {
-//     return self.clone();
-//   }
-
-//   at::Tensor result = npu_preparation::ApplyTensor(self);
-//   at::SmallVector<int64_t, N> dim_vector = op_infer::array_to_small_vector(dims);
-//   at_npu::native::OpCommand cmd;
-//   cmd.Name("ReverseV2")
-//       .Input(self)
-//       .Input(dim_vector, at::kLong)
-//       .Output(result)
-//       .Run();
-//   return result;
-// }
-} // namespace op_plugin
+at::Tensor flip(const at::Tensor& self, at::IntArrayRef dims) {
+  // DO_COMPATIBILITY(aclnnFlip, acl_op::flip(self, dims));
+  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+  EXEC_NPU_CMD(aclnnFlip, self, dims, result);
+  return result;
+}
+} // namespace op_api

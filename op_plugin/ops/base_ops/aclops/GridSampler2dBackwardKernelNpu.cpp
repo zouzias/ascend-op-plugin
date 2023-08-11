@@ -17,57 +17,57 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-using npu_preparation = at_npu::native::OpPreparation;
+// using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> grid_sampler_2d_backward(
-    const at::Tensor& grad,
-    const at::Tensor& input,
-    const at::Tensor& grid,
-    int64_t interpolation_mode,
-    int64_t padding_mode,
-    bool align_corners,
-    std::array<bool, 2> output_mask) {
-  TORCH_CHECK((0 <= interpolation_mode && interpolation_mode <= 2), "interpolation_mode must be in range [0~2].")
-  TORCH_CHECK((0 <= padding_mode && padding_mode <= 2), "padding_mode must be in range [0~2].")
+// std::tuple<at::Tensor, at::Tensor> grid_sampler_2d_backward(
+//     const at::Tensor& grad,
+//     const at::Tensor& input,
+//     const at::Tensor& grid,
+//     int64_t interpolation_mode,
+//     int64_t padding_mode,
+//     bool align_corners,
+//     std::array<bool, 2> output_mask) {
+//   TORCH_CHECK((0 <= interpolation_mode && interpolation_mode <= 2), "interpolation_mode must be in range [0~2].")
+//   TORCH_CHECK((0 <= padding_mode && padding_mode <= 2), "padding_mode must be in range [0~2].")
 
-  at::Tensor format_cast_of_grad = grad;
-  at::Tensor format_cast_of_input = input;
-  at::Tensor format_cast_of_grid = grid;
+//   at::Tensor format_cast_of_grad = grad;
+//   at::Tensor format_cast_of_input = input;
+//   at::Tensor format_cast_of_grid = grid;
 
-  if (format_cast_of_grad.scalar_type() == at::ScalarType::Half) {
-    format_cast_of_grad = op_plugin::npu_dtype_cast(format_cast_of_grad, at::ScalarType::Float);
-  }
-  if (format_cast_of_input.scalar_type() == at::ScalarType::Half) {
-    format_cast_of_input = op_plugin::npu_dtype_cast(format_cast_of_input, at::ScalarType::Float);
-  }
-  if (format_cast_of_grid.scalar_type() == at::ScalarType::Half) {
-    format_cast_of_grid = op_plugin::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
-  }
+//   if (format_cast_of_grad.scalar_type() == at::ScalarType::Half) {
+//     format_cast_of_grad = op_plugin::npu_dtype_cast(format_cast_of_grad, at::ScalarType::Float);
+//   }
+//   if (format_cast_of_input.scalar_type() == at::ScalarType::Half) {
+//     format_cast_of_input = op_plugin::npu_dtype_cast(format_cast_of_input, at::ScalarType::Float);
+//   }
+//   if (format_cast_of_grid.scalar_type() == at::ScalarType::Half) {
+//     format_cast_of_grid = op_plugin::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
+//   }
 
-  at::Tensor dx = npu_preparation::ApplyTensor(format_cast_of_input);
-  at::Tensor dgrid = npu_preparation::ApplyTensor(format_cast_of_grid);
+//   at::Tensor dx = npu_preparation::ApplyTensor(format_cast_of_input);
+//   at::Tensor dgrid = npu_preparation::ApplyTensor(format_cast_of_grid);
 
-  c10::SmallVector<string, SIZE> inter_mode = {"bilinear", "nearest", "bicubic"};
-  c10::SmallVector<string, SIZE> pad_mode = {"zeros", "border", "reflection"};
+//   c10::SmallVector<string, SIZE> inter_mode = {"bilinear", "nearest", "bicubic"};
+//   c10::SmallVector<string, SIZE> pad_mode = {"zeros", "border", "reflection"};
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("GridSampler2DGrad")
-      .Input(format_cast_of_grad)
-      .Input(format_cast_of_input)
-      .Input(format_cast_of_grid)
-      .Output(dx)
-      .Output(dgrid)
-      .Attr("interpolation_mode", inter_mode[interpolation_mode])
-      .Attr("padding_mode", pad_mode[padding_mode])
-      .Attr("align_corners", align_corners)
-      .Run();
+//   at_npu::native::OpCommand cmd;
+//   cmd.Name("GridSampler2DGrad")
+//       .Input(format_cast_of_grad)
+//       .Input(format_cast_of_input)
+//       .Input(format_cast_of_grid)
+//       .Output(dx)
+//       .Output(dgrid)
+//       .Attr("interpolation_mode", inter_mode[interpolation_mode])
+//       .Attr("padding_mode", pad_mode[padding_mode])
+//       .Attr("align_corners", align_corners)
+//       .Run();
 
-  at::ScalarType input_scalar_type(input.scalar_type());
-  if (dx.scalar_type() != input_scalar_type) {
-    dx = op_plugin::npu_dtype_cast(dx, input_scalar_type);
-    dgrid = op_plugin::npu_dtype_cast(dgrid, input_scalar_type);
-  }
+//   at::ScalarType input_scalar_type(input.scalar_type());
+//   if (dx.scalar_type() != input_scalar_type) {
+//     dx = op_plugin::npu_dtype_cast(dx, input_scalar_type);
+//     dgrid = op_plugin::npu_dtype_cast(dgrid, input_scalar_type);
+//   }
 
-  return std::tuple<at::Tensor, at::Tensor>(dx, dgrid);
-}
+//   return std::tuple<at::Tensor, at::Tensor>(dx, dgrid);
+// }
 } // namespace op_plugin

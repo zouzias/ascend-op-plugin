@@ -37,33 +37,33 @@ at::Tensor& hardtanh_out_npu_nocheck(
 }
 } // namespace
 
-at::Tensor& hardtanh_out(
-    const at::Tensor& self,
-    const at::Scalar& min,
-    const at::Scalar& max,
-    at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
+// at::Tensor& hardtanh_out(
+//     const at::Tensor& self,
+//     const at::Scalar& min,
+//     const at::Scalar& max,
+//     at::Tensor& result) {
+//   npu_preparation::CheckOut(
+//       {self},
+//       result,
+//       self);
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    hardtanh_out_npu_nocheck(contiguous_result, self, min, max);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    hardtanh_out_npu_nocheck(result, self, min, max);
-  }
-    return result;
-}
+//   if (!npu_utils::check_match(&result)) {
+//     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+//     hardtanh_out_npu_nocheck(contiguous_result, self, min, max);
+//     npu_utils::format_fresh_view(result, contiguous_result);
+//   } else {
+//     hardtanh_out_npu_nocheck(result, self, min, max);
+//   }
+//     return result;
+// }
 
-at::Tensor hardtanh(const at::Tensor& self, const at::Scalar& min, const at::Scalar& max) {
-  at::Tensor result = npu_preparation::ApplyTensor(self);
-  hardtanh_out(self, min, max, result);
-  return result;
-}
+// at::Tensor hardtanh(const at::Tensor& self, const at::Scalar& min, const at::Scalar& max) {
+//   at::Tensor result = npu_preparation::ApplyTensor(self);
+//   hardtanh_out(self, min, max, result);
+//   return result;
+// }
 
-at::Tensor& hardtanh_(at::Tensor& self, const at::Scalar& min, const at::Scalar& max) {
-  return op_plugin::hardtanh_out(self, min, max, self);
-}
+// at::Tensor& hardtanh_(at::Tensor& self, const at::Scalar& min, const at::Scalar& max) {
+//   return op_plugin::hardtanh_out(self, min, max, self);
+// }
 } // namespace op_plugin

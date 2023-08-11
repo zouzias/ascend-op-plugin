@@ -17,18 +17,18 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace op_plugin {
-at::Tensor embedding_backward_symint(
-    const at::Tensor& grad, 
-    const at::Tensor& indices, 
-    c10::SymInt num_weights,
-    c10::SymInt padding_idx,
-    bool scale_grad_by_freq, 
-    bool sparse) {
-  TORCH_CHECK(sparse == false, "the current NPU does not yet support sparse tensor, when sparse is set to True");
+// at::Tensor embedding_backward_symint(
+//     const at::Tensor& grad,
+//     const at::Tensor& indices,
+//     c10::SymInt num_weights,
+//     c10::SymInt padding_idx,
+//     bool scale_grad_by_freq,
+//     bool sparse) {
+//   TORCH_CHECK(sparse == false, "the current NPU does not yet support sparse tensor, when sparse is set to True");
 
-  // run dense tensor backward
-  return at::embedding_dense_backward(
-      grad, indices, num_weights.guard_int(__FILE__, __LINE__),
-      padding_idx.guard_int(__FILE__, __LINE__), scale_grad_by_freq);
-}
+//   // run dense tensor backward
+//   return at::embedding_dense_backward(
+//       grad, indices, num_weights.guard_int(__FILE__, __LINE__),
+//       padding_idx.guard_int(__FILE__, __LINE__), scale_grad_by_freq);
+// }
 } // namespace op_plugin

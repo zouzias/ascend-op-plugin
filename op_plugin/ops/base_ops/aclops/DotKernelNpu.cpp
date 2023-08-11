@@ -33,29 +33,29 @@ at::Tensor& dot_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, cons
 }
 } // namespace
 
-at::Tensor& dot_out(const at::Tensor& self, const at::Tensor& tensor, at::Tensor& result) {
-  c10::SmallVector<int64_t, N> output_size = {};
-  npu_preparation::CheckOut(
-      {self, tensor},
-      result,
-      self,
-      output_size);
+// at::Tensor& dot_out(const at::Tensor& self, const at::Tensor& tensor, at::Tensor& result) {
+//   c10::SmallVector<int64_t, N> output_size = {};
+//   npu_preparation::CheckOut(
+//       {self, tensor},
+//       result,
+//       self,
+//       output_size);
 
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    dot_out_npu_nocheck(contiguous_result, self, tensor);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    dot_out_npu_nocheck(result, self, tensor);
-  }
+//   if (!npu_utils::check_match(&result)) {
+//     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+//     dot_out_npu_nocheck(contiguous_result, self, tensor);
+//     npu_utils::format_fresh_view(result, contiguous_result);
+//   } else {
+//     dot_out_npu_nocheck(result, self, tensor);
+//   }
 
-  return result;
-}
+//   return result;
+// }
 
-at::Tensor dot(const at::Tensor& self, const at::Tensor& tensor) {
-  c10::SmallVector<int64_t, N> output_size = {};
-  at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
-  dot_out_npu_nocheck(result, self, tensor);
-  return result;
-}
+// at::Tensor dot(const at::Tensor& self, const at::Tensor& tensor) {
+//   c10::SmallVector<int64_t, N> output_size = {};
+//   at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
+//   dot_out_npu_nocheck(result, self, tensor);
+//   return result;
+// }
 } // op_plugin
