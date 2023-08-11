@@ -201,4 +201,54 @@ at::Tensor& erfc_(at::Tensor& self) {
 at::Tensor erfc(const at::Tensor& self) {
   return op_api::erfc(self);
 }
+
+at::Tensor eq(const at::Tensor & self, const at::Tensor & other) {
+    return op_api::eq(self, other);
+}
+at::Tensor eq(const at::Tensor & self, const at::Scalar & other) {
+    return op_api::eq(self, other);
+}
+at::Tensor & eq_(at::Tensor & self, const at::Tensor & other) {
+    return op_api::eq_(self, other);
+}
+at::Tensor & eq_(at::Tensor & self, const at::Scalar & other) {
+    return op_api::eq_(self, other);
+}
+at::Tensor & eq_out(const at::Tensor & self, const at::Tensor & other, at::Tensor & out) {
+    return op_api::eq_out(self, other, out);
+}
+at::Tensor & eq_out(const at::Tensor & self, const at::Scalar & other, at::Tensor & out) {
+    return op_api::eq_out(self, other, out);
+}
+
+bool equal(const at::Tensor & self, const at::Tensor & other) {
+    return op_api::equal(self, other);
+}
+
+::std::tuple<at::Tensor,at::Tensor> _ctc_loss(const at::Tensor & log_probs, const at::Tensor & targets, at::IntArrayRef input_lengths, at::IntArrayRef target_lengths, int64_t blank, bool zero_infinity) {
+    return op_api::_ctc_loss(log_probs, targets, input_lengths, target_lengths, blank, zero_infinity);
+}
+
+at::Tensor _ctc_loss_backward(const at::Tensor & grad, const at::Tensor & log_probs, const at::Tensor & targets, at::IntArrayRef input_lengths, at::IntArrayRef target_lengths, const at::Tensor & neg_log_likelihood, const at::Tensor & log_alpha, int64_t blank, bool zero_infinity) {
+    return op_api::_ctc_loss_backward(grad, log_probs, targets, input_lengths, target_lengths, neg_log_likelihood, log_alpha, blank, zero_infinity);
+}
+at::Tensor ctc_loss(const at::Tensor & log_probs, const at::Tensor & targets, const at::Tensor & input_lengths, const at::Tensor & target_lengths, int64_t blank, int64_t reduction, bool zero_infinity) {
+    return op_api::ctc_loss(log_probs, targets, input_lengths, target_lengths, blank, reduction, zero_infinity);
+}
+at::Tensor ctc_loss(const at::Tensor & log_probs, const at::Tensor & targets, at::IntArrayRef input_lengths, at::IntArrayRef target_lengths, int64_t blank, int64_t reduction, bool zero_infinity) {
+    return op_api::ctc_loss(log_probs, targets, input_lengths, target_lengths, blank, reduction, zero_infinity);
+}
+
+at::Tensor glu(const at::Tensor & self, int64_t dim) {
+    return op_api::glu(self, dim);
+}
+at::Tensor glu_backward(const at::Tensor & grad_output, const at::Tensor & self, int64_t dim) {
+    return op_api::glu_backward(grad_output, self, dim);
+}
+at::Tensor & glu_backward_out(const at::Tensor & grad_output, const at::Tensor & self, int64_t dim, at::Tensor & grad_input) {
+    return op_api::glu_backward_out(grad_output, self, dim, grad_input);
+}
+at::Tensor & glu_out(const at::Tensor & self, int64_t dim, at::Tensor & out) {
+    return op_api::glu_out(self, dim, out);
+}
 } // namespace op_plugin
