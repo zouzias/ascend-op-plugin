@@ -52,13 +52,13 @@ at::Tensor check_dtype(
 }
 } // namespace
 
-at::Tensor& sum_out(
+at::Tensor& sum_out_common(
+    at::Tensor& result,
     const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
+    at::IntArrayRef dim,
     bool keepdim,
-    c10::optional<c10::ScalarType> dtype,
-    at::Tensor& result) {
-  auto output_size = op_infer::sum_npu_output_size(self, dim.value(), keepdim);
+    c10::optional<c10::ScalarType> dtype) {
+  auto output_size = op_infer::sum_npu_output_size(self, dim, keepdim);
   auto res_type = dtype.has_value() ? dtype.value() : result.scalar_type();
 
   npu_preparation::CheckOut(
@@ -80,10 +80,10 @@ at::Tensor& sum_out(
 
   if (!npu_utils::check_match(&result_cp)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cp);
-    sum_out_npu_nocheck(contiguous_result, self_cp, dim.value(), keepdim);
+    sum_out_npu_nocheck(contiguous_result, self_cp, dim, keepdim);
     npu_utils::format_fresh_view(result, contiguous_result);
   } else {
-    sum_out_npu_nocheck(result_cp, self_cp, dim.value(), keepdim);
+    sum_out_npu_nocheck(result_cp, self_cp, dim, keepdim);
   }
 
   if (result_cp.scalar_type() != res_type) {
@@ -95,21 +95,13 @@ at::Tensor& sum_out(
   return result;
 }
 
-at::Tensor& sum_out(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype,
-    at::Tensor& result) {
-  return op_plugin::sum_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
-}
 
-at::Tensor sum(
+at::Tensor sum_common(
     const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
+    at::IntArrayRef dim,
     bool keepdim,
     c10::optional<c10::ScalarType> dtype) {
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, dim.value(), keepdim);
+  auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
   auto out_type = self.scalar_type();
 
   if (dtype.has_value()) {
@@ -125,23 +117,11 @@ at::Tensor sum(
   at::Tensor self_cp = check_dtype(self, out_type);
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(
       output_size, self_cp.options(), ACL_FORMAT_ND);
-  sum_out_npu_nocheck(result, self_cp, dim.value(), keepdim);
+  sum_out_npu_nocheck(result, self_cp, dim, keepdim);
 
   if (result.scalar_type() != out_type) {
     result = op_plugin::npu_dtype_cast(result, out_type);
   }
   return result;
-}
-
-at::Tensor sum(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype) {
-  return op_plugin::sum(self, dimnames_to_positions(self, dim), keepdim, dtype);
-}
-
-at::Tensor sum(const at::Tensor& self, c10::optional<c10::ScalarType> dtype) {
-  return op_plugin::sum(self, c10::SmallVector<int64_t, N>{}, false, dtype);
 }
 } // namespace op_plugin

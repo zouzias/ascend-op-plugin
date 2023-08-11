@@ -19,39 +19,13 @@
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace {
-std::tuple<at::Tensor&, at::Tensor&> grid_sampler_3d_backward_nocheck(
-    const at::Tensor& grad,
-    const at::Tensor& input,
-    const at::Tensor& grid,
-    std::string inter_mode,
-    std::string padding_mode,
-    bool align_corners,
-    at::Tensor& dx,
-    at::Tensor& dgrid) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("GridSampler3DGrad")
-      .Input(grad)
-      .Input(input)
-      .Input(grid)
-      .Output(dx)
-      .Output(dgrid)
-      .Attr("interpolation_mode", inter_mode)
-      .Attr("padding_mode", padding_mode)
-      .Attr("align_corners", align_corners)
-      .Run();
-  return std::tie(dx, dgrid);
-}
-} // namespace
-
-std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
+std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward_common(
     const at::Tensor& grad,
     const at::Tensor& input,
     const at::Tensor& grid,
     int64_t interpolation_mode,
     int64_t padding_mode,
-    bool align_corners,
-    std::array<bool,2> output_mask) {
+    bool align_corners) {
   TORCH_CHECK(
       (0 <= interpolation_mode && interpolation_mode <= 2),
       "interpolation_mode must be in range [0~2].")
@@ -76,8 +50,17 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
   std::string inter_mode_list[] = {"bilinear", "nearest", "bicubic"};
   std::string padding_mode_list[] = {"zeros", "border", "reflection"};
 
-  grid_sampler_3d_backward_nocheck(format_cast_of_grad, format_cast_of_input, format_cast_of_grid,
-      inter_mode_list[interpolation_mode], padding_mode_list[padding_mode], align_corners, dx, dgrid);
+  at_npu::native::OpCommand cmd;
+  cmd.Name("GridSampler3DGrad")
+      .Input(format_cast_of_grad)
+      .Input(format_cast_of_input)
+      .Input(format_cast_of_grid)
+      .Output(dx)
+      .Output(dgrid)
+      .Attr("interpolation_mode", inter_mode_list[interpolation_mode])
+      .Attr("padding_mode", padding_mode_list[padding_mode])
+      .Attr("align_corners", align_corners)
+      .Run();
   return std::tie(dx, dgrid);
 }
 } // namespace op_plugin

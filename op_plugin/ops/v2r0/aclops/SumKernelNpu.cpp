@@ -14,21 +14,23 @@
 // limitations under the License.
 
 #include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-at::Tensor embedding_backward_symint(
-    const at::Tensor& grad, 
-    const at::Tensor& indices, 
-    c10::SymInt num_weights,
-    c10::SymInt padding_idx,
-    bool scale_grad_by_freq, 
-    bool sparse) {
-  TORCH_CHECK(sparse == false, "the current NPU does not yet support sparse tensor, when sparse is set to True");
+at::Tensor& sum_out(
+    const at::Tensor& self,
+    at::OptionalIntArrayRef dim,
+    bool keepdim,
+    c10::optional<c10::ScalarType> dtype,
+    at::Tensor& result) {
+  return sum_out_common(result, self, dim.value(), keepdim, dtype);
+}
 
-  // run dense tensor backward
-  return at::embedding_dense_backward(
-      grad, indices, num_weights.guard_int(__FILE__, __LINE__),
-      padding_idx.guard_int(__FILE__, __LINE__), scale_grad_by_freq);
+at::Tensor sum(
+    const at::Tensor& self,
+    at::OptionalIntArrayRef dim,
+    bool keepdim,
+    c10::optional<c10::ScalarType> dtype) {
+  return sum_common(self, dim.value(), keepdim, dtype);
 }
 } // namespace op_plugin

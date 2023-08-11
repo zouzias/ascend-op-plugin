@@ -20,81 +20,69 @@
 
 namespace op_plugin {
 using npu_preparation = at_npu::native::OpPreparation;
+using npu_compile_type = at_npu::native::CompileType;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
-at::Tensor& cumprod_out_nocheck(
+namespace {
+at::Tensor& cumsum_out_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     int64_t dim) {
-  at::Scalar axis = dim;
+  at::NoNamesGuard guard;
   at_npu::native::OpCommand cmd;
-  cmd.Name("Cumprod")
-      .Input(self)
-      .Input(axis, at::kLong)
-      .Attr("exclusive", (bool)false)
-      .Attr("reverse", (bool)false)
-      .Output(result)
+  // if dim = 0, performance in Aicpu is better than Aicore
+  // if dim > INT32_MAX, we should use long to store dim for ensuring function correctness.
+  // use host memory instead of scalar to improve delivery performance
+  at::Scalar dimScalar(dim);
+  cmd.Name("Cumsum")
+      .Input(self);
+  if (dim == 0 || dim > INT32_MAX) {
+    cmd.Input(dimScalar, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT);
+  } else {
+    cmd.Input(dimScalar, at::kInt, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT);
+  }
+  cmd.Output(result)
       .Run();
-
+  at::namedinference::propagate_names(result, self);
   return result;
 }
 } // namespace
 
-at::Tensor& cumprod_out(
+at::Tensor& cumsum_out(
     const at::Tensor& self,
     int64_t dim,
     c10::optional<at::ScalarType> dtype,
     at::Tensor& result) {
-  at::ScalarType dst_type;
+  at::ScalarType dst_type = self.scalar_type();
   if (dtype.has_value()) {
     dst_type = dtype.value();
   } else if (result.defined()) {
     dst_type = result.scalar_type();
-  } else {
-    dst_type = self.scalar_type();
   }
-
   at::Tensor self_cp = self.scalar_type() == dst_type ? self :
       op_plugin::npu_dtype_cast(self, dst_type);
   npu_preparation::CheckOut(
       {self_cp},
       result,
-      self_cp);
+      calcu_op_util::GetTensorNpuFormat(result),
+      dst_type,
+      self_cp.sizes());
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    cumprod_out_nocheck(contiguous_result, self_cp, dim);
+    cumsum_out_nocheck(contiguous_result, self_cp, dim);
     npu_utils::format_fresh_view(result, contiguous_result);
   } else {
-    cumprod_out_nocheck(result, self_cp, dim);
+    cumsum_out_nocheck(result, self_cp, dim);
   }
   return result;
 }
 
-at::Tensor& cumprod_out(
+at::Tensor& cumsum_out(
     const at::Tensor& self,
     at::Dimname dim,
     c10::optional<at::ScalarType> dtype,
     at::Tensor& result) {
-  return op_plugin::cumprod_out(self, dimname_to_position(self, dim), dtype, result);
-}
-
-at::Tensor& cumprod_(
-    at::Tensor& self,
-    int64_t dim,
-    c10::optional<at::ScalarType> dtype) {
-  TORCH_CHECK(
-      !dtype.has_value() || (self.scalar_type() == dtype.value()),
-      "provided dtype must match the dtype of self tensor in cumprod. Got ",
-      toString(self.scalar_type()),
-      " and ",
-      toString(dtype.value()),
-      ".");
-  return op_plugin::cumprod_out(self, dim, dtype, self);
-}
-
-at::Tensor& cumprod_(at::Tensor& self, at::Dimname dim, c10::optional<at::ScalarType> dtype) {
-  return op_plugin::cumprod_(self, dimname_to_position(self, dim), dtype);
+  return op_plugin::cumsum_out(self, dimname_to_position(self, dim), dtype, result);
 }
 } // namespace op_plugin
