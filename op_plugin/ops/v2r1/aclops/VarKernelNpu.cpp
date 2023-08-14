@@ -34,6 +34,22 @@ auto check_and_trans_dim(const at::Tensor& self, at::IntArrayRef dim) {
   return result_dim;
 }
 
+int64_t get_shape_prod(const at::Tensor& self, at::IntArrayRef dim) {
+  int64_t shape_prod = 1;
+  if (self.dim() == 0) {
+    shape_prod = 1;
+  } else if (dim.size() == 0) {
+    for (auto i = 0; i < self.dim(); i++) {
+      shape_prod *= self.size(i);
+    }
+  } else {
+    for(auto i = 0; i < dim.size(); i++) {
+      shape_prod *= self.size(dim[i]);
+    }
+  }
+  return shape_prod;
+}
+
 auto get_result_names(const at::Tensor& self, at::IntArrayRef dim, bool keepdim) {
   auto names = self.names();
   std::vector<at::Dimname> result_names;
@@ -55,7 +71,8 @@ at::Tensor& var_after_out_nocheck(
     const at::Tensor& mean_broadcast,
     at::IntArrayRef dim,
     bool unbiased,
-    bool keepdim) {
+    bool keepdim,
+    int64_t correction) {
   bool if_std = false;
   at_npu::native::OpCommand cmd;
   cmd.Name("ReduceStdV2Update")
@@ -66,6 +83,7 @@ at::Tensor& var_after_out_nocheck(
       .Attr("if_std", if_std)
       .Attr("unbiased", unbiased)
       .Attr("keepdim", keepdim)
+      .Attr("correction", correction)
       .Run();
   return var;
 }
@@ -76,7 +94,8 @@ std::tuple<at::Tensor&, at::Tensor&> var_mean_compute(
     const at::Tensor& self,
     at::IntArrayRef dim,
     bool unbiased,
-    bool keepdim) {
+    bool keepdim,
+    int64_t correction) {
   auto mean_output_size_keepdim = op_infer::var_npu_output_size(self, dim, true);
   auto mean_output_size_not_keepdim = op_infer::var_npu_output_size(self, dim, false);
   mean = at::mean(self, dim, false);
@@ -85,7 +104,16 @@ std::tuple<at::Tensor&, at::Tensor&> var_mean_compute(
   if (!keepdim) {
     mean.resize_(mean_output_size_not_keepdim);
   }
-  var_after_out_nocheck(variance, self, mean_broadcast, dim, unbiased, keepdim);
+  auto shape_prod = get_shape_prod(self, dim);
+  if (shape_prod == 0 || (shape_prod <= 1 && shape_prod <= correction)) {
+    variance.fill_(NAN);
+    return std::tuple<at::Tensor&, at::Tensor&>(variance, mean);
+  }
+  if (correction > 1 && shape_prod <= correction) {
+    variance.fill_(INFINITY);
+    return std::tuple<at::Tensor&, at::Tensor&>(variance, mean);
+  }
+  var_after_out_nocheck(variance, self, mean_broadcast, dim, unbiased, keepdim, correction);
   return std::tuple<at::Tensor&, at::Tensor&>(variance, mean);
 }
 
@@ -95,7 +123,8 @@ std::tuple<at::Tensor&, at::Tensor&> var_mean_out_nocheck(
     const at::Tensor& self,
     at::IntArrayRef dim,
     bool unbiased,
-    bool keepdim) {
+    bool keepdim,
+    int64_t correction) {
   c10::SmallVector<int64_t, N> dim_now =
       dim.empty() ? op_plugin::utils::get_dimlist_for_tensor(self) : c10::SmallVector<int64_t, N>(dim);
   auto ori_type = self.scalar_type();
@@ -103,7 +132,7 @@ std::tuple<at::Tensor&, at::Tensor&> var_mean_out_nocheck(
       "Var Mean only support float16 or float32 type.");
   TORCH_CHECK((variance.scalar_type() == mean.scalar_type() && variance.scalar_type() == ori_type),
       "mean's type and variance' type must be equal to input's type.");
-  var_mean_compute(variance, mean, self, dim_now, unbiased, keepdim);
+  var_mean_compute(variance, mean, self, dim_now, unbiased, keepdim, correction);
 
   return std::tuple<at::Tensor&, at::Tensor&>(variance, mean);
 }
@@ -116,6 +145,7 @@ at::Tensor& var_out(
     bool keepdim,
     at::Tensor& result) {
   auto unbiased = !(correction.has_value() && correction.value().toInt() == 0);
+  auto real_correction = correction.has_value() ? correction.value().toInt() : 1;
   // check and trans dim
   auto dim_now = check_and_trans_dim(self, dim.value_or(at::IntArrayRef{}));
   auto output_size = op_infer::var_npu_output_size(self, dim_now, keepdim);
@@ -129,10 +159,10 @@ at::Tensor& var_out(
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    var_mean_out_nocheck(contiguous_result, mean, self, dim_now, unbiased, keepdim);
+    var_mean_out_nocheck(contiguous_result, mean, self, dim_now, unbiased, keepdim, real_correction);
     npu_utils::format_fresh_view(result, contiguous_result);
   } else {
-    var_mean_out_nocheck(result, mean, self, dim_now, unbiased, keepdim);
+    var_mean_out_nocheck(result, mean, self, dim_now, unbiased, keepdim, real_correction);
   }
 
   return result;
@@ -172,12 +202,13 @@ at::Tensor var(
     const c10::optional<c10::Scalar>& correction,
     bool keepdim) {
   auto unbiased = !(correction.has_value() && correction.value().toInt() == 0);
+  auto real_correction = correction.has_value() ? correction.value().toInt() : 1;
   auto dim_now = check_and_trans_dim(self, dim.value_or(at::IntArrayRef{}));
   auto output_size = op_infer::var_npu_output_size(self, dim_now, keepdim);
 
   at::Tensor variance = npu_preparation::apply_tensor(self, output_size);
   at::Tensor mean = npu_preparation::apply_tensor(self, output_size);
-  var_mean_out_nocheck(variance, mean, self, dim_now, unbiased, keepdim);
+  var_mean_out_nocheck(variance, mean, self, dim_now, unbiased, keepdim, real_correction);
   return variance;
 }
 
@@ -209,12 +240,13 @@ std::tuple<at::Tensor, at::Tensor> var_mean(
     const c10::optional<c10::Scalar>& correction,
     bool keepdim) {
   auto unbiased = !(correction.has_value() && correction.value().toInt() == 0);
+  auto real_correction = correction.has_value() ? correction.value().toInt() : 1;
   auto dim_now = check_and_trans_dim(self, dim.value_or(at::IntArrayRef{}));
   auto output_size = op_infer::var_npu_output_size(self, dim_now, keepdim);
 
   at::Tensor variance = npu_preparation::apply_tensor(self, output_size);
   at::Tensor mean = npu_preparation::apply_tensor(self, output_size);
-  var_mean_out_nocheck(variance, mean, self, dim_now, unbiased, keepdim);
+  var_mean_out_nocheck(variance, mean, self, dim_now, unbiased, keepdim, real_correction);
 
   return std::tuple<at::Tensor, at::Tensor>(variance, mean);
 }
