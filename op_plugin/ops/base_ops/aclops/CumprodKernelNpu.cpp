@@ -98,4 +98,14 @@ at::Tensor& cumprod_(
 at::Tensor& cumprod_(at::Tensor& self, at::Dimname dim, c10::optional<at::ScalarType> dtype) {
   return op_plugin::cumprod_(self, dimname_to_position(self, dim), dtype);
 }
+
+at::Tensor cumprod(
+    const at::Tensor& self,
+    int64_t dim,
+    c10::optional<at::ScalarType> dtype) {
+  at::Tensor self_cast = dtype.has_value() ? op_plugin::npu_dtype_cast(self, dtype.value()) : self;
+  at::Tensor result = npu_preparation::apply_tensor(self_cast);
+  cumprod_out_nocheck(result, self_cast, dim);
+  return result;
+}
 } // namespace op_plugin

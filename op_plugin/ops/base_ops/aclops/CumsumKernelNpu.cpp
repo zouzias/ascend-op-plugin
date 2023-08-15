@@ -60,6 +60,7 @@ at::Tensor& cumsum_out(
   } else if (result.defined()) {
     dst_type = result.scalar_type();
   }
+
   at::Tensor self_cp = self.scalar_type() == dst_type ? self :
       op_plugin::npu_dtype_cast(self, dst_type);
   npu_preparation::CheckOut(
@@ -84,5 +85,27 @@ at::Tensor& cumsum_out(
     c10::optional<at::ScalarType> dtype,
     at::Tensor& result) {
   return op_plugin::cumsum_out(self, dimname_to_position(self, dim), dtype, result);
+}
+
+at::Tensor cumsum(
+    const at::Tensor& self,
+    const int64_t dim,
+    const c10::optional<at::ScalarType> dtype) {
+  at::Tensor result;
+  if (dtype.has_value()) {
+    result = npu_preparation::apply_tensor(self, self.options().dtype(dtype.value()));
+  } else if (self.scalar_type() == at::ScalarType::Bool) {
+    result = npu_preparation::apply_tensor(self, self.options().dtype(at::kLong));
+  } else {
+    result = npu_preparation::apply_tensor(self);
+  }
+  return op_plugin::cumsum_out(self, dim, dtype, result);
+}
+
+at::Tensor& cumsum_(
+    at::Tensor& self,
+    int64_t dim,
+    c10::optional<at::ScalarType> dtype) {
+  return op_plugin::cumsum_out(self, dim, dtype, self);
 }
 } // namespace op_plugin
