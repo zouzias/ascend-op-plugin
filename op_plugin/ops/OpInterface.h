@@ -829,6 +829,8 @@ at::Tensor sgn(const at::Tensor& self);
 at::Tensor silu(const at::Tensor & self);
 at::Tensor & silu_(at::Tensor & self);
 at::Tensor & silu_out(const at::Tensor & self, at::Tensor & out);
+at::Tensor& silu_backward_out(const at::Tensor& grad_output, const at::Tensor& self, at::Tensor& grad_input);
+at::Tensor silu_backward(const at::Tensor& grad_output, const at::Tensor& self);
 at::Tensor sin(const at::Tensor & self);
 at::Tensor & sin_(at::Tensor & self);
 at::Tensor & sin_out(const at::Tensor & self, at::Tensor & out);
