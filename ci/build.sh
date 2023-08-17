@@ -148,9 +148,10 @@ function main()
         mkdir -p ${PYTORCH_THIRD_PATH}
     fi
 
-    cp -rf ${CODE_ROOT_PATH}/op_plugin ${PYTORCH_THIRD_PATH}/
-    cp -rf ${CODE_ROOT_PATH}/codegen ${PYTORCH_THIRD_PATH}/
-    cp -rf ${CODE_ROOT_PATH}/gencode.sh ${PYTORCH_THIRD_PATH}/
+    cp -r ${CODE_ROOT_PATH}/op_plugin ${PYTORCH_THIRD_PATH}/
+    cp -r ${CODE_ROOT_PATH}/codegen ${PYTORCH_THIRD_PATH}/
+    cp ${CODE_ROOT_PATH}/*.sh ${PYTORCH_THIRD_PATH}/
+
     # compile torch_adapter
     bash ${PYTORCH_PATH}/ci/build.sh --python=${PY_VERSION}
     # copy dist/torch_npu.whl from torch_adapter to op_plugin
