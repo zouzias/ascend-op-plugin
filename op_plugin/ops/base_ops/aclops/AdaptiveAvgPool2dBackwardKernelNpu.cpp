@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 int64_t adaptive_avg_pool2d_backward_safe_size(const at::Tensor& self) {
@@ -30,7 +29,7 @@ int64_t adaptive_avg_pool2d_backward_safe_size(const at::Tensor& self) {
   }
 
   for (int64_t ndim : dims) {
-    ndim = calcu_op_util::MakeWrapDim(ndim, self.sizes().size());
+    ndim = op_plugin::utils::make_warp_dim(ndim, self.sizes().size());
     size *= self.sizes()[ndim];
   }
 
@@ -63,4 +62,4 @@ at::Tensor _adaptive_avg_pool2d_backward(
   adaptive_avg_pool2d_backward_out_nocheck(result, grad_output, self);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

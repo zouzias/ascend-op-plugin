@@ -15,17 +15,17 @@
 
 #include <ATen/NamedTensorUtils.h>
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 c10::SmallVector<int64_t, SIZE> median_npu_output_size(const at::Tensor& self, int64_t dim, bool keepdim) {
-  dim = calcu_op_util::MakeWrapDim(dim, self.dim());
+  dim = op_plugin::utils::make_warp_dim(dim, self.dim());
   at::IntArrayRef dims(dim);
   return op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
 }
@@ -44,7 +44,7 @@ at::Tensor& median_out_nocheck(at::Tensor& result, const at::Tensor& self) {
   auto ret = at::topk(input, k + 1);
   at::Tensor topk_values = std::get<0>(ret);
   at::Tensor value = topk_values[k];
-  op_plugin::fill_(result, value);
+  acl_op::fill_(result, value);
   return result;
 }
 
@@ -54,7 +54,7 @@ std::tuple<at::Tensor&, at::Tensor&> median_out_value_nocheck(
     const at::Tensor& self,
     int64_t dim,
     bool keepdim) {
-  dim = calcu_op_util::MakeWrapDim(dim, self.dim());
+  dim = op_plugin::utils::make_warp_dim(dim, self.dim());
   int64_t k = self.dim() > 0 ? (self.size(dim) + 1) / 2 : 1;
 
   at::Tensor self_name = self.has_names() ? self.rename(c10::nullopt) : self;
@@ -65,9 +65,9 @@ std::tuple<at::Tensor&, at::Tensor&> median_out_value_nocheck(
   //NCHW -> reflush base format
   at::Tensor index = npu_preparation::ApplyTensorWithFormat(
       {1}, self_name.options().dtype(at::kLong), ACL_FORMAT_NCHW);
-  op_plugin::fill_(index, k - 1);
-  at::Tensor values_index_select = op_plugin::index_select(topk_values, dim, index);
-  at::Tensor indices_index_select = op_plugin::index_select(topkIndices, dim, index);
+  acl_op::fill_(index, k - 1);
+  at::Tensor values_index_select = acl_op::index_select(topk_values, dim, index);
+  at::Tensor indices_index_select = acl_op::index_select(topkIndices, dim, index);
   if (!keepdim) {
     values_index_select.squeeze_(dim);
     indices_index_select.squeeze_(dim);
@@ -156,6 +156,6 @@ std::tuple<at::Tensor, at::Tensor> median(const at::Tensor& self, int64_t dim, b
 }
 
 std::tuple<at::Tensor, at::Tensor> median(const at::Tensor& self, at::Dimname dim, bool keepdim) {
-  return op_plugin::median(self, dimname_to_position(self, dim), keepdim);
+  return acl_op::median(self, dimname_to_position(self, dim), keepdim);
 }
-} // namespace op_plugin
+} // namespace acl_op

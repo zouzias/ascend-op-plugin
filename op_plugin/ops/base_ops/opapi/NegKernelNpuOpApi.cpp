@@ -14,15 +14,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
-#include "op_plugin/ops/op_api/op_api_common.h"
+#include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
 
 at::Tensor& neg_out(const at::Tensor& self, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnNeg, acl_op::neg_out(self, result));
-  OpPreparation::CheckOut({self}, result, ACL_FORMAT_ND, self.scalar_type(), self.sizes());
+  at_npu::native::OpPreparation::check_tensor({self}, result, ACL_FORMAT_ND, self.scalar_type(), self.sizes());
   EXEC_NPU_CMD(aclnnNeg, self, result);
   return result;
 }
@@ -31,7 +31,7 @@ at::Tensor neg(const at::Tensor& self) {
   DO_COMPATIBILITY(aclnnNeg, acl_op::neg(self));
   // construct the output tensor of the NPU
   at::Tensor result =
-      OpPreparation::ApplyTensorWithoutFormat(self.sizes(), self.options());
+      at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(), self.options());
 
   EXEC_NPU_CMD(aclnnNeg, self, result);
   return result;
@@ -41,7 +41,7 @@ at::Tensor& neg_(at::Tensor &self) {
   DO_COMPATIBILITY(aclnnInplaceNeg, acl_op::neg_(self));
   c10::SmallVector<at::Tensor, N> inputs = {self};
   c10::SmallVector<at::Tensor, N> outputs = {self};
-  CalcuOpUtil::CheckMemoryOverLaps(inputs, outputs);
+  at_npu::native::CalcuOpUtil::CheckMemoryOverLaps(inputs, outputs);
 
   EXEC_NPU_CMD(aclnnInplaceNeg, self);
   return self;

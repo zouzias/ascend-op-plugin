@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace {
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> nms_with_mask_npu_nocheck(
@@ -27,7 +26,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> nms_with_mask_npu_nocheck(
     at::Tensor& mask,
     const at::Tensor& input,
     at::Scalar iou_threshold) {
-  float iou_threshold_value = calcu_op_util::GetScalarFloatValue(iou_threshold);
+  float iou_threshold_value = op_plugin::utils::get_scalar_float_value(iou_threshold);
   at_npu::native::OpCommand cmd;
   cmd.Name("NMSWithMask")
       .Input(input)
@@ -51,4 +50,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_nms_with_mask(
   return std::tie(boxes, idx, mask);
 }
 
-} // namespace op_plugin
+} // namespace acl_op

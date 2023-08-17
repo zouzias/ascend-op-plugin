@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 at::Tensor& fill_diagonal_out_npu(
@@ -26,7 +25,7 @@ at::Tensor& fill_diagonal_out_npu(
     const at::Tensor& self,
     const at::Scalar& value,
     bool wrap) {
-  float fill_value = calcu_op_util::GetScalarFloatValue(value);
+  float fill_value = op_plugin::utils::get_scalar_float_value(value);
   at_npu::native::OpCommand cmd;
   cmd.Name("FillDiagonal")
       .Input(self)
@@ -52,4 +51,4 @@ at::Tensor& fill_diagonal_(at::Tensor& self, const at::Scalar& value, bool wrap)
   return self;
 }
 
-} // namespace op_plugin
+} // namespace acl_op

@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -29,7 +28,7 @@ int64_t adaptive_avg_pool3d_backward_safe_size(const at::Tensor& self) {
      return size;
   }
   for (int64_t ndim : dims) {
-    ndim = calcu_op_util::MakeWrapDim(ndim, self.sizes().size());
+    ndim = op_plugin::utils::make_warp_dim(ndim, self.sizes().size());
     size *= self.sizes()[ndim];
   }
   return size;
@@ -42,8 +41,8 @@ at::Tensor& adaptive_avg_pool3d_backward_out_nocheck(
   TORCH_CHECK(grad_output.size(grad_output.dim() - 3) == 1 && grad_output.size(grad_output.dim() - 2) == 1 &&
       grad_output.size(grad_output.dim() - 1) == 1,
       "adaptive_avg_pool3d_backward only support D=1 && H=1 && W=1 current!");
-  op_plugin::fill_(result, 1.0 / adaptive_avg_pool3d_backward_safe_size(self));
-  op_plugin::mul_(result, grad_output);
+  acl_op::fill_(result, 1.0 / adaptive_avg_pool3d_backward_safe_size(self));
+  acl_op::mul_(result, grad_output);
 
   return result;
 }
@@ -72,4 +71,4 @@ at::Tensor _adaptive_avg_pool3d_backward(const at::Tensor& grad_output, const at
   adaptive_avg_pool3d_backward_out_nocheck(result, grad_output, self);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

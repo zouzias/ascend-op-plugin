@@ -14,40 +14,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
-#include "op_plugin/ops/op_api/op_api_common.h"
+#include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
 
 at::Tensor& ne_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnNeTensor, acl_op::ne_out(self, other, result));
-  at::Tensor formatCastOfSelf = OpPreparation::CastBackToOriFormat(self);
-  at::Tensor formatCastOfOther = OpPreparation::CastBackToOriFormat(other);
-  auto outputSize = broadcast_ops_npu_output_size(self, other);
-  OpPreparation::CheckOut({self, other}, result, CalcuOpUtil::GetTensorNpuFormat(formatCastOfSelf),
-                          result.scalar_type(), at::IntArrayRef(outputSize));
+  at::Tensor formatCastOfSelf = at_npu::native::OpPreparation::CastBackToOriFormat(self);
+  at::Tensor formatCastOfOther = at_npu::native::OpPreparation::CastBackToOriFormat(other);
+  auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
+  at_npu::native::OpPreparation::check_tensor({self, other}, result,
+                                 at_npu::native::CalcuOpUtil::GetTensorNpuFormat(formatCastOfSelf),
+                                 result.scalar_type(), at::IntArrayRef(outputSize));
   EXEC_NPU_CMD(aclnnNeTensor, formatCastOfSelf, formatCastOfOther, result);
   return result;
 }
 
 at::Tensor& ne_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnNeScalar, acl_op::ne_out(self, other, result));
-  at::Tensor formatCastOfSelf = OpPreparation::CastBackToOriFormat(self);
-  OpPreparation::CheckOut({self}, result, CalcuOpUtil::GetTensorNpuFormat(formatCastOfSelf), result.scalar_type(),
-                          formatCastOfSelf.sizes());
+  at::Tensor formatCastOfSelf = at_npu::native::OpPreparation::CastBackToOriFormat(self);
+  at_npu::native::OpPreparation::check_tensor({self}, result, 
+                                              at_npu::native::CalcuOpUtil::GetTensorNpuFormat(formatCastOfSelf),
+                                              result.scalar_type(), formatCastOfSelf.sizes());
   EXEC_NPU_CMD(aclnnNeScalar, formatCastOfSelf, other, result);
   return result;
 }
 
 at::Tensor ne(const at::Tensor& self, const at::Tensor& other) {
   DO_COMPATIBILITY(aclnnNeTensor, acl_op::ne(self, other));
-  at::Tensor formatCastOfSelf = OpPreparation::CastBackToOriFormat(self);
-  at::Tensor formatCastOfOther = OpPreparation::CastBackToOriFormat(other);
+  at::Tensor formatCastOfSelf = at_npu::native::OpPreparation::CastBackToOriFormat(self);
+  at::Tensor formatCastOfOther = at_npu::native::OpPreparation::CastBackToOriFormat(other);
 
-  auto outputSize = broadcast_ops_npu_output_size(formatCastOfSelf, formatCastOfOther);
+  auto outputSize = op_infer::broadcast_ops_npu_output_size(formatCastOfSelf, formatCastOfOther);
   at::Tensor result =
-      OpPreparation::ApplyTensorWithoutFormat(outputSize, formatCastOfSelf.options().dtype(at::kBool));
+      at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, formatCastOfSelf.options().dtype(at::kBool));
 
   EXEC_NPU_CMD(aclnnNeTensor, formatCastOfSelf, formatCastOfOther, result);
   return result;
@@ -55,9 +57,10 @@ at::Tensor ne(const at::Tensor& self, const at::Tensor& other) {
 
 at::Tensor ne(const at::Tensor& self, const at::Scalar& other) {
   DO_COMPATIBILITY(aclnnNeScalar, acl_op::ne(self, other));
-  at::Tensor formatCastOfSelf = OpPreparation::CastBackToOriFormat(self);
+  at::Tensor formatCastOfSelf = at_npu::native::OpPreparation::CastBackToOriFormat(self);
 
-  at::Tensor result = OpPreparation::ApplyTensorWithoutFormat(formatCastOfSelf.sizes(), formatCastOfSelf.options().dtype(at::kBool));
+  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(formatCastOfSelf.sizes(),
+                      formatCastOfSelf.options().dtype(at::kBool));
 
   EXEC_NPU_CMD(aclnnNeScalar, formatCastOfSelf, other, result);
   return result;

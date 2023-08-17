@@ -13,13 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace{
@@ -60,9 +59,9 @@ at::Tensor arange(
   c10::TensorOptions option =
       c10::TensorOptions().dtype(dtype_opt).device(device_opt).layout(layout_opt).pinned_memory(pin_memory_opt);
 
-  float start_value = calcu_op_util::GetScalarFloatValue(start);
-  float end_value = calcu_op_util::GetScalarFloatValue(end);
-  float step_value = calcu_op_util::GetScalarFloatValue(step);
+  float start_value = op_plugin::utils::get_scalar_float_value(start);
+  float end_value = op_plugin::utils::get_scalar_float_value(end);
+  float step_value = op_plugin::utils::get_scalar_float_value(step);
 
   TORCH_CHECK(step_value != 0, "step must be nonzero");
   TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),
@@ -85,11 +84,11 @@ at::Tensor arange(
   auto output_size = op_infer::infersize_arange(start, end, step);
   at::Tensor result = npu_preparation::ApplyTensorWithFormat(output_size, option, ACL_FORMAT_ND);
   if(option.dtype() == at::kHalf) {
-    result = op_plugin::npu_dtype_cast(result, at::kFloat);
+    result = acl_op::npu_dtype_cast(result, at::kFloat);
   }
   arange_out_npu_nocheck(result, start, end, step);
   if(option.dtype() == at::kHalf) {
-    result = op_plugin::npu_dtype_cast(result, at::kHalf);
+    result = acl_op::npu_dtype_cast(result, at::kHalf);
   }
   return result;
 }
@@ -102,7 +101,7 @@ at::Tensor arange(
     c10::optional<at::Device> device_opt,
     c10::optional<bool> pin_memory_opt) {
   const at::Scalar step = 1;
-  return op_plugin::arange(start, end, step, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+  return acl_op::arange(start, end, step, dtype_opt, layout_opt, device_opt, pin_memory_opt);
 }
 
 
@@ -113,7 +112,7 @@ at::Tensor arange(
     c10::optional<at::Device> device_opt,
     c10::optional<bool> pin_memory_opt) {
   const at::Scalar start = 0;
-  return op_plugin::arange(start, end, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+  return acl_op::arange(start, end, dtype_opt, layout_opt, device_opt, pin_memory_opt);
 }
 
 at::Tensor& arange_out(
@@ -121,9 +120,9 @@ at::Tensor& arange_out(
     const at::Scalar& end,
     const at::Scalar& step,
     at::Tensor& result) {
-  float start_value = calcu_op_util::GetScalarFloatValue(start);
-  float end_value = calcu_op_util::GetScalarFloatValue(end);
-  float step_value = calcu_op_util::GetScalarFloatValue(step);
+  float start_value = op_plugin::utils::get_scalar_float_value(start);
+  float end_value = op_plugin::utils::get_scalar_float_value(end);
+  float step_value = op_plugin::utils::get_scalar_float_value(step);
   TORCH_CHECK(step_value != 0, "step must be nonzero");
   TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) || ((step_value < 0) && (end_value <= start_value)),
       "upper bound and larger bound inconsistent with step sign");
@@ -143,7 +142,7 @@ at::Tensor& arange_out(
 at::Tensor& arange_out(const at::Scalar& end, at::Tensor& result) {
   const at::Scalar start = 0;
   const at::Scalar step = 1;
-  return op_plugin::arange_out(start, end, step, result);
+  return acl_op::arange_out(start, end, step, result);
 }
 
 at::Tensor _dim_arange(const at::Tensor& self, int64_t dim) {
@@ -152,8 +151,8 @@ at::Tensor _dim_arange(const at::Tensor& self, int64_t dim) {
   c10::optional<at::Device> device_opt(self.options().device());
   c10::optional<bool> pin_memory_opt(self.options().pinned_memory());
 
-  at::Tensor result = op_plugin::arange(
+  at::Tensor result = acl_op::arange(
       self.size(dim), dtype_opt, layout_opt, device_opt, pin_memory_opt);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

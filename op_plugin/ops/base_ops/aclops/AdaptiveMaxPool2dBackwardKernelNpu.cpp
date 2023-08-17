@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -113,4 +112,4 @@ at::Tensor adaptive_max_pool2d_backward(
   adaptive_max_pool2d_backward_out_nocheck(grad_input, grad_output, self, indices);
   return grad_input;
 }
-} // namespace op_plugin
+} // namespace acl_op

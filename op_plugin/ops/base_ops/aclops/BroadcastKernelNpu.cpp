@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -45,13 +44,13 @@ at::Tensor& npu_broadcast_out(
 }
 
 at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size) {
-  at::Tensor self_cp = self.dtype() == at::kBool ? op_plugin::npu_dtype_cast(self, at::kInt) : self;
+  at::Tensor self_cp = self.dtype() == at::kBool ? acl_op::npu_dtype_cast(self, at::kInt) : self;
   at::Tensor result = npu_preparation::ApplyTensor(self_cp, size);
   npu_broadcast_out_nocheck(result, self_cp, size);
 
   if (self.dtype() == at::kBool) {
-    result = op_plugin::npu_dtype_cast(result, at::kBool);
+    result = acl_op::npu_dtype_cast(result, at::kBool);
   }
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

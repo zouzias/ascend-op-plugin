@@ -14,40 +14,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/AclOpsInterface.h"
-#include "op_plugin/ops/OpApiInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
-#include "op_plugin/ops/op_api/op_api_common.h"
+#include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
 
 at::Tensor& logsumexp_out(const at::Tensor& self, at::IntArrayRef dims, bool keepdim, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnLogSumExp, acl_op::logsumexp_out(self, dims, keepdim, result));
-  auto outputSize = reduce_ops_npu_output_size(self, dims, keepdim);
-  OpPreparation::CheckOut({self}, result, result.scalar_type(), outputSize);
+  auto outputSize = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
+  at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), outputSize);
   EXEC_NPU_CMD(aclnnLogSumExp, self, dims, keepdim, result);
   return result;
 }
 
 at::Tensor& logsumexp_out(const at::Tensor& self, at::DimnameList dims, bool keepdim, at::Tensor& result) {
-  return logsumexp_out(self, dimnames_to_positions(self, dims), keepdim, result);
+  return op_api::logsumexp_out(self, dimnames_to_positions(self, dims), keepdim, result);
 }
 
 at::Tensor logsumexp(const at::Tensor& self, at::IntArrayRef dims, bool keepdim) {
   DO_COMPATIBILITY(aclnnLogSumExp, acl_op::logsumexp(self, dims, keepdim));
-  auto outputSize = reduce_ops_npu_output_size(self, dims, keepdim);
+  auto outputSize = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
   at::ScalarType dst_type = self.scalar_type();
   if (isIntegralType(self.scalar_type(), true)) {
     dst_type = at::kFloat;
   }
-  at::Tensor result =  OpPreparation::ApplyTensorWithoutFormat(outputSize, self.options().dtype(dst_type));
+  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(outputSize,
+                       self.options().dtype(dst_type));
   EXEC_NPU_CMD(aclnnLogSumExp, self, dims, keepdim, result);
 
   return result;
 }
 
 at::Tensor logsumexp(const at::Tensor& self, at::DimnameList dims, bool keepdim) {
-  return logsumexp(self, dimnames_to_positions(self, dims), keepdim);
+  return op_api::logsumexp(self, dimnames_to_positions(self, dims), keepdim);
 }
 
 }  // namespace op_api

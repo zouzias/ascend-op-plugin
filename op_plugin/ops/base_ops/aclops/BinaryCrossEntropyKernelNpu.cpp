@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace{
@@ -29,7 +28,7 @@ at::Tensor& binary_cross_entropy_out_nocheck(
     const at::Tensor& weight,
     int64_t reduction) {
   at::Tensor weight_tensor = weight.defined() ? weight : at::ones(self.sizes(), self.options());
-  string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("BinaryCrossEntropy")
@@ -57,8 +56,8 @@ at::Tensor& binary_cross_entropy_out(
     output_size = at::ArrayRef<int64_t>();
   }
   if (self.numel() == 0) {
-    at::Tensor result_cp = op_plugin::npu_dtype_cast(result, at::kFloat);
-    op_plugin::fill_(result_cp, 0);
+    at::Tensor result_cp = acl_op::npu_dtype_cast(result, at::kFloat);
+    acl_op::fill_(result_cp, 0);
     result_cp = result_cp / 0;
     result.copy_(result_cp);
     return result;
@@ -94,8 +93,8 @@ at::Tensor binary_cross_entropy(
 
   at::Tensor result = npu_preparation::ApplyTensor(self, output_size);
   if (self.numel() == 0) {
-    result = op_plugin::npu_dtype_cast(result, at::kFloat);
-    op_plugin::fill_(result, 0);
+    result = acl_op::npu_dtype_cast(result, at::kFloat);
+    acl_op::fill_(result, 0);
     result = result / 0;
     return result;
   }
@@ -103,4 +102,4 @@ at::Tensor binary_cross_entropy(
   binary_cross_entropy_out_nocheck(result, self, target, weight, reduction);
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

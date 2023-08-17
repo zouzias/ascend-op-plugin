@@ -14,16 +14,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
-#include "op_plugin/ops/op_api/op_api_common.h"
+#include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
 
 at::Tensor& le_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnLeTensor, acl_op::le_out(self, other, result));
-  auto outputSize = broadcast_ops_npu_output_size(self, other);
-  OpPreparation::CheckOut({self}, result, at::kBool, outputSize);
+  auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
+  at_npu::native::OpPreparation::check_tensor({self}, result, at::kBool, outputSize);
   EXEC_NPU_CMD(aclnnLeTensor, self, other, result);
   return result;
 }
@@ -31,7 +31,7 @@ at::Tensor& le_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& 
 at::Tensor& le_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnLeScalar, acl_op::le_out(self, other, result));
   auto outputSize = self.sizes();
-  OpPreparation::CheckOut({self}, result, at::kBool, outputSize);
+  at_npu::native::OpPreparation::check_tensor({self}, result, at::kBool, outputSize);
 
   EXEC_NPU_CMD(aclnnLeScalar, self, other, result);
   return result;
@@ -39,16 +39,18 @@ at::Tensor& le_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& 
 
 at::Tensor le(const at::Tensor& self, const at::Tensor& other) {
   DO_COMPATIBILITY(aclnnLeTensor, acl_op::le(self, other));
-  auto outputSize = broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = OpPreparation::ApplyTensorWithoutFormat(outputSize, self.options().dtype(at::kBool));
+  auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
+  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, 
+                                                                                  self.options().dtype(at::kBool));
   EXEC_NPU_CMD(aclnnLeTensor, self, other, result);
   return result;
 }
 
 at::Tensor le(const at::Tensor& self, const at::Scalar& other) {
   DO_COMPATIBILITY(aclnnLeScalar, acl_op::le(self, other));
-  auto outputSize = input_same_output_size(self);
-  at::Tensor result = OpPreparation::ApplyTensorWithoutFormat(outputSize, self.options().dtype(at::kBool));
+  auto outputSize = op_infer::input_same_output_size(self);
+  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(outputSize,
+                                                                                  self.options().dtype(at::kBool));
   EXEC_NPU_CMD(aclnnLeScalar, self, other, result);  
   return result;
 }

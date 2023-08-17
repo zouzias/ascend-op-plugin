@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 namespace{
 bool is_backward(at::IntArrayRef pad) {
@@ -82,7 +81,7 @@ at::Tensor constant_pad_nd(const at::Tensor& self, at::IntArrayRef pad, const at
       }
       begin_list[i] = begin_list[i] + (-pad_vec[max_pad_size - 2 * (i + 1)]);
       end_list[i] = end_list[i] + pad_vec[max_pad_size - 1 - 2 * i];
-      result = op_plugin::npu_indexing(result, begin_list, end_list, strides, 0, 0, 0, 0, 0);
+      result = acl_op::npu_indexing(result, begin_list, end_list, strides, 0, 0, 0, 0, 0);
       begin_list[i] = 0;
       end_list[i] = result.size(i);
     }
@@ -99,9 +98,9 @@ at::Tensor constant_pad_nd(const at::Tensor& self, at::IntArrayRef pad, const at
     vector_int.emplace_back(paddings_vector[i - 1]);
   }
 
-  float val = calcu_op_util::GetScalarFloatValue(value);
+  float val = op_plugin::utils::get_scalar_float_value(value);
   at::Tensor value_tensor = at::empty({1}, self.options());
-  op_plugin::fill_(value_tensor, val);
+  acl_op::fill_(value_tensor, val);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("PadV3")
@@ -115,4 +114,4 @@ at::Tensor constant_pad_nd(const at::Tensor& self, at::IntArrayRef pad, const at
 
   return result;
 }
-} // namespace op_plugin
+} // namespace acl_op

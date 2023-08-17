@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 
 #include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_format_helper = at_npu::native::FormatHelper;
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
@@ -112,9 +112,9 @@ at::Tensor npu_linear(
   static auto mm_bmm_nd = !at_npu::native::env::CheckMmBmmNDDisable();
   static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
   at::Tensor input_cast = (npu_format_helper::IsBaseFormatType(input) && mm_bmm_nd &&
-      ((is_support_nd_out && calcu_op_util::IsNdToNzOnTheFly(input, weight)) ||
+      ((is_support_nd_out && op_plugin::utils::is_nd_to_nz_on_fly(input, weight)) ||
       (!is_support_nd_out && is_aligin()))) ? input :
       at_npu::native::NPUNativeFunctions::npu_format_cast(input, ACL_FORMAT_FRACTAL_NZ);
   return linear_npu_nocheck(input_cast, weight, bias_opt);
 }
-} // namespace op_plugin
+} // namespace acl_op

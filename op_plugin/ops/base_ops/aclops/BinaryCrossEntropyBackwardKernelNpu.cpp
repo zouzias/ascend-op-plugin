@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace{
@@ -30,7 +29,7 @@ at::Tensor& binary_cross_entropy_backward_out_npu_nocheck(
     const at::Tensor& weight,
     int64_t reduction) {
   at::Tensor weight_tensor = weight.defined() ? weight : at::ones(self.sizes(), self.options());
-  std::string reduction_str = calcu_op_util::GetReductionStr(reduction);
+  std::string reduction_str = op_plugin::utils::get_reduction_str(reduction);
   at_npu::native::OpCommand cmd;
   cmd.Name("BinaryCrossEntropyGrad")
       .Input(self)
@@ -77,4 +76,4 @@ at::Tensor binary_cross_entropy_backward(
   binary_cross_entropy_backward_out_npu_nocheck(grad_input, grad_output, self, target, weight, reduction);
   return grad_input;
 }
-} // namespace op_plugin
+} // namespace acl_op

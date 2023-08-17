@@ -14,6 +14,7 @@
 // limitations under the License.
 
 #include "op_plugin/utils/KernelNpuOutputSize.h"
+#include <bitset>
 #include "op_plugin/utils/AdvancedIndex.h"
 
 namespace op_infer {
@@ -37,8 +38,6 @@ int64_t make_wrap_dim(int64_t dim, int64_t dim_post_expr) {
     dim_post_expr = 1;
   }
 
-  int64_t min = -dim_post_expr;
-  int64_t max = dim_post_expr - 1;
   if (dim < 0) {
     dim += dim_post_expr;
   }
@@ -46,8 +45,8 @@ int64_t make_wrap_dim(int64_t dim, int64_t dim_post_expr) {
   return dim;
 }
 
-bitset<64> make_dim_mask(c10::IntArrayRef dims, int64_t ndim) {
-  bitset<64> mask = bitset<64>();
+static std::bitset<64> make_dim_mask(c10::IntArrayRef dims, int64_t ndim) {
+  std::bitset<64> mask = std::bitset<64>();
   if (dims.empty()) {
     mask.flip();
   } else {
@@ -81,7 +80,7 @@ c10::SmallVector<int64_t, SIZE> broadcast_ops_npu_output_size(const at::Tensor &
 c10::SmallVector<int64_t, SIZE> reduce_ops_npu_output_size(const at::Tensor &self, c10::IntArrayRef dim,
                                                            bool keepdim) {
   int64_t ndim = self.dim();
-  bitset<64> mask = make_dim_mask(dim, ndim);
+  std::bitset<64> mask = make_dim_mask(dim, ndim);
   auto shape = array_to_small_vector(self.sizes());
   for (int dim = shape.size() - 1; dim >= 0; dim--) {
     if (mask[dim]) {
@@ -168,12 +167,12 @@ c10::SmallVector<int64_t, SIZE> cdist_npu_output_size(const at::Tensor &x1, cons
   return output_shape;
 }
 
-tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>> conv2d_backward_npu_output_size(
+std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>> conv2d_backward_npu_output_size(
     const at::Tensor &input, const at::Tensor &grad, const at::Tensor &weight, c10::IntArrayRef stride,
     c10::IntArrayRef padding, c10::IntArrayRef dilation, int64_t groups) {
   c10::SmallVector<int64_t, SIZE> gradBiasSize = {grad.size(1)};
-  return tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>(input.sizes(), weight.sizes(),
-                                                                                    gradBiasSize);
+  return std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>(input.sizes(), weight.sizes(),
+                                                                                         gradBiasSize);
 }
 
 c10::SmallVector<int64_t, SIZE> cosine_similarity_npu_output_size(const at::Tensor &x1, int64_t dim, bool keepdim) {
@@ -181,12 +180,14 @@ c10::SmallVector<int64_t, SIZE> cosine_similarity_npu_output_size(const at::Tens
   return reduce_ops_npu_output_size(x1, dims, keepdim);
 }
 
-tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>> conv_transpose2d_backward_npu_output_size(
-    const at::Tensor &input, const at::Tensor &grad_output, const at::Tensor &weight, c10::IntArrayRef padding,
-    c10::IntArrayRef output_padding, c10::IntArrayRef stride, c10::IntArrayRef dilation, int64_t groups) {
+std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>
+conv_transpose2d_backward_npu_output_size(const at::Tensor &input, const at::Tensor &grad_output,
+                                          const at::Tensor &weight, c10::IntArrayRef padding,
+                                          c10::IntArrayRef output_padding, c10::IntArrayRef stride,
+                                          c10::IntArrayRef dilation, int64_t groups) {
   c10::SmallVector<int64_t, SIZE> gradBiasSize = {grad_output.size(1)};
-  return tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>(input.sizes(), weight.sizes(),
-                                                                                    gradBiasSize);
+  return std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>(input.sizes(), weight.sizes(),
+                                                                                         gradBiasSize);
 }
 
 c10::SmallVector<int64_t, SIZE> conv_transpose2d_npu_output_size(const at::Tensor &input, const at::Tensor &weight,
@@ -237,7 +238,7 @@ c10::SmallVector<int64_t, SIZE> det_npu_output_size(const at::Tensor &self) {
   return dimVec;
 }
 
-tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> ctc_loss_npu_output_size(
+std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> ctc_loss_npu_output_size(
     const at::Tensor &log_probs, int64_t max_length) {
   int64_t time_size = log_probs.size(0);
   int64_t batch_size = log_probs.size(1);
@@ -248,8 +249,8 @@ tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> ctc_loss
   int64_t alpha_tail_size_align = (alpha_tail_size + 7) / 8 * 8;
   c10::SmallVector<int64_t, SIZE> log_alpha_size = {batch_size, time_size, alpha_tail_size_align};
 
-  return tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>(neg_log_likelihood_size,
-                                                                                 log_alpha_size);
+  return std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>(neg_log_likelihood_size,
+                                                                                      log_alpha_size);
 }
 
 c10::SmallVector<int64_t, SIZE> dot_npu_output_size(const at::Tensor &self, const at::Tensor &other) {
@@ -270,10 +271,10 @@ c10::SmallVector<int64_t, SIZE> equal_npu_output_size(void) {
   return outputSize;
 }
 
-tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef> layer_norm_backward_npu_output_size(
+std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef> layer_norm_backward_npu_output_size(
     const at::Tensor &dY, const at::Tensor &X, const at::Tensor &mean, const at::Tensor &rstd, const at::Tensor &gamma,
     int64_t M, int64_t N) {
-  return tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef>(X.sizes(), gamma.sizes(), gamma.sizes());
+  return std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef>(X.sizes(), gamma.sizes(), gamma.sizes());
 }
 
 static bool hasContiguousSubspace(at::TensorList tl) {
@@ -441,7 +442,7 @@ c10::SmallVector<int64_t, SIZE> nnpack_spatial_convolution_npu_output_size(const
   return outputSize;
 }
 
-tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>
+std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>
 nms_with_mask_npu_output_size(const at::Tensor &input) {
   c10::SmallVector<int64_t, SIZE> boxesSize = {input.size(0), 5};
   c10::SmallVector<int64_t, SIZE> idxSize = {
@@ -587,7 +588,7 @@ c10::SmallVector<int64_t, SIZE> replication_pad2d_npu_output_size(const at::Tens
   return outputSize;
 }
 
-tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> nms_v4_npu_output_size(
+std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> nms_v4_npu_output_size(
     c10::Scalar max_output_size) {
   c10::SmallVector<int64_t, SIZE> selected_indices = {max_output_size.toInt()};
   c10::SmallVector<int64_t, SIZE> valid_outputs = {};
@@ -634,18 +635,18 @@ c10::SmallVector<int64_t, SIZE> slow_conv_dilated2d_npu_output_size(const at::Te
   return outputSize;
 }
 
-tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef> slow_conv_dilated2d_backward_npu_output_size(
+std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef> slow_conv_dilated2d_backward_npu_output_size(
     const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &weight, c10::IntArrayRef kernel_size,
     c10::IntArrayRef stride, c10::IntArrayRef padding, c10::IntArrayRef dilation) {
-  return tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef>(grad_output.sizes(), self.sizes(),
-                                                                     weight.sizes());
+  return std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef>(grad_output.sizes(), self.sizes(),
+                                                                          weight.sizes());
 }
 
-tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef> slow_conv_transpose2d_backward_npu_output_size(
+std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef> slow_conv_transpose2d_backward_npu_output_size(
     const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &weight, c10::IntArrayRef kernel_size,
     c10::IntArrayRef stride, c10::IntArrayRef padding, c10::IntArrayRef output_padding, c10::IntArrayRef dilation) {
-  return tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef>(self.sizes(), weight.sizes(),
-                                                                     grad_output.sizes());
+  return std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef>(self.sizes(), weight.sizes(),
+                                                                          grad_output.sizes());
 }
 
 c10::IntArrayRef smooth_l1_loss_npu_output_size(const at::Tensor &self, const at::Tensor &target, int64_t reduction) {
@@ -656,12 +657,12 @@ c10::IntArrayRef smooth_l1_loss_npu_output_size(const at::Tensor &self, const at
   return outputSize;
 }
 
-tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>
+std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>
 softmax_cross_entropy_with_logits_impl_npu_output_size(const at::Tensor &self) {
   c10::SmallVector<int64_t, SIZE> resultSize = array_to_small_vector(self.size(0));
   c10::SmallVector<int64_t, SIZE> backpropSize = array_to_small_vector(self.sizes());
 
-  return tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>(resultSize, backpropSize);
+  return std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>(resultSize, backpropSize);
 }
 
 c10::SmallVector<int64_t, SIZE> sum_npu_output_size(const at::Tensor &self, c10::IntArrayRef dim, bool keepdim) {
@@ -691,6 +692,27 @@ c10::SmallVector<int64_t, SIZE> transpose_npu_output_size(const at::Tensor &self
 c10::SmallVector<int64_t, SIZE> trace_npu_output_size(const at::Tensor &self) {
   c10::SmallVector<int64_t, SIZE> shape = {1};
   return shape;
+}
+
+c10::SmallVector<int64_t, 3> upsample_infershape_with_scale(c10::IntArrayRef input_size,
+                                                            c10::optional<c10::IntArrayRef> output_size,
+                                                            c10::optional<c10::ArrayRef<double>> scale_factors) {
+  const auto spatial_dimensions = static_cast<int64_t>(input_size.size()) - 2;
+  if (output_size) {
+    TORCH_CHECK(!scale_factors, "Must specify exactly one of output_size and scale_factors");
+    TORCH_CHECK(static_cast<int64_t>(output_size->size()) == spatial_dimensions);
+    return {output_size->data(), output_size->data() + output_size->size()};
+  }
+  if (scale_factors) {
+    TORCH_CHECK(!output_size, "Must specify exactly one of output_size and scale_factors");
+    TORCH_CHECK(static_cast<int64_t>(scale_factors->size()) == spatial_dimensions);
+    c10::SmallVector<int64_t, 3> ret;
+    for (const auto i : c10::irange(spatial_dimensions)) {
+      ret.push_back(static_cast<double>(input_size[i + 2]) * scale_factors.value()[i]);
+    }
+    return ret;
+  }
+  TORCH_CHECK(false, "Must specify exactly one of output_size and scale_factors");
 }
 
 c10::IntArrayRef upsample_bicubic2d_backward_npu_output_size(c10::IntArrayRef input_size) { return input_size; }
@@ -835,5 +857,87 @@ c10::SmallVector<int64_t, SIZE> infersize_arange(
   int64_t size_value = static_cast<int64_t>(size_arange);
   c10::SmallVector<int64_t, SIZE> output_size = {size_value};
   return output_size;
+}
+
+c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(
+    const at::Tensor& self,
+    at::IntArrayRef ksizes,
+    at::IntArrayRef strides,
+    at::IntArrayRef dilations,
+    at::IntArrayRef pads) {
+
+  if (ksizes.size() == 1) {
+    c10::SmallVector<int64_t, SIZE> kernel_sizes = {ksizes[0], ksizes[0]};
+    ksizes = at::IntArrayRef(kernel_sizes);
+  }
+
+  strides = strides.empty() ? at::IntArrayRef({1}) : strides;
+  if (strides.size() == 1) {
+    c10::SmallVector<int64_t, SIZE> stride_sizes = {strides[0], strides[0]};
+    strides = at::IntArrayRef(stride_sizes);
+  }
+
+  dilations = dilations.empty() ? at::IntArrayRef({1}) : dilations;
+  if (dilations.size() == 1) {
+    c10::SmallVector<int64_t, SIZE> dilation_sizes = {dilations[0], dilations[0]};
+    dilations = at::IntArrayRef(dilation_sizes);
+  }
+
+  pads = pads.empty() ? at::IntArrayRef({0}) : pads;
+  if (pads.size() == 1) {
+    c10::SmallVector<int64_t, SIZE> pad_sizes = {pads[0], pads[0]};
+    pads = at::IntArrayRef(pad_sizes);
+  }
+
+  int64_t out_h = (self.size(2) + 2 * pads[0] - (dilations[0] * (ksizes[0] - 1) + 1)) / strides[0] + 1;
+  int64_t out_w = (self.size(3) + 2 * pads[1] - (dilations[1] * (ksizes[1] - 1) + 1)) / strides[1] + 1;
+  return {self.size(0), self.size(1) * ksizes[0] * ksizes[1], out_h * out_w};
+}
+
+c10::SmallVector<int64_t, SIZE> cat_npu_output_size(c10::SmallVector<at::Tensor, N>& tensors, int64_t dimension) {
+  bool all_skipped = true;
+  int64_t n_dims = 0;
+  at::Tensor* not_skipped_tensor;
+  auto num_inputs = tensors.size();
+  auto should_skip = [](const at::Tensor* t) {
+    return t->nbytes() == 0 && t->dim() == 1;
+  };
+
+  for (int i = 0; i < num_inputs; i++) {
+    if (should_skip((at::Tensor*)&tensors[i])) {
+      continue;
+    }
+    // found a non-empty tensor
+    all_skipped = false;
+    not_skipped_tensor = (at::Tensor*)&tensors[i];
+    n_dims = not_skipped_tensor->dim();
+    break;
+  }
+
+  if (all_skipped) {
+    c10::SmallVector<int64_t, SIZE> size = {0};
+    return size;
+  }
+
+  // Compute size of the result in the cat dimension
+  int64_t cat_dim_size = 0;
+  for (int i = 0; i < num_inputs; i++) {
+    at::Tensor* tensor = (at::Tensor*)&tensors[i];
+    if (should_skip(tensor)) {
+      continue;
+    }
+    cat_dim_size += tensor->size(dimension);
+  }
+
+  c10::SmallVector<int64_t, SIZE> size;
+  size.resize(n_dims);
+  for (int dim = 0; dim < n_dims; dim++) {
+    int64_t result_dim_size = not_skipped_tensor->size(dim);
+    if (dim == dimension) {
+      result_dim_size = cat_dim_size;
+    }
+    size[dim] = result_dim_size;
+  }
+  return size;
 }
 } // namespace op_infer
