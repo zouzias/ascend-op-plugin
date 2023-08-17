@@ -121,6 +121,8 @@ c10::SmallVector<int64_t, SIZE> index_select_npu_output_size(const at::Tensor& s
 
 c10::SmallVector<int64_t, SIZE> iou_npu_output_size(const at::Tensor& bboxes, const at::Tensor& gtboxes);
 
+c10::SmallVector<int64_t, SIZE> kthvalue_npu_output_size(const at::Tensor& self, int64_t dim, bool keepdim);
+
 std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef> layer_norm_backward_npu_output_size(
     const at::Tensor& dY, const at::Tensor& X, const at::Tensor& mean, const at::Tensor& rstd, const at::Tensor& gamma,
     int64_t M, int64_t N);
