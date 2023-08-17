@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
-namespace op_plugin {
+namespace acl_op {
 at::Tensor& var_out(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
@@ -64,7 +64,7 @@ at::Tensor var(
     bool keepdim) {
   bool unbiased = !(correction.has_value() && correction.value().toInt() == 0);
   int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
-  return cal_var(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim); 
+  return cal_var(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim);
 }
 
 at::Tensor var(
@@ -116,4 +116,4 @@ std::tuple<at::Tensor, at::Tensor> var_mean(
     bool keepdim) {
   return at::var_mean(self, at::OptionalIntArrayRef(dim), c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
 }
-} // namespace op_plugin
+} // namespace acl_op

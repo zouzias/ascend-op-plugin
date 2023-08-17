@@ -18,8 +18,9 @@
 #include <ATen/Tensor.h>
 #include <ATen/ATen.h>
 #include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/utils/custom_functions/BackwardManual.h"
 
 namespace ${namespace} {
 ${declarations}
-}  // namespace op_plugin
+}  // namespace acl_op
 #endif

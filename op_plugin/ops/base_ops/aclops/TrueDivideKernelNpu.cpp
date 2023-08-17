@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
@@ -63,36 +63,28 @@ at::Tensor& true_div_out_npu_nocheck(at::Tensor& result, const at::Tensor& self,
 
   return result;
 }
-
-at::ScalarType get_divide_high_type(const at::Tensor& self, const at::Tensor& other) {
-  at::ScalarType high_type = at::native::result_type(self, other);
-  if (isIntegralType(high_type, true)) {
-    high_type = at::kFloat;
-  }
-  return high_type;
-}
 } // namespace
 
 at::Tensor& true_divide_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  auto high_type = get_divide_high_type(self, other);
+  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self) || npu_preparation::IsCPUScalar(self);
+  at::Tensor output_tensor = is_self_wrapped ? other : self;
   auto result_type = result.scalar_type();
+  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+  npu_preparation::CheckOut(
+      {self, other},
+      result,
+      calcu_op_util::GetTensorNpuFormat(output_tensor),
+      result_type,
+      output_size);
+
+  auto high_type = op_plugin::utils::get_divide_high_type(self, other);
   TORCH_CHECK(canCast(high_type, result_type),
       "result type ", high_type, " can't be cast to the desired output type ", result_type);
 
   at::Tensor self_temp = (self.scalar_type() == high_type) ? self : self.to(high_type);
   at::Tensor other_temp = (other.scalar_type() == high_type) ? other : other.to(high_type);
 
-  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self_temp) || npu_preparation::IsCPUScalar(self_temp);
-  at::Tensor output_tensor = is_self_wrapped ? other_temp : self_temp;
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self_temp, other_temp);
-  npu_preparation::CheckOut(
-      {self_temp, other_temp},
-      result,
-      calcu_op_util::GetTensorNpuFormat(output_tensor),
-      result_type,
-      output_size);
-
-  at::Tensor result_cast = result_type == high_type ? result : op_plugin::npu_dtype_cast(result, high_type);
+  at::Tensor result_cast = result_type == high_type ? result : acl_op::npu_dtype_cast(result, high_type);
   if (!npu_utils::check_match(&result_cast)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
     true_div_out_npu_nocheck(contiguous_result, self_temp, other_temp);
@@ -102,14 +94,14 @@ at::Tensor& true_divide_out(const at::Tensor& self, const at::Tensor& other, at:
   }
 
   if (result_type != high_type) {
-    result_cast = op_plugin::npu_dtype_cast(result_cast, result_type);
+    result_cast = acl_op::npu_dtype_cast(result_cast, result_type);
     result.copy_(result_cast);
   }
   return result;
 }
 
 at::Tensor true_divide(const at::Tensor& self, const at::Tensor& other) {
-  auto high_type = get_divide_high_type(self, other);
+  auto high_type = op_plugin::utils::get_divide_high_type(self, other);
   at::Tensor self_temp = (self.scalar_type() == high_type) ? self : self.to(high_type);
   at::Tensor other_temp = (other.scalar_type() == high_type) ? other : other.to(high_type);
 
@@ -130,7 +122,7 @@ at::Tensor true_divide(const at::Tensor& self, const at::Scalar& other) {
 }
 
 at::Tensor& true_divide_(at::Tensor& self, const at::Tensor& other) {
-  return op_plugin::true_divide_out(self, other, self);
+  return acl_op::true_divide_out(self, other, self);
 }
 
 at::Tensor& true_divide_(at::Tensor& self, const at::Scalar& other) {
@@ -143,4 +135,4 @@ at::Tensor& true_divide_(at::Tensor& self, const at::Scalar& other) {
   }
   return self;
 }
-} // namespace op_plugin
+} // namespace acl_op

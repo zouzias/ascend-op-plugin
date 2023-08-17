@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/ops/OpInterface.h"
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace op_plugin {
+namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
@@ -32,7 +32,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> layer_norm_npu_support(
   const at::Tensor& bias_ = c10::value_or_else(bias_ex, [] {return at::Tensor();});
   at::Tensor bias = bias_;
 
-  TORCH_DCHECK_EQ(input.numel(), M * N);
+  TORCH_CHECK(input.numel() == M * N, "The numel of input should be equal to M * N");
   DCHECK(!weight.defined() || weight.numel() == N);
   DCHECK(!bias.defined() || bias.numel() == N);
 
@@ -166,4 +166,4 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(
   const auto& beta = bias.is_contiguous() ? bias : bias.contiguous();
   return layer_norm_npu_support(X, gamma, beta, M, N, eps);
 }
-} // namespace op_plugin
+} // namespace acl_op
