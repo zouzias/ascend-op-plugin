@@ -271,6 +271,11 @@ c10::SmallVector<int64_t, SIZE> equal_npu_output_size(void) {
   return outputSize;
 }
 
+c10::SmallVector<int64_t, SIZE> kthvalue_npu_output_size(const at::Tensor& self, int64_t dim, bool keepdim) {
+  at::IntArrayRef dims(dim);
+  return op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
+}
+
 std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef> layer_norm_backward_npu_output_size(
     const at::Tensor &dY, const at::Tensor &X, const at::Tensor &mean, const at::Tensor &rstd, const at::Tensor &gamma,
     int64_t M, int64_t N) {
@@ -940,4 +945,25 @@ c10::SmallVector<int64_t, SIZE> cat_npu_output_size(c10::SmallVector<at::Tensor,
   }
   return size;
 }
+
+c10::SmallVector<int64_t, SIZE> max_pool2d_out_size(
+    const at::Tensor &self,
+    at::IntArrayRef output_size) {
+  auto shape = array_to_small_vector(self.sizes());
+  if ((self.dim() == 3 || self.dim() == 4) && output_size.size() == 2) {
+    shape[shape.size() - 2] = output_size[0];
+    shape[shape.size() - 1] = output_size[1];
+  }
+  return shape;
+}
+
+c10::SmallVector<int64_t, SIZE> ger_output_size(
+    const at::Tensor& self,
+    const at::Tensor& vec2) {
+  int64_t outputsize_0 = self.size(0);
+  int64_t outputsize_1 = vec2.size(0);
+  c10::SmallVector<int64_t, SIZE> output_size = {outputsize_0, outputsize_1};
+  return output_size;
+}
+
 } // namespace op_infer

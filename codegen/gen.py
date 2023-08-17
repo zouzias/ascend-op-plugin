@@ -1,5 +1,5 @@
 # Copyright (c) 2020 Huawei Technologies Co., Ltd
-# Copyright (c) 2019, Facebook CORPORATION. 
+# Copyright (c) 2019, Facebook CORPORATION.
 # All rights reserved.
 #
 # Licensed under the BSD 3-Clause License  (the "License");
@@ -18,19 +18,19 @@ import os
 import stat
 import functools
 import hashlib
-from typing import (List, Dict, Optional, Set, Callable, Any, 
+from typing import (List, Dict, Optional, Set, Callable, Any,
                     Union, TypeVar, Iterable)
 import yaml
 
 from codegen.code_template import CodeTemplate
-from codegen.model import NativeFunction, assert_never
-from codegen.api.types import kernel_signature
-import codegen.api.cpp as cpp
+from codegen.model import (NativeFunction, SelfArgument,
+                           TensorOptionsArguments,
+                           assert_never)
+from codegen.api.types.signatures import NativeSignature
 from codegen.context import native_function_manager
-from codegen.utils import (
-    concatMap,
-    context,
-)
+from codegen.utils import concatMap, context
+
+
 
 T = TypeVar('T')
 
@@ -213,15 +213,18 @@ def gen_function_declaration(
     f: NativeFunction,
 ) -> List[Optional[str]]:
     with native_function_manager(f):
-        sig = kernel_signature(f)
+        has_symint = False
         op_name = str(f.func.name.name)
         global SYMINT_SET
         if str(f.func.name) in SYMINT_SET:
             op_name += "_symint"
+            has_symint = True
         if f.func.is_out_fn():
             op_name += "_out"
 
+        sig = NativeSignature(f.func, prefix='', symint=has_symint)
         ret = f"{sig.decl(name=op_name)};"
+
     return [ret]
 
 
@@ -229,24 +232,33 @@ def gen_return(
     f: NativeFunction,
 ) -> List[Optional[str]]:
     with native_function_manager(f):
-        sig = kernel_signature(f)
-        args_exprs_str = ', '.join(a.name for a in sig.arguments())
-        # print(f.func.name.name.base)
-        # print(f.func.name, f.func.name.name, f.func.name.name.base)
+        has_symint = False
         op_name = str(f.func.name.name)
         global SYMINT_SET
         if str(f.func.name) in SYMINT_SET:
             op_name += "_symint"
+            has_symint = True
         if f.func.is_out_fn():
             op_name += "_out"
+
+        sig = NativeSignature(f.func, prefix='', symint=has_symint)
+        args_exprs_str = ', '.join(a.name for a in sig.arguments())
 
         impl_name = f.impl_name
         if not f.impl_name:
             impl_name = op_name
 
+        format_check = ""
+        for a in sig.arguments():
+            argument = a.argument
+            if isinstance(a.argument, SelfArgument):
+                argument = a.argument.argument
+            if not isinstance(a.argument, TensorOptionsArguments) and argument.type.is_tensor_like():
+                format_check += f" && at_npu::native::FormatHelper::IsOpInputBaseFormat({a.name})"
+
         if "op_api" in f.impl_ns and "acl_op" in f.impl_ns:
             p = f"""{sig.defn(name=op_name)}{{
-    if (at_npu::native::env::CheckJitDisable() && at_npu::native::FormatHelper::IsOpInputBaseFormat(input)) {{
+    if (at_npu::native::env::CheckJitDisable(){format_check}) {{
         return op_api::{impl_name}({args_exprs_str});
     }} else {{
         return acl_op::{impl_name}({args_exprs_str});
@@ -258,7 +270,7 @@ def gen_return(
             p = f"""{sig.defn(name=op_name)}{{
     return {ns}::{impl_name}({args_exprs_str});
 }}
-"""      
+"""
         else:
             raise AssertionError(f"unknown namespace {f.impl_ns}")
 
@@ -274,6 +286,6 @@ def parse_native_yaml(
 
     res = parse_native_yaml_struct(es)
     backend_declarations = sorted(set(concatMap(lambda f: gen_function_declaration(f), res)))
-    dispatch_registrations_body = sorted(set(concatMap(lambda f: gen_return(f), res))) 
+    dispatch_registrations_body = sorted(set(concatMap(lambda f: gen_return(f), res)))
 
     return backend_declarations, dispatch_registrations_body
