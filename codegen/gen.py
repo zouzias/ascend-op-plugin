@@ -23,14 +23,13 @@ from typing import (List, Dict, Optional, Set, Callable, Any,
 import yaml
 
 from codegen.code_template import CodeTemplate
-from codegen.model import NativeFunction, assert_never
+from codegen.model import (NativeFunction, SelfArgument,
+                           TensorOptionsArguments,
+                           assert_never)
 from codegen.api.types import kernel_signature
 import codegen.api.cpp as cpp
 from codegen.context import native_function_manager
-from codegen.utils import (
-    concatMap,
-    context,
-)
+from codegen.utils import concatMap, context
 
 T = TypeVar('T')
 
@@ -244,9 +243,17 @@ def gen_return(
         if not f.impl_name:
             impl_name = op_name
 
+        format_check = ""
+        for a in sig.arguments():
+            argument = a.argument
+            if isinstance(a.argument, SelfArgument):
+                argument = a.argument.argument
+            if not isinstance(a.argument, TensorOptionsArguments) and argument.type.is_tensor_like():
+                format_check += f" && at_npu::native::FormatHelper::IsOpInputBaseFormat({a.name})"
+
         if "op_api" in f.impl_ns and "acl_op" in f.impl_ns:
             p = f"""{sig.defn(name=op_name)}{{
-    if (at_npu::native::env::CheckJitDisable() && at_npu::native::FormatHelper::IsOpInputBaseFormat(input)) {{
+    if (at_npu::native::env::CheckJitDisable(){format_check}) {{
         return op_api::{impl_name}({args_exprs_str});
     }} else {{
         return acl_op::{impl_name}({args_exprs_str});
