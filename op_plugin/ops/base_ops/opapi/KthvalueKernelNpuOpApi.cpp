@@ -19,6 +19,7 @@
 #include "op_plugin/utils/KernelNpuOutputSize.h"
 
 namespace op_api {
+using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor&, at::Tensor&> kthvalue_out(
     const at::Tensor& self,
@@ -29,8 +30,8 @@ std::tuple<at::Tensor&, at::Tensor&> kthvalue_out(
     at::Tensor& indices) {
   DO_COMPATIBILITY(aclnnKthvalue, acl_op::kthvalue_out(self, k, dim, keepdim, values, indices));
   auto output_size = op_infer::kthvalue_npu_output_size(self, dim, keepdim);
-  at_npu::native::OpPreparation::check_tensor({self}, values, self.scalar_type(), output_size);
-  at_npu::native::OpPreparation::check_tensor({self}, indices, at::ScalarType::Long, output_size);
+  npu_preparation::check_tensor({self}, values, self.scalar_type(), output_size);
+  npu_preparation::check_tensor({self}, indices, at::ScalarType::Long, output_size);
 
   EXEC_NPU_CMD(aclnnKthvalue, self, k, dim, keepdim, values, indices);
   return std::tuple<at::Tensor&, at::Tensor&>(values, indices);
@@ -46,8 +47,8 @@ std::tuple<at::Tensor&, at::Tensor&> kthvalue_out(
   DO_COMPATIBILITY(aclnnKthvalue, acl_op::kthvalue_out(self, k, dim, keepdim, values, indices));
   const int64_t real_dim = dimname_to_position(self, dim);
   auto output_size = op_infer::kthvalue_npu_output_size(self, real_dim, keepdim);
-  at_npu::native::OpPreparation::check_tensor({self}, values, self.scalar_type(), output_size);
-  at_npu::native::OpPreparation::check_tensor({self}, indices, at::ScalarType::Long, output_size);
+  npu_preparation::check_tensor({self}, values, self.scalar_type(), output_size);
+  npu_preparation::check_tensor({self}, indices, at::ScalarType::Long, output_size);
 
   EXEC_NPU_CMD(aclnnKthvalue, self, k, real_dim, keepdim, values, indices);
   return std::tuple<at::Tensor&, at::Tensor&>(values, indices);
@@ -61,8 +62,8 @@ std::tuple<at::Tensor, at::Tensor> kthvalue(
   DO_COMPATIBILITY(aclnnKthvalue, acl_op::kthvalue(self, k, dim, keepdim));
   auto output_size = op_infer::kthvalue_npu_output_size(self, dim, keepdim);
 
-  at::Tensor values = at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options());
-  at::Tensor indices = at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options().dtype(at::kLong));
+  at::Tensor values = npu_preparation::apply_tensor_without_format(output_size, self.options());
+  at::Tensor indices = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kLong));
 
   EXEC_NPU_CMD(aclnnKthvalue, self, k, dim, keepdim, values, indices);
   return std::tuple<at::Tensor, at::Tensor>(values, indices);
@@ -77,8 +78,8 @@ std::tuple<at::Tensor, at::Tensor> kthvalue(
   const int64_t real_dim = dimname_to_position(self, dim);
   auto output_size = op_infer::kthvalue_npu_output_size(self, real_dim, keepdim);
 
-  at::Tensor values = at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options());
-  at::Tensor indices = at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options().dtype(at::kLong));
+  at::Tensor values = npu_preparation::apply_tensor_without_format(output_size, self.options());
+  at::Tensor indices = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kLong));
 
   EXEC_NPU_CMD(aclnnKthvalue, self, k, real_dim, keepdim, values, indices);
   return std::tuple<at::Tensor, at::Tensor>(values, indices);

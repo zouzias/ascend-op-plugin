@@ -19,10 +19,11 @@
 #include "op_plugin/utils/KernelNpuOutputSize.h"
 
 namespace op_api {
+using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& hardsigmoid_out(const at::Tensor& self, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnHardsigmoid, acl_op::hardsigmoid_out(self, result));
-  at_npu::native::OpPreparation::check_tensor(
+  npu_preparation::check_tensor(
       {self},
       result,
       self);
@@ -33,7 +34,7 @@ at::Tensor& hardsigmoid_out(const at::Tensor& self, at::Tensor& result) {
 at::Tensor hardsigmoid(const at::Tensor &self) {
   DO_COMPATIBILITY(aclnnHardsigmoid, acl_op::hardsigmoid(self));
   auto out_size = op_infer::input_same_output_size(self);
-  auto result = at_npu::native::OpPreparation::apply_tensor_without_format(out_size, self.options());
+  auto result = npu_preparation::apply_tensor_without_format(out_size, self.options());
   EXEC_NPU_CMD(aclnnHardsigmoid, self, result);
   return result;
 }
