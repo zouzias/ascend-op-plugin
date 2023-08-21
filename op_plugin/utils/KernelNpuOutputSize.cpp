@@ -271,6 +271,11 @@ c10::SmallVector<int64_t, SIZE> equal_npu_output_size(void) {
   return outputSize;
 }
 
+c10::SmallVector<int64_t, SIZE> kthvalue_npu_output_size(const at::Tensor& self, int64_t dim, bool keepdim) {
+  at::IntArrayRef dims(dim);
+  return op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
+}
+
 std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef> layer_norm_backward_npu_output_size(
     const at::Tensor &dY, const at::Tensor &X, const at::Tensor &mean, const at::Tensor &rstd, const at::Tensor &gamma,
     int64_t M, int64_t N) {
