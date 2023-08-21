@@ -148,5 +148,51 @@ at::ScalarType get_divide_high_type(const at::Tensor& self, const at::Tensor& ot
   }
   return high_type;
 }
+
+c10::Scalar ConvertTensorToScalar(const at::Tensor &tensor) {
+  c10::Scalar expScalar;
+  const at::Tensor *aclInput = &tensor;
+  if (aclInput->scalar_type() == at::ScalarType::Double) {
+    double value = *(double *)aclInput->data_ptr();
+    c10::Scalar scalar(value);
+    expScalar = scalar;
+  } else if (aclInput->scalar_type() == at::ScalarType::Long) {
+    int64_t value = *(int64_t *)aclInput->data_ptr();
+    c10::Scalar scalar(value);
+    expScalar = scalar;
+  } else if (aclInput->scalar_type() == at::ScalarType::Float) {
+    float value = *(float *)aclInput->data_ptr();
+    c10::Scalar scalar(value);
+    expScalar = scalar;
+  } else if (aclInput->scalar_type() == at::ScalarType::Int) {
+    int value = *(int *)aclInput->data_ptr();
+    c10::Scalar scalar(value);
+    expScalar = scalar;
+  } else if (aclInput->scalar_type() == at::ScalarType::Half) {
+    c10::Half value = *(c10::Half *)aclInput->data_ptr();
+    c10::Scalar scalar(value);
+    expScalar = scalar;
+  } else if (aclInput->scalar_type() == at::ScalarType::Bool) {
+    int8_t value = *(int8_t *)aclInput->data_ptr();
+    c10::Scalar scalar(value);
+    expScalar = scalar;
+  } else if (aclInput->scalar_type() == at::ScalarType::ComplexDouble) {
+    c10::complex<double> value = *(c10::complex<double> *)aclInput->data_ptr();
+    c10::Scalar scalar(value);
+    expScalar = scalar;
+  } else if (aclInput->scalar_type() == at::ScalarType::ComplexFloat) {
+    c10::complex<float> value = *(c10::complex<float> *)aclInput->data_ptr();
+    c10::Scalar scalar(value);
+    expScalar = scalar;
+  } else if (aclInput->scalar_type() == at::ScalarType::BFloat16) {
+    c10::BFloat16 value = *(c10::BFloat16 *)aclInput->data_ptr();
+    c10::Scalar scalar(value);
+    expScalar = scalar;
+  } else {
+    TORCH_CHECK(false, "unsupport scalar type! ");
+  }
+
+  return expScalar;
+}
 }  // namespace utils
 }  // namespace op_plugin
