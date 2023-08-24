@@ -16,7 +16,7 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace op_plugin {
-at::Tensor prelu(const at::Tensor& self, const at::Tensor& weight) {
+at::Tensor _prelu_kernel(const at::Tensor& self, const at::Tensor& weight) {
   return prelu_common_nocheck(self, weight);
 }
 } // namespace op_plugin
