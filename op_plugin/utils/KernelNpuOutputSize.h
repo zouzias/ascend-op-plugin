@@ -48,6 +48,9 @@ c10::SmallVector<int64_t, SIZE> broadcast_ops_npu_output_size(const at::Tensor& 
 
 c10::SmallVector<int64_t, SIZE> reduce_ops_npu_output_size(const at::Tensor& self, c10::IntArrayRef dim, bool keepdim);
 
+c10::SmallVector<int64_t, SIZE> mse_loss_npu_output_size(const at::Tensor& self, const at::Tensor& target,
+                                                         int64_t reduction);
+
 c10::SmallVector<int64_t, SIZE> adaptive_avg_pool3d_npu_output_size(const at::Tensor& self,
                                                                     c10::IntArrayRef output_size);
 
@@ -242,9 +245,19 @@ c10::SmallVector<int64_t, SIZE> infersize_arange(const at::Scalar& start,
 
 c10::SmallVector<int64_t, SIZE> cat_npu_output_size(c10::SmallVector<at::Tensor, N>& tensors, int64_t dimension);
 
+c10::SmallVector<int64_t, SIZE> clamp_npu_output_size(const at::Tensor &self,
+                                                      const c10::optional<at::Tensor> &min,
+                                                      const c10::optional<at::Tensor> &max);
+
 c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(const at::Tensor& self, at::IntArrayRef ksizes,
                                                              at::IntArrayRef strides, at::IntArrayRef dilations,
                                                              at::IntArrayRef pads);
+c10::SmallVector<int64_t, SIZE> max_pool2d_out_size(const at::Tensor &self, at::IntArrayRef output_size);
 
+c10::SmallVector<int64_t, SIZE> ger_output_size(const at::Tensor& self, const at::Tensor& vec2);
+
+c10::SmallVector<int64_t, SIZE> im2col_backward_npu_output_size(const at::Tensor& grad_output,
+                                                                const at::IntArrayRef& input_size,
+                                                                const at::IntArrayRef& kernel_size);
 } // namespace op_infer
 #endif // OP_PLUGIN_UTILS_KERNEL_NPU_INFER_SHAPE

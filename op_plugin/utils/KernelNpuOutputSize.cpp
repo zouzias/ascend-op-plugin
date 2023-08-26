@@ -95,6 +95,20 @@ c10::SmallVector<int64_t, SIZE> reduce_ops_npu_output_size(const at::Tensor &sel
   return shape;
 }
 
+c10::SmallVector<int64_t, SIZE> mse_loss_npu_output_size(const at::Tensor& self, const at::Tensor& target,
+                                                         int64_t reduction) {
+  auto shape = broadcast_ops_npu_output_size(self, target);
+  if (reduction == at::Reduction::None) {
+    return shape;
+  } else {
+    c10::SmallVector<int64_t, SIZE> output_size;
+    for (int i = 1; i < shape.size(); i++) {
+      output_size.emplace_back(shape[i]);
+    }
+    return output_size;
+  }
+}
+
 c10::SmallVector<int64_t, SIZE> adaptive_avg_pool3d_npu_output_size(const at::Tensor &self,
                                                                     c10::IntArrayRef output_size) {
   auto shape = array_to_small_vector(self.sizes());
@@ -595,6 +609,24 @@ std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> nms
   return std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>(selected_indices, valid_outputs);
 }
 
+c10::SmallVector<int64_t, SIZE> im2col_backward_npu_output_size(const at::Tensor& grad_output,
+                                                                const at::IntArrayRef& input_size,
+                                                                const at::IntArrayRef& kernel_size)
+{
+  TORCH_CHECK((grad_output.dim() == 2 && grad_output.size(0) != 0 && grad_output.size(1) != 0) ||
+              (grad_output.dim() == 3 && grad_output.size(1) != 0 && grad_output.size(2) != 0),
+                  "Expected 2D or 3D (batch mode) tensor for gradOutput with possibly 0 batch size and non-zero "
+                  "dimensions for gradOutput, but got: ", grad_output.sizes());
+  c10::SmallVector<int64_t, SIZE> outputSize;
+  if (grad_output.dim() == 2) {
+    outputSize = {grad_output.size(0) / (kernel_size[0] * kernel_size[1]), input_size[0], input_size[1]};
+  } else {
+    outputSize = {grad_output.size(0), grad_output.size(1) / (kernel_size[0] * kernel_size[1]),
+                  input_size[0], input_size[1]};
+  }
+  return outputSize;
+}
+
 c10::SmallVector<int64_t, SIZE> repeat_npu_output_size(const at::Tensor &self, c10::IntArrayRef repeats) {
   int64_t num_new_dimensions = repeats.size() - self.dim();
   // Fill num_ new_ Dimensions elements with a value of 1
@@ -894,6 +926,26 @@ c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(
   return {self.size(0), self.size(1) * ksizes[0] * ksizes[1], out_h * out_w};
 }
 
+c10::SmallVector<int64_t, SIZE> clamp_npu_output_size(const at::Tensor& self, const c10::optional<at::Tensor>& min,
+                                                      const c10::optional<at::Tensor>& max) {
+  TORCH_CHECK(min.has_value() || max.has_value(), "torch.clamp: At least one of 'min' or 'max' must not be None");
+  if (self.numel() == 0) {
+    c10::SmallVector<int64_t, SIZE> empty_sizes;
+    for (int64_t i = 0; i < self.dim(); ++i) {
+      empty_sizes.push_back(self.size(i));
+    }
+    return empty_sizes;
+  }
+  if (min.has_value() && max.has_value()) {
+    auto brc_shape_min = broadcast_ops_npu_output_size(self.sizes(), min.value().sizes());
+    return broadcast_ops_npu_output_size(brc_shape_min, max.value().sizes());
+  }
+  if (min.has_value()) {
+    return broadcast_ops_npu_output_size(self.sizes(), min.value().sizes());
+  }
+  return broadcast_ops_npu_output_size(self.sizes(), max.value().sizes());
+}
+
 c10::SmallVector<int64_t, SIZE> cat_npu_output_size(c10::SmallVector<at::Tensor, N>& tensors, int64_t dimension) {
   bool all_skipped = true;
   int64_t n_dims = 0;
@@ -940,4 +992,25 @@ c10::SmallVector<int64_t, SIZE> cat_npu_output_size(c10::SmallVector<at::Tensor,
   }
   return size;
 }
+
+c10::SmallVector<int64_t, SIZE> max_pool2d_out_size(
+    const at::Tensor &self,
+    at::IntArrayRef output_size) {
+  auto shape = array_to_small_vector(self.sizes());
+  if ((self.dim() == 3 || self.dim() == 4) && output_size.size() == 2) {
+    shape[shape.size() - 2] = output_size[0];
+    shape[shape.size() - 1] = output_size[1];
+  }
+  return shape;
+}
+
+c10::SmallVector<int64_t, SIZE> ger_output_size(
+    const at::Tensor& self,
+    const at::Tensor& vec2) {
+  int64_t outputsize_0 = self.size(0);
+  int64_t outputsize_1 = vec2.size(0);
+  c10::SmallVector<int64_t, SIZE> output_size = {outputsize_0, outputsize_1};
+  return output_size;
+}
+
 } // namespace op_infer

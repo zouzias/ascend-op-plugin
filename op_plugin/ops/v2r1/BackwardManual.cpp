@@ -31,32 +31,33 @@ at::Tensor npu_binary_cross_entropy_with_logits_backward(
 
 at::Tensor npu_confusion_transpose_backward(const at::Tensor& grad, at::IntArrayRef perm, c10::SymIntArrayRef shape,
                                             bool transpose_first) {
-  return acl_op::npu_confusion_transpose_backward(grad, perm, shape, transpose_first);
+  return acl_op::npu_confusion_transpose_backward(grad, perm, c10::asIntArrayRefUnchecked(shape), transpose_first);
 }
 
 at::Tensor npu_max_backward(const at::Tensor& grad, int64_t dim, const at::Tensor& indices, c10::SymIntArrayRef sizes,
                             bool keepdim) {
-  return acl_op::npu_max_backward(grad, dim, indices, sizes, keepdim);
+  return acl_op::npu_max_backward(grad, dim, indices, c10::asIntArrayRefUnchecked(sizes), keepdim);
 }
 
 at::Tensor npu_min_backward(const at::Tensor& grad, int64_t dim, const at::Tensor& indices, c10::SymIntArrayRef sizes,
                             bool keepdim) {
-  return acl_op::npu_min_backward(grad, dim, indices, sizes, keepdim);
+  return acl_op::npu_min_backward(grad, dim, indices, c10::asIntArrayRefUnchecked(sizes), keepdim);
 }
 
 at::Tensor npu_ps_roi_pooling_backward(const at::Tensor& output_grad, const at::Tensor& rois, double spatial_scale,
                                        int64_t group_size, int64_t output_dim, c10::SymIntArrayRef input_size) {
-  return acl_op::npu_ps_roi_pooling_backward(output_grad, rois, spatial_scale, group_size, output_dim, input_size);
+  return acl_op::npu_ps_roi_pooling_backward(output_grad, rois, spatial_scale, group_size, output_dim,
+                                             c10::asIntArrayRefUnchecked(input_size));
 }
 
 at::Tensor npu_bmm_v2_mat1_backward(const at::Tensor& grad, const at::Tensor& mat1, const at::Tensor& mat2,
                                     c10::SymIntArrayRef size) {
-  return acl_op::npu_bmm_v2_mat1_backward(grad, mat1, mat2, size);
+  return acl_op::npu_bmm_v2_mat1_backward(grad, mat1, mat2, c10::asIntArrayRefUnchecked(size));
 }
 
 at::Tensor npu_bmm_v2_mat2_backward(const at::Tensor& grad, const at::Tensor& mat1, const at::Tensor& mat2,
                                     c10::SymIntArrayRef size) {
-  return acl_op::npu_bmm_v2_mat2_backward(grad, mat1, mat2, size);
+  return acl_op::npu_bmm_v2_mat2_backward(grad, mat1, mat2, c10::asIntArrayRefUnchecked(size));
 }
 
 at::Tensor celu_backward(const at::Tensor& grad_output, const at::Scalar& alpha, const at::Tensor& output) {
@@ -77,8 +78,18 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_
     const c10::optional<at::Tensor>& gradc_opt, const at::Tensor& input, const at::Tensor& batch_sizes,
     const at::Tensor& weight, const at::Tensor& bias, const at::Tensor& init_h, const at::Tensor& init_c,
     const at::Tensor& y, const at::Tensor& h, const at::Tensor& c, const at::Tensor& i, const at::Tensor& j,
-    const at::Tensor& f, const at::Tensor& o, const at::Tensor& tanhc) {
+    const at::Tensor& f, const at::Tensor& o, const at::Tensor& tanhc, bool flag_direction) {
   return acl_op::npu_lstm_data_backward(grady_opt, gradh_opt, gradc_opt, input, batch_sizes, weight, bias, init_h,
-                                        init_c, y, h, c, i, j, f, o, tanhc);
+                                        init_c, y, h, c, i, j, f, o, tanhc, flag_direction);
+}
+
+at::Tensor l1_loss_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& target,
+                            int64_t reduction) {
+  return acl_op::l1_loss_backward(grad_output, self, target, reduction);
+}
+
+at::Tensor kl_div_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& target,
+                           int64_t reduction, bool log_target) {
+  return acl_op::kl_div_backward(grad_output, self, target, reduction, log_target);
 }
 }  // namespace op_plugin

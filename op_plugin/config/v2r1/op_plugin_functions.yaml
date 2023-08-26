@@ -1258,6 +1258,8 @@ official:
    impl_ns: acl_op
  - func: remainder_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
    impl_ns: acl_op
+ - func: remainder.Scalar_Tensor(Scalar self, Tensor other) -> Tensor
+   impl_ns: acl_op
  - func: renorm(Tensor self, Scalar p, int dim, Scalar maxnorm) -> Tensor
    impl_ns: acl_op
  - func: renorm.out(Tensor self, Scalar p, int dim, Scalar maxnorm, *, Tensor(a!) out) -> Tensor(a!)
@@ -1688,6 +1690,10 @@ official:
    impl_ns: acl_op
  - func: linalg_matrix_norm.str_ord_out(Tensor self, str ord='fro', int[] dim=[-2,-1], bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
+ - func: l1_loss(Tensor self, Tensor target, int reduction=Mean) -> Tensor
+   impl_ns: acl_op
+ - func: kl_div(Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
+   impl_ns: acl_op
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
@@ -1989,3 +1995,4 @@ custom:
     impl_ns: acl_op
   - func: _npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> (Tensor, Tensor)
     impl_ns: acl_op
+  

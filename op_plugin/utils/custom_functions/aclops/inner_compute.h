@@ -19,18 +19,18 @@
 #include <ATen/Tensor.h>
 
 namespace acl_op {
-at::Tensor npu_confusion_transpose_backward(const at::Tensor& grad, at::IntArrayRef perm, c10::SymIntArrayRef shape,
+at::Tensor npu_confusion_transpose_backward(const at::Tensor& grad, at::IntArrayRef perm, at::IntArrayRef shape,
                                             bool transpose_first);
-at::Tensor npu_max_backward(const at::Tensor& grad, int64_t dim, const at::Tensor& indices, c10::SymIntArrayRef sizes,
+at::Tensor npu_max_backward(const at::Tensor& grad, int64_t dim, const at::Tensor& indices, at::IntArrayRef sizes,
                             bool keepdim);
-at::Tensor npu_min_backward(const at::Tensor& grad, int64_t dim, const at::Tensor& indices, c10::SymIntArrayRef sizes,
+at::Tensor npu_min_backward(const at::Tensor& grad, int64_t dim, const at::Tensor& indices, at::IntArrayRef sizes,
                             bool keepdim);
 at::Tensor npu_ps_roi_pooling_backward(const at::Tensor& output_grad, const at::Tensor& rois, double spatial_scale,
-                                       int64_t group_size, int64_t output_dim, c10::SymIntArrayRef input_size);
+                                       int64_t group_size, int64_t output_dim, at::IntArrayRef input_size);
 at::Tensor npu_bmm_v2_mat1_backward(const at::Tensor& grad, const at::Tensor& mat1, const at::Tensor& mat2,
-                                    c10::SymIntArrayRef size);
+                                    at::IntArrayRef size);
 at::Tensor npu_bmm_v2_mat2_backward(const at::Tensor& grad, const at::Tensor& mat1, const at::Tensor& mat2,
-                                    c10::SymIntArrayRef size);
+                                    at::IntArrayRef size);
 at::Tensor celu_backward(const at::Tensor& grad_output, const at::Scalar& alpha, const at::Tensor& output);
 at::Tensor elu_backward(const at::Tensor& grad_output, const at::Scalar& alpha, const at::Scalar& scale,
                         const at::Scalar& input_scale, const at::Tensor& output);
@@ -40,7 +40,11 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_lstm_
     const c10::optional<at::Tensor>& gradc_opt, const at::Tensor& input, const at::Tensor& batch_sizes,
     const at::Tensor& weight, const at::Tensor& bias, const at::Tensor& init_h, const at::Tensor& init_c,
     const at::Tensor& y, const at::Tensor& h, const at::Tensor& c, const at::Tensor& i, const at::Tensor& j,
-    const at::Tensor& f, const at::Tensor& o, const at::Tensor& tanhc);
+    const at::Tensor& f, const at::Tensor& o, const at::Tensor& tanhc, bool flag_direction);
+at::Tensor l1_loss_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& target,
+                            int64_t reduction);
+at::Tensor kl_div_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& target,
+                           int64_t reduction, bool log_target);
 at::Tensor embedding_common_nocheck(const at::Tensor& weight, const at::Tensor& indices);
 at::Tensor gelu_common_nocheck(const at::Tensor& self);
 at::Tensor gelu_backward_common_nocheck(const at::Tensor& grad, const at::Tensor& self);
@@ -66,8 +70,11 @@ at::Tensor mean_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool
                                c10::optional<c10::ScalarType> dtype);
 at::Tensor& scatter_npu_common_nocheck(at::Tensor& self, int64_t dim, const at::Tensor& index, const at::Tensor& src);
 at::Tensor& scatter_npu_src_impl(at::Tensor& self, int64_t dim, const at::Tensor& index_ex, const at::Tensor& src_ex);
-::std::tuple<at::Tensor, at::Tensor> prelu_backward_commom_nocheck(const at::Tensor& grad_output,
-                                                                   const at::Tensor& self, const at::Tensor& weight);
+::std::tuple<at::Tensor, at::Tensor> prelu_backward_commom_nocheck(at::Tensor& grad_input,
+                                                                   at::Tensor& grad_weight,
+                                                                   const at::Tensor& grad_output,
+                                                                   const at::Tensor& self,
+                                                                   const at::Tensor& weight);
 at::Tensor prelu_common_nocheck(const at::Tensor& self, const at::Tensor& weight);
 at::Tensor zeros_common_nocheck(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt,
                                 c10::optional<at::Layout> layout_opt, c10::optional<at::Device> device_opt,
