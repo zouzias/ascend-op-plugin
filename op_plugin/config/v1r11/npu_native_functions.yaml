@@ -1452,13 +1452,16 @@ supported:
    op_api: True
  - func: median.dim
    wrap_impl: median
+   op_api: True
  - func: median.dim_values
    wrap_impl: median
    op_api: True
  - func: median.names_dim
    wrap_impl: median
+   op_api: True
  - func: median.names_dim_values
    wrap_impl: median
+   op_api: True
  - func: min
    wrap_impl: min
    op_api: True
@@ -2123,8 +2126,10 @@ supported:
    op_api: True
  - func: std_mean.correction
    wrap_impl: std_mean
+   op_api: False
  - func: std_mean.correction_names
    wrap_impl: std_mean
+   op_api: False
  - func: sub.Scalar
    wrap_impl: sub
    op_api: True
@@ -2342,16 +2347,22 @@ supported:
    op_api: False
  - func: upsample_nearest3d
    wrap_impl: upsample_nearest3d
+   op_api: False
  - func: upsample_nearest3d.out
    wrap_impl: upsample_nearest3d_out
+   op_api: False
  - func: upsample_nearest3d.vec
    wrap_impl: upsample_nearest3d
+   op_api: False
  - func: upsample_nearest3d_backward
    wrap_impl: upsample_nearest3d_backward
+   op_api: False
  - func: upsample_nearest3d_backward.grad_input
    wrap_impl: upsample_nearest3d_backward_out
+   op_api: False
  - func: upsample_nearest3d_backward.vec
    wrap_impl: upsample_nearest3d_backward
+   op_api: False
  - func: upsample_trilinear3d
    wrap_impl: upsample_trilinear3d
  - func: upsample_trilinear3d.out
