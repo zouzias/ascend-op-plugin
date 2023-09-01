@@ -22,30 +22,6 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::SmallVector<int64_t, SIZE> upsample_nearest3d_infer_size(
-    const at::Tensor& input,
-    at::IntArrayRef output_size,
-    c10::optional<double> scales_d,
-    c10::optional<double> scales_h,
-    c10::optional<double> scales_w) {
-  TORCH_CHECK(
-      output_size.size() == 3,
-      "It is expected output_size equals to 3, but got size ",
-      output_size.size());
-
-  int64_t output_depth = output_size[0];
-  int64_t output_height = output_size[1];
-  int64_t output_width = output_size[2];
-
-  int64_t nbatch = input.size(0);
-  int64_t channels = input.size(1);
-
-  at::SmallVector<int64_t, SIZE> output_sizes =
-      {nbatch, channels, output_depth, output_height, output_width};
-
-  return output_sizes;
-}
-
 at::Tensor& upsample_nearest3d_out_nocheck(
     at::Tensor& result,
     const at::Tensor& input,
@@ -71,7 +47,7 @@ at::Tensor& upsample_nearest3d_out(
     c10::optional<double> scales_h,
     c10::optional<double> scales_w,
     at::Tensor& result) {
-  auto op_infer_output_size = upsample_nearest3d_infer_size(
+  auto op_infer_output_size = op_infer::upsample_nearest3d_npu_output_size(
       input, output_size, scales_d, scales_h, scales_w);
   npu_preparation::CheckOut(
       {input},
@@ -97,7 +73,7 @@ at::Tensor upsample_nearest3d(
     c10::optional<double> scales_d,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w) {
-  auto op_infer_output_size = upsample_nearest3d_infer_size(
+  auto op_infer_output_size = op_infer::upsample_nearest3d_npu_output_size(
       input, output_size, scales_d, scales_h, scales_w);
   at::Tensor result = npu_preparation::apply_tensor(input, op_infer_output_size);
   upsample_nearest3d_out_nocheck(
