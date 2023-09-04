@@ -1,5 +1,4 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -15,26 +14,23 @@
 // limitations under the License.
 
 #include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
-#include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
-namespace acl_op {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> _prelu_kernel_backward(
     const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Tensor& weight) {
-  c10::SmallVector<int64_t, N> weight_shape = op_infer::array_to_small_vector(weight.sizes());
-  at::Tensor reshape_weight = weight.reshape({-1});
+  DO_COMPATIBILITY(aclnnPreluBackward, acl_op::_prelu_kernel_backward(grad_output, self, weight));
+  c10::SmallVector<int64_t, SIZE> output_size = op_infer::prelu_backward_npu_grad_weight_output_size(weight);
 
-  at::Tensor grad_input = npu_preparation::apply_tensor(self);
-  at::Tensor grad_weight = npu_preparation::apply_tensor(reshape_weight);
-
-  prelu_backward_commom_nocheck(grad_input, grad_weight, grad_output, self, reshape_weight);
-  grad_weight = grad_weight.reshape(weight_shape);
+  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output);
+  at::Tensor grad_weight = npu_preparation::apply_tensor_without_format(weight, output_size);
+  EXEC_NPU_CMD(aclnnPreluBackward, grad_output, self, weight, grad_input, grad_weight);
 
   return std::tie<at::Tensor, at::Tensor>(grad_input, grad_weight);
 }
-
-} // namespace acl_op
+} // namespace op_api
