@@ -17,24 +17,23 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor& im2col_backward_out(
-    const at::Tensor& grad_output,
-    at::IntArrayRef input_size,
-    at::IntArrayRef kernel_size,
-    at::IntArrayRef dilation,
-    at::IntArrayRef padding,
-    at::IntArrayRef stride,
-    at::Tensor& grad_input) {
-  return acl_op::col2im_out(grad_output, input_size, kernel_size, dilation, padding, stride, grad_input);
+using npu_preparation = at_npu::native::OpPreparation;
+
+at::Tensor scatter_update(
+    const at::Tensor& data,
+    const at::Tensor& indices,
+    const at::Tensor& updates,
+    int64_t axis) {
+  at::Tensor result = npu_preparation::apply_tensor(data);
+  at_npu::native::OpCommand cmd;
+  cmd.Name("ScatterElements")
+     .Input(data)
+     .Input(indices)
+     .Input(updates)
+     .Output(result)
+     .Attr("axis", axis)
+     .Run();
+  return result;
 }
 
-at::Tensor im2col_backward(
-    const at::Tensor& grad_output,
-    at::IntArrayRef input_size,
-    at::IntArrayRef kernel_size,
-    at::IntArrayRef dilation,
-    at::IntArrayRef padding,
-    at::IntArrayRef stride) {
-  return acl_op::col2im(grad_output, input_size, kernel_size, dilation, padding, stride);
-}
 } // namespace acl_op

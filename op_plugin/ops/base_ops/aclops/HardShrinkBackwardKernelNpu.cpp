@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -18,6 +19,15 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
+
+at::Tensor& hardshrink_backward_out(
+    const at::Tensor& grad_output,
+    const at::Tensor& self,
+    const at::Scalar& lambd,
+    at::Tensor& grad_input) {
+  TORCH_CHECK(false, "hardshrink_backward.grad_input is not supported.");
+  return grad_input;
+}
 
 at::Tensor hardshrink_backward(
     const at::Tensor& grad_output,

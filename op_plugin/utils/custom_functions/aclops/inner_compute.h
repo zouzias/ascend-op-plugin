@@ -1,4 +1,6 @@
-// Copyright (c) 2023, Huawei Technologies.All rights reserved.
+// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
+// All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
 // you may not use this file except in compliance with the License.
@@ -108,5 +110,6 @@ at::Tensor npu_binary_cross_entropy_with_logits_backward(
     const c10::optional<at::Tensor>& weight_opt,
     const c10::optional<at::Tensor>& pos_weight_opt,
     int64_t reduction);
+at::Tensor index_common(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& orig);
 } // namespace acl_op
 #endif

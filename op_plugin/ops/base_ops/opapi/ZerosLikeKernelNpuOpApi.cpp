@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2023, Facebook CORPORATION.
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -25,26 +25,6 @@ at::Tensor& zero_(at::Tensor& self) {
   DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zero_(self));
   EXEC_NPU_CMD(aclnnInplaceZero, self);
   return self;
-}
-
-at::Tensor zeros_like(
-    const at::Tensor &self,
-    c10::optional<c10::ScalarType> dtype_opt,
-    c10::optional<c10::Layout> layout_opt,
-    c10::optional<c10::Device> device_opt,
-    c10::optional<bool> pin_memory_opt,
-    c10::optional<c10::MemoryFormat> optional_memory_format)
-{
-  DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zeros_like(self, dtype_opt, layout_opt,device_opt,
-                                                        pin_memory_opt, optional_memory_format));
-  c10::TensorOptions option = c10::TensorOptions().dtype(dtype_opt)
-                                                  .device(device_opt)
-                                                  .layout(layout_opt)
-                                                  .pinned_memory(pin_memory_opt);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), option);
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnInplaceZero, result);
-  return result;
 }
 
 }  // namespace op_api

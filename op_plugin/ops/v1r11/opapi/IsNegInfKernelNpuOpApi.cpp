@@ -1,4 +1,7 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
+// All rights reserved.
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -14,23 +17,22 @@
 // limitations under the License.
 
 #include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
-namespace acl_op {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor cumsum(
-    const at::Tensor& self,
-    int64_t dim,
-    const c10::optional<at::ScalarType> dtype) {
-  at::Tensor result;
-  if (dtype.has_value()) {
-    result = npu_preparation::apply_tensor(self, self.options().dtype(dtype.value()));
-  } else if (self.scalar_type() == at::ScalarType::Bool) {
-    result = npu_preparation::apply_tensor(self, self.options().dtype(at::kLong));
-  } else {
-    result = npu_preparation::apply_tensor(self);
+at::Tensor& isneginf_out(const at::Tensor& self, at::Tensor& out) {
+  DO_COMPATIBILITY(aclnnIsNegInf, acl_op::isneginf_out(self, out));
+  // resize_ the output size when size of out and self don't match with each other.
+  if (out.sizes() != self.sizes()) {
+    auto output_size = op_infer::input_same_output_size(self);
+    out.resize_(output_size);
   }
-  return acl_op::cumsum_out(self, dim, dtype, result);
+  // dispatch hostAPI
+  EXEC_NPU_CMD(aclnnIsNegInf, self, out);
+  return out;
 }
-} // namespace acl_op
+
+} // namespace op_api

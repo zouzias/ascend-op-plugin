@@ -1,5 +1,7 @@
-// Copyright (c) 2023, Huawei Technologies.All rights reserved.
-// Copyright (c) 2023, Facebook CORPORATION.
+// Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
+// All rights reserved.
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -46,6 +48,13 @@ at::Tensor expm1(const at::Tensor& self) {
   // dispatch hostAPI
   EXEC_NPU_CMD(aclnnExpm1, self, out);
   return out;
+}
+
+at::Tensor& expm1_(at::Tensor& self) {
+  DO_COMPATIBILITY(aclnnInplaceExpm1, acl_op::expm1_(self));
+  // dispatch hostAPI
+  EXEC_NPU_CMD(aclnnInplaceExpm1, self);
+  return self;
 }
 
 } // namespace op_api

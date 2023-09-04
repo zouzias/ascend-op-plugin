@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -17,7 +18,6 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 at::Tensor upsample_bilinear2d(
     const at::Tensor& self_ex,
@@ -25,8 +25,8 @@ at::Tensor upsample_bilinear2d(
     bool align_corners,
     c10::optional<at::ArrayRef<double>> scale_factors) {
   auto osize = op_infer::upsample_infershape_with_scale(self_ex.sizes(), output_size, scale_factors);
-  auto scales_h = calcu_op_util::GetScaleValue(scale_factors, 0);
-  auto scales_w = calcu_op_util::GetScaleValue(scale_factors, 1);
+  auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
+  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
 
   return acl_op::upsample_bilinear2d(self_ex, osize, align_corners, scales_h, scales_w);
 }

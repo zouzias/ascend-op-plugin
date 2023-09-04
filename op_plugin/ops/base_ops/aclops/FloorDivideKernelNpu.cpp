@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -77,18 +78,14 @@ at::ScalarType get_cal_type(const at::ScalarType high_type) {
 } // namespace
 
 at::Tensor& floor_divide_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  bool is_self_wrapped = calcu_op_util::IsScalarWrappedToTensor(self) || npu_preparation::IsCPUScalar(self);
-  at::Tensor output_tensor = is_self_wrapped ? other : self;
-  at::ScalarType result_type = result.scalar_type();
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-
   npu_preparation::CheckOut(
       {self, other},
       result,
-      calcu_op_util::GetTensorNpuFormat(output_tensor),
-      result_type,
+      result,
       output_size);
 
+  at::ScalarType result_type = result.scalar_type();
   at::ScalarType high_type = at::native::result_type(self, other);
   TORCH_CHECK(canCast(high_type, result_type),
       "result type ", high_type, " can't be cast to the desired output type ", result_type);

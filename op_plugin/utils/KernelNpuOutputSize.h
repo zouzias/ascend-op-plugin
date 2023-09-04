@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Huawei Technologies Co., Ltd
+// Copyright (c) 2023 Huawei Technologies Co., Ltd
 // Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
@@ -142,6 +142,8 @@ std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>, c10
 nms_with_mask_npu_output_size(const at::Tensor& self);
 
 c10::SmallVector<int64_t, SIZE> nonzero_npu_max_output_size(const at::Tensor& self);
+
+c10::SmallVector<int64_t, SIZE> prelu_backward_npu_grad_weight_output_size(const at::Tensor& weight);
 
 c10::SmallVector<int64_t, SIZE> pad_npu_output_size(const at::Tensor& input, c10::IntArrayRef paddings);
 

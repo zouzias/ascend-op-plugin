@@ -46,9 +46,9 @@ official:
  - func: _add_relu_.Tensor(Tensor(a!) self, Tensor other, *, Scalar alpha=1) -> Tensor(a!)
    impl_ns: acl_op
  - func: _aminmax(Tensor self) -> (Tensor, Tensor)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: _aminmax.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor, Tensor)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: aminmax.out(Tensor self, *, int? dim=None, bool keepdim=False, Tensor(a!) min, Tensor(b!) max) -> (Tensor(a!) min, Tensor(b!) max)
    impl_ns: acl_op
  - func: _amp_foreach_non_finite_check_and_unscale_(Tensor(a!)[] self, Tensor(b!) found_inf, Tensor inv_scale) -> ()
@@ -81,6 +81,8 @@ official:
  - func: _embedding_bag(Tensor weight, Tensor indices, Tensor offsets, bool scale_grad_by_freq=False, int mode=0, bool sparse=False, Tensor? per_sample_weights=None, bool include_last_offset=False, int padding_idx=-1) -> (Tensor, Tensor, Tensor, Tensor)
    impl_ns: acl_op
  - func: _embedding_bag_backward(Tensor grad, Tensor indices, Tensor offsets, Tensor offset2bag, Tensor bag_size, Tensor maximum_indices, SymInt num_weights, bool scale_grad_by_freq, int mode, bool sparse, Tensor? per_sample_weights, int padding_idx=-1) -> Tensor
+   impl_ns: acl_op
+ - func: _embedding_bag_dense_backward(Tensor grad, Tensor indices, Tensor offset2bag, Tensor bag_size, Tensor maximum_indices, SymInt num_weights, bool scale_grad_by_freq, int mode, Tensor? per_sample_weights, int padding_idx=-1) -> Tensor
    impl_ns: acl_op
  - func: _embedding_bag_forward_only(Tensor weight, Tensor indices, Tensor offsets, bool scale_grad_by_freq=False, int mode=0, bool sparse=False, Tensor? per_sample_weights=None, bool include_last_offset=False, int padding_idx=-1) -> (Tensor, Tensor, Tensor, Tensor)
    impl_ns: acl_op
@@ -216,6 +218,8 @@ official:
    impl_ns: acl_op
  - func: all.out(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
+ - func: all.all_out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
  - func: amax(Tensor self, int[1] dim=[], bool keepdim=False) -> Tensor
    impl_ns: acl_op
  - func: amax.out(Tensor self, int[1] dim=[], bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
@@ -229,6 +233,8 @@ official:
  - func: any.dim(Tensor self, int dim, bool keepdim=False) -> Tensor
    impl_ns: acl_op
  - func: any.out(Tensor self, int dim, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
+ - func: any.all_out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: arange(Scalar end, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op
@@ -435,9 +441,9 @@ official:
  - func: clamp_min_.Tensor(Tensor(a!) self, Tensor min) -> Tensor(a!)
    impl_ns: acl_op
  - func: col2im(Tensor self, SymInt[2] output_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: col2im.out(Tensor self, SymInt[2] output_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: constant_pad_nd(Tensor self, SymInt[] pad, Scalar value=0) -> Tensor
    impl_ns: acl_op
  - func: conv_tbc(Tensor self, Tensor weight, Tensor bias, int pad=0) -> Tensor
@@ -581,7 +587,7 @@ official:
  - func: expm1.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: expm1_(Tensor(a!) self) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: eye(int n, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op
  - func: eye.m(int n, int m, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
@@ -762,6 +768,10 @@ official:
    impl_ns: acl_op
  - func: inverse.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
+ - func: isin.Tensor_Scalar(Tensor element, Scalar test_elements, *, bool assume_unique=False, bool invert=False) -> Tensor
+   impl_ns: acl_op, op_api
+ - func: isin.Tensor_Scalar_out(Tensor element, Scalar test_elements, *, bool assume_unique=False, bool invert=False, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: isclose(Tensor self, Tensor other, float rtol=1e-05, float atol=1e-08, bool equal_nan=False) -> Tensor
    impl_ns: acl_op
  - func: isfinite(Tensor self) -> Tensor
@@ -835,7 +845,7 @@ official:
  - func: log2.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: log2_(Tensor(a!) self) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: log_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op
  - func: log_sigmoid(Tensor self) -> Tensor
@@ -952,9 +962,17 @@ official:
    impl_ns: acl_op
  - func: max_unpool2d.out(Tensor self, Tensor indices, int[2] output_size, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
+ - func: max_unpool2d_backward(Tensor grad_output, Tensor self, Tensor indices, int[2] output_size) -> Tensor
+   impl_ns: acl_op
+ - func: max_unpool2d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, int[2] output_size, *, Tensor(a!) grad_input) -> Tensor(a!)
+   impl_ns: acl_op
  - func: max_unpool3d(Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding) -> Tensor
    impl_ns: acl_op
  - func: max_unpool3d.out(Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
+ - func: max_unpool3d_backward(Tensor grad_output, Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding) -> Tensor
+   impl_ns: acl_op
+ - func: max_unpool3d_backward.grad_input(Tensor grad_output, Tensor self, Tensor indices, int[3] output_size, int[3] stride, int[3] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
    impl_ns: acl_op
  - func: maximum(Tensor self, Tensor other) -> Tensor
    impl_ns: acl_op
@@ -1171,10 +1189,6 @@ official:
  - func: _prelu_kernel_backward(Tensor grad_output, Tensor self, Tensor weight) -> (Tensor, Tensor)
    impl_ns: acl_op
  - func: prod(Tensor self, *, ScalarType? dtype=None) -> Tensor
-   impl_ns: acl_op
- - func: prod.Dimname_out(Tensor self, Dimname dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
- - func: prod.dim_Dimname(Tensor self, Dimname dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
    impl_ns: acl_op
  - func: prod.dim_int(Tensor self, int dim, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
    impl_ns: acl_op
@@ -1668,6 +1682,8 @@ official:
    impl_ns: acl_op
  - func: matmul(Tensor self, Tensor other) -> Tensor
    impl_ns: acl_op
+ - func: matmul_backward(Tensor grad, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)
+   impl_ns: acl_op
  - func: matmul.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: batch_norm(Tensor input, Tensor? weight, Tensor? bias, Tensor? running_mean, Tensor? running_var, bool training, float momentum, float eps, bool cudnn_enabled) -> Tensor
@@ -1675,6 +1691,8 @@ official:
  - func: softmax.Dimname(Tensor self, Dimname dim, *, ScalarType? dtype=None) -> Tensor
    impl_ns: acl_op
  - func: softmax.int(Tensor self, int dim, ScalarType? dtype=None) -> Tensor
+   impl_ns: acl_op
+ - func: _symeig_helper(Tensor self, bool eigenvectors, bool upper) -> (Tensor, Tensor)
    impl_ns: acl_op
 
 symint:
@@ -1909,8 +1927,6 @@ unsupported:
   - frexp.Tensor_out
   - isin.Tensor_Tensor_out
   - isin.Tensor_Tensor
-  - isin.Tensor_Scalar_out
-  - isin.Tensor_Scalar
   - isin.Scalar_Tensor_out
   - isin.Scalar_Tensor
   - cholesky.out
@@ -1974,6 +1990,8 @@ custom:
   - func: fast_gelu(Tensor self) -> Tensor
     impl_ns: acl_op
   - func: npu_fast_gelu_backward(Tensor grad, Tensor self) -> Tensor
+    impl_ns: acl_op
+  - func: _amp_foreach_non_finite_check(Tensor[] scaled_grads) -> bool
     impl_ns: acl_op
   - func: npu_sign_bits_pack(Tensor self, int size) -> Tensor
     impl_ns: acl_op
@@ -2150,8 +2168,6 @@ custom:
   - func: npu_ifmr(Tensor data, Tensor data_min, Tensor data_max, Tensor cumsum, float min_percentile, float max_percentile, float search_start, float search_end, float search_step, bool with_offset) -> (Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_grid_assign_positive(Tensor self, Tensor overlaps, Tensor box_responsible_flags, Tensor max_overlaps, Tensor argmax_overlaps, Tensor gt_max_overlaps, Tensor gt_argmax_overlaps, int num_gts, float pos_iou_thr, float min_pos_iou, bool gt_max_assign_all) -> Tensor
-    impl_ns: acl_op
-  - func: npu_enque_tensor(Tensor[] tensors, str format_string, int capacity=3) -> ()
     impl_ns: acl_op
   - func: npu_rotary_mul(Tensor self, Tensor r1, Tensor r2) -> Tensor
     impl_ns: acl_op

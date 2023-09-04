@@ -48,8 +48,10 @@ supported:
    wrap_impl: _add_relu_
  - func: _aminmax
    wrap_impl: _aminmax
+   op_api: True
  - func: _aminmax.dim
    wrap_impl: _aminmax
+   op_api: True
  - func: aminmax
    wrap_impl: aminmax
    op_api: False
@@ -181,13 +183,13 @@ supported:
    op_api: True
  - func: acosh
    wrap_impl: acosh
-   op_api: False
+   op_api: True
  - func: acosh.out
    wrap_impl: acosh_out
-   op_api: False
+   op_api: True
  - func: acosh_
    wrap_impl: acosh_
-   op_api: False
+   op_api: True
  - func: adaptive_avg_pool1d
    wrap_impl: adaptive_avg_pool1d
  - func: adaptive_avg_pool2d
@@ -836,6 +838,7 @@ supported:
    op_api: False
  - func: expm1_
    wrap_impl: expm1_
+   op_api: True
  - func: eye
    wrap_impl: eye
    op_api: True
@@ -856,7 +859,7 @@ supported:
    op_api: True
  - func: fill_diagonal_
    wrap_impl: fill_diagonal_
-   op_api: False
+   op_api: True
  - func: flip
    wrap_impl: flip
    op_api: True
@@ -926,6 +929,9 @@ supported:
  - func: gather.out
    wrap_impl: gather_out
    op_api: True
+ - func: gcd.out
+   wrap_impl: gcd.out
+   op_api: True
  - func: ge.Scalar
    wrap_impl: ge
    op_api: True
@@ -955,10 +961,10 @@ supported:
    op_api: True
  - func: ger
    wrap_impl: ger
-   op_api: False
+   op_api: True
  - func: ger.out
    wrap_impl: ger_out
-   op_api: False
+   op_api: True
  - func: glu
    wrap_impl: glu
    op_api: False
@@ -1011,6 +1017,8 @@ supported:
    wrap_impl: hardshrink
  - func: hardshrink_backward
    wrap_impl: hardshrink_backward
+ - func: hardshrink_backward.grad_input
+   wrap_impl: hardshrink_backward_out
  - func: hardsigmoid
    wrap_impl: hardsigmoid
    op_api: True
@@ -1022,7 +1030,7 @@ supported:
    op_api: True
  - func: hardsigmoid_backward
    wrap_impl: hardsigmoid_backward
-   op_api: False
+   op_api: True
  - func: hardswish
    wrap_impl: hardswish
    op_api: True
@@ -1116,15 +1124,30 @@ supported:
    op_api: False
  - is_pinned
  - is_set_to
+ - func: isin.Tensor_Scalar_out
+   wrap_impl: isin_out
+   op_api: True
+ - func: isin.Tensor_Scalar
+   wrap_impl: isin
+   op_api: True
+ - func: isin.Scalar_Tensor_out
+   wrap_impl: isin_out
+   op_api: True
  - func: isclose
    wrap_impl: isclose
    op_api: False
  - func: isfinite
    wrap_impl: isfinite
+ - func: isposinf.out
+   wrap_impl: isposinf.out
+   op_api: True
+ - func: isneginf.out
+   wrap_impl: isneginf.out
+   op_api: True
  - isnan
  - func: kl_div
    wrap_impl: kl_div
-   op_api: False
+   op_api: True
  - func: kl_div_backward
    wrap_impl: kl_div_backward
    op_api: True
@@ -1450,13 +1473,16 @@ supported:
    op_api: True
  - func: median.dim
    wrap_impl: median
+   op_api: True
  - func: median.dim_values
    wrap_impl: median
    op_api: True
  - func: median.names_dim
    wrap_impl: median
+   op_api: True
  - func: median.names_dim_values
    wrap_impl: median
+   op_api: True
  - func: min
    wrap_impl: min
    op_api: True
@@ -1487,7 +1513,7 @@ supported:
    wrap_impl: mish_
  - func: mish_backward
    wrap_impl: mish_backward
-   op_api: False
+   op_api: True
  - func: mm
    wrap_impl: mm
    op_api: True
@@ -1560,6 +1586,10 @@ supported:
  - func: native_dropout_backward
    wrap_impl: native_dropout_backward
    op_api: False
+ - func: native_group_norm
+   wrap_impl: native_group_norm
+ - func: native_group_norm_backward
+   wrap_impl: native_group_norm_backward
  - func: native_layer_norm
    wrap_impl: native_layer_norm
    op_api: True
@@ -1709,10 +1739,10 @@ supported:
    op_api: True
  - func: pow_.Scalar
    wrap_impl: pow_
-   op_api: False
+   op_api: True
  - func: pow_.Tensor
    wrap_impl: pow_
-   op_api: False
+   op_api: True
  - func: prelu
    wrap_impl: prelu
    op_api: True
@@ -1721,10 +1751,6 @@ supported:
  - func: prod
    wrap_impl: prod
    op_api: True
- - func: prod.Dimname_out
-   wrap_impl: prod_out
- - func: prod.dim_Dimname
-   wrap_impl: prod
  - func: prod.dim_int
    wrap_impl: prod
    op_api: True
@@ -1985,6 +2011,9 @@ supported:
  - func: sign_
    wrap_impl: sign_
    op_api: True
+ - func: signbit.out
+   wrap_impl: signbit_out
+   op_api: True
  - func: sin
    wrap_impl: sin
    op_api: True
@@ -1994,15 +2023,24 @@ supported:
  - func: sin_
    wrap_impl: sin_
    op_api: True
+ - func: sinc
+   wrap_impl: sinc
+   op_api: True
+ - func: sinc.out
+   wrap_impl: sinc_out
+   op_api: True
+ - func: sinc_
+   wrap_impl: sinc_
+   op_api: True
  - func: sinh
    wrap_impl: sinh
-   op_api: False
+   op_api: True
  - func: sinh.out
    wrap_impl: sinh_out
-   op_api: False
+   op_api: True
  - func: sinh_
    wrap_impl: sinh_
-   op_api: False
+   op_api: True
  - func: linalg_slogdet
    wrap_impl: linalg_slogdet
    op_api: False
@@ -2057,7 +2095,7 @@ supported:
    op_api: True
  - func: softplus_backward.grad_input
    wrap_impl: softplus_backward_out
-   op_api: False
+   op_api: True
  - func: softshrink
    wrap_impl: softshrink
  - func: softshrink.out
@@ -2134,10 +2172,10 @@ supported:
    op_api: True
  - func: sub_.Scalar
    wrap_impl: sub_
-   op_api: False
+   op_api: True
  - func: sub_.Tensor
    wrap_impl: sub_
-   op_api: False
+   op_api: True
  - func: sum
    wrap_impl: sum
    op_api: True
@@ -2260,7 +2298,7 @@ supported:
    op_api: True
  - func: unique_consecutive
    wrap_impl: unique_consecutive
-   op_api: False
+   op_api: True
  - unsqueeze
  - func: upsample_bicubic2d
    wrap_impl: upsample_bicubic2d
@@ -2285,13 +2323,13 @@ supported:
    op_api: True
  - func: upsample_bilinear2d_backward
    wrap_impl: upsample_bilinear2d_backward
-   op_api: False
+   op_api: True
  - func: upsample_bilinear2d_backward.grad_input
    wrap_impl: upsample_bilinear2d_backward_out
-   op_api: False
+   op_api: True
  - func: upsample_bilinear2d_backward.vec
    wrap_impl: upsample_bilinear2d_backward
-   op_api: False
+   op_api: True
  - func: upsample_linear1d
    wrap_impl: upsample_linear1d
  - func: upsample_linear1d.out
@@ -2331,13 +2369,13 @@ supported:
    op_api: True
  - func: upsample_nearest2d_backward
    wrap_impl: upsample_nearest2d_backward
-   op_api: False
+   op_api: True
  - func: upsample_nearest2d_backward.grad_input
    wrap_impl: upsample_nearest2d_backward_out
-   op_api: False
+   op_api: True
  - func: upsample_nearest2d_backward.vec
    wrap_impl: upsample_nearest2d_backward
-   op_api: False
+   op_api: True
  - func: upsample_nearest3d
    wrap_impl: upsample_nearest3d
  - func: upsample_nearest3d.out
@@ -2616,7 +2654,6 @@ tocpu:
   - nansum
   - nansum.dim_IntList
   - nansum.IntList_out
-  - native_group_norm_backward
   - narrow_copy.out
   - poisson
   - polar.out
@@ -2635,11 +2672,7 @@ tocpu:
   - unique_dim
   - unique_dim_consecutive
   - vdot
-  - sinc.out
-  - gcd.out
   - lcm.out
-  - isposinf.out
-  - isneginf.out
   - fmin
   - fmin.out
   - fmax
@@ -2665,7 +2698,6 @@ tocpu:
   - igammac
   - igammac_
   - i0.out
-  - signbit.out
   - hypot.out
   - hypot
   - nextafter.out
@@ -2720,10 +2752,6 @@ unsupported:
   - frexp.Tensor_out
   - isin.Tensor_Tensor_out
   - isin.Tensor_Tensor
-  - isin.Tensor_Scalar_out
-  - isin.Tensor_Scalar
-  - isin.Scalar_Tensor_out
-  - isin.Scalar_Tensor
   - cholesky.out
   - cholesky
   - geqrf.a
@@ -3004,8 +3032,6 @@ custom:
     wrap_impl: npu_hcom_allreduce
   - func: npu_hcom_allreduce.out(Tensor self, str reduction, str group, int fusion, int fusion_id, float alpha, float beta, int? hccl_comm, *, Tensor(a!) out) -> Tensor(a!)
     wrap_impl: npu_hcom_allreduce_out
-  - func: npu_enque_tensor(Tensor[] tensors, str format_string, int capacity=3) -> ()
-    wrap_impl: npu_enque_tensor
   - func: npu_hcom_allgather(Tensor self, int rank_size, str group, float alpha, float beta, int? hccl_comm) -> Tensor
     wrap_impl: npu_hcom_allgather
   - func: npu_hcom_allgather.out(Tensor self, int rank_size, str group, float alpha, float beta, int? hccl_comm, *, Tensor(a!) out) -> Tensor(a!)

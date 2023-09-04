@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -103,9 +104,6 @@ at::Tensor repeat_interleave_common_nocheck(
   }
   if (!dim.has_value()) {
     self_tensor = at::flatten(self_tensor);
-  }
-  if (repeats.dim() == 1 && repeats.size(0) == 1) {
-    return self_tensor;
   }
 
   TORCH_CHECK(
