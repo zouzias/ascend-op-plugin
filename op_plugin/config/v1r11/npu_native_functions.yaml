@@ -3017,6 +3017,12 @@ custom:
     wrap_impl: npu_rotary_mul
   - func: npu_rotary_mul_backward(Tensor grad, Tensor self, Tensor r1, Tensor r2) -> (Tensor, Tensor, Tensor)
     wrap_impl: npu_rotary_mul_backward
+  - func: npu_moe_fast(Tensor self, Tensor indices, Tensor locations, Tensor reshaped, Tensor dispatched, int samples, int hidden, int capacity) -> Tensor
+    wrap_impl: npu_moe_fast
+  - func: npu_moe_fast_data_backward(Tensor grad, Tensor self, Tensor indices, Tensor locations, Tensor reshaped, Tensor dispatched, int samples, int hidden, int capacity) -> Tensor
+    wrap_impl: npu_moe_fast_data_backward
+  - func: npu_moe_fast_gate_backward(Tensor grad, Tensor indices, Tensor locations, Tensor reshaped, Tensor dispatched, int samples, int hidden, int capacity) -> Tensor
+    wrap_impl: npu_moe_fast_gate_backward
   - func: npu_lstm_cell(Tensor input, Tensor w_ih, Tensor w_hh, Tensor h, Tensor c, Tensor? bias=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     wrap_impl: npu_lstm_cell
   - func: npu_multi_head_attention(Tensor query, Tensor key, Tensor value, Tensor query_weight, Tensor key_weight, Tensor value_weight, Tensor attn_mask, Tensor out_proj_weight, Tensor? query_bias, Tensor? key_bias, Tensor? value_bias, Tensor? out_proj_bias, Tensor? dropout_mask, int attn_head_num, int attn_dim_per_head, int src_len, int tgt_len, float dropout_prob, bool softmax_use_float) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
