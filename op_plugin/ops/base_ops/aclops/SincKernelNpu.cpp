@@ -19,15 +19,15 @@
 
 namespace acl_op {
 
-at::Tensor& NPUNativeFunctions::sinc_out(const at::Tensor& self, at::Tensor& result) {
+at::Tensor& sinc_out(const at::Tensor& self, at::Tensor& result) {
   return at::sinc_out(self.to("cpu"), result.to("cpu")).to(self.device());
 }
 
-at::Tensor NPUNativeFunctions::sinc(const at::Tensor& self) {
+at::Tensor sinc(const at::Tensor& self) {
   return at::sinc(self.to("cpu")).to(self.device());
 }
 
-at::Tensor& NPUNativeFunctions::sinc_(at::Tensor& self) {
+at::Tensor& sinc_(at::Tensor& self) {
   return at::sinc_(self.to("cpu")).to(self.device());
 }
 
