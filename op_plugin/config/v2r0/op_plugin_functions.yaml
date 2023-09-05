@@ -506,6 +506,8 @@ official:
    impl_ns: acl_op
  - func: diag.out(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
+ - func: diagflat(Tensor self, int offset=0) -> Tensor
+   impl_ns: acl_op
  - func: div.Scalar(Tensor self, Scalar other) -> Tensor
    impl_ns: acl_op
  - func: div.Scalar_mode(Tensor self, Scalar other, *, str? rounding_mode) -> Tensor

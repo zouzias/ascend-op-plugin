@@ -711,6 +711,9 @@ supported:
    wrap_impl: diag
  - func: diag.out
    wrap_impl: diag_out
+ - func: diagflat
+   wrap_impl: diagflat
+   op_api: False
  - func: div.Scalar
    wrap_impl: div
    op_api: True
