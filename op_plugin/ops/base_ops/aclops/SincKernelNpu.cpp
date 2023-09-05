@@ -19,24 +19,16 @@
 
 namespace acl_op {
 
-at::Tensor& sinc_out(const at::Tensor& self, at::Tensor& result) {
-  at::Tensor self_cpu = self.to("cpu");
-  at::Tensor result_cpu = result.to("cpu");
-  at::Tensor sinc_result = at::sinc_out(self_cpu, result_cpu); 
-  return sinc_result.to(self.device());
+at::Tensor& NPUNativeFunctions::sinc_out(const at::Tensor& self, at::Tensor& result) {
+  return at::sinc_out(self.to("cpu"), result.to("cpu")).to(self.device());
 }
 
-at::Tensor sinc(const at::Tensor& self) {
-  at::Tensor self_cpu = self.to("cpu");
-  at::Tensor sinc_result = at::sinc(self_cpu);
-  at::Tensor result = sinc_result.to(self.device());
-  return result;
+at::Tensor NPUNativeFunctions::sinc(const at::Tensor& self) {
+  return at::sinc(self.to("cpu")).to(self.device());
 }
 
-at::Tensor& sinc_(at::Tensor& self) {
-  at::Tensor self_cpu = self.to("cpu");
-  at::Tensor result = at::sinc_(self_cpu);
-  return result.to(self.device());
+at::Tensor& NPUNativeFunctions::sinc_(at::Tensor& self) {
+  return at::sinc_(self.to("cpu")).to(self.device());
 }
 
 } // namespace acl_op
