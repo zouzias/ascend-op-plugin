@@ -709,10 +709,10 @@ supported:
  - decode_jpeg
  - func: diag
    wrap_impl: diag
-   op_api: False
+   op_api: True
  - func: diag.out
    wrap_impl: diag_out
-   op_api: False
+   op_api: True
  - func: div.Scalar
    wrap_impl: div
    op_api: True
@@ -745,10 +745,10 @@ supported:
    op_api: True
  - func: complex.out
    wrap_impl: complex_out
-   op_api: False
+   op_api: True
  - func: complex
    wrap_impl: complex
-   op_api: False
+   op_api: True
  - func: diagflat
    wrap_impl: diagflat
    op_api: False
