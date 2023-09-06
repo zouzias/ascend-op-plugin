@@ -2023,6 +2023,12 @@ custom:
     impl_ns: acl_op
   - func: npu_rotary_mul(Tensor self, Tensor r1, Tensor r2) -> Tensor
     impl_ns: acl_op
+  - func: npu_moe_fast(Tensor self, Tensor indices, Tensor locations, Tensor reshaped, Tensor dispatched, int samples, int hidden, int capacity) -> Tensor
+    impl_ns: acl_op
+  - func: npu_moe_fast_data_backward(Tensor grad, Tensor self, Tensor indices, Tensor locations, Tensor reshaped, Tensor dispatched, int samples, int hidden, int capacity) -> Tensor
+    impl_ns: acl_op
+  - func: npu_moe_fast_gate_backward(Tensor grad, Tensor indices, Tensor locations, Tensor reshaped, Tensor dispatched, int samples, int hidden, int capacity) -> Tensor
+    impl_ns: acl_op
   - func: _npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> (Tensor, Tensor)
     impl_ns: acl_op
   - func: scatter_update(Tensor data, Tensor indices, Tensor updates, int axis) -> Tensor

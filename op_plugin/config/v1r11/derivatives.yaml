@@ -65,6 +65,10 @@
 - name: npu_rotary_mul(Tensor self, Tensor r1, Tensor r2) -> Tensor
   self, r1, r2: npu_rotary_mul_backward(grad, self, r1, r2)
 
+- name: npu_moe_fast(Tensor self, Tensor indices, Tensor locations, Tensor reshaped, Tensor dispatched, int samples, int hidden, int capacity) -> Tensor
+  reshaped: npu_moe_fast_data_backward(grad, self, indices, locations, dispatched, samples, hidden, capacity)
+  self: npu_moe_fast_gate_backward(grad, indices, locations, reshaped, dispatched, samples, hidden, capacity)
+
 - name: npu_diou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=False, int mode=0) -> Tensor
   self, gtboxes: npu_diou_backward(grad, self, gtboxes, trans, is_cross, mode)
 
