@@ -47,6 +47,9 @@ at::Tensor npu_stride_add(
     const c10::Scalar &offset1,
     const c10::Scalar &offset2,
     const c10::Scalar &c1_len) {
+  TORCH_CHECK(
+      self.sizes() == other.sizes(),
+      "The size of self and the size of other are not equal, please check.");
   auto output_size = op_infer::infersize_stride_add(self.sizes(), other.sizes());
   output_size[1] = c1_len.toInt() * 16;
   at::Tensor result = npu_preparation::apply_tensor(self, output_size);
