@@ -316,6 +316,8 @@ c10::SmallVector<int64_t, SIZE> repeat_interleave_npu_output_size_opapi(const at
                                                                         const at::Tensor &repeats,
                                                                         c10::optional<int64_t> dim);
 
+c10::SmallVector<int64_t, op_infer::SIZE> matmul_output_size(const at::Tensor &tensor1, const at::Tensor &tensor2);
+
 c10::SmallVector<int64_t, SIZE> max_pool3d_output_size(const at::Tensor& self, at::IntArrayRef output_size);
 
 } // namespace op_infer
