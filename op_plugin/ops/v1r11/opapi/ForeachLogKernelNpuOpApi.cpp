@@ -24,7 +24,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 void _foreach_log_(at::TensorList self) {
     at::native::check_foreach_api_restrictions(self);
-    EXEC_NPU_CMD(aclnnForeachLogInPlace, self);
+    EXEC_NPU_CMD(aclnnForeachLogInplace, self);
 }
 
 } // namespace at_npu
