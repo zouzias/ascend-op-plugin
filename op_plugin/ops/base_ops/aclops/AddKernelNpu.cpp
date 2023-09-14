@@ -234,7 +234,7 @@ at::Tensor& add_out(
   npu_preparation::CheckOut(
       {self_cp, other_cp},
       result,
-      calcu_op_util::GetTensorNpuFormat(result),
+      calcu_op_util::GetTensorNpuFormat(output_tensor),
       result_type,
       output_size);
 
