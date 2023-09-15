@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
+// Copyright (c) 2023, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -28,10 +28,11 @@ at::Tensor kl_div(const at::Tensor& self, const at::Tensor& target, int64_t redu
                              ? op_infer::broadcast_ops_npu_output_size(self.sizes(), target.sizes()) 
                              : at::ArrayRef<int64_t>();
   at::ScalarType result_type = at::native::result_type(self, target);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(result_type));
+  at::Tensor result = isIntegralType(result_type, true)
+        ? npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::ScalarType::Float))
+        : npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(result_type));
   EXEC_NPU_CMD(aclnnKlDiv, self, target, reduction, log_target, result);
   return result;
 }
 
 } // namespace op_api
-
