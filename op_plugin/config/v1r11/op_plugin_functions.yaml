@@ -1782,6 +1782,8 @@ official:
    impl_ns: acl_op, op_api
  - func: selu_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: _foreach_add_.List(Tensor(a!)[] self, Tensor[] other, *, Scalar alpha=1) -> ()
+   impl_ns: op_api
 
 symint:
 
@@ -1808,7 +1810,7 @@ tocpu:
   - _foreach_div.Scalar
   - _foreach_div_.Scalar
   - _foreach_add.List
-  - _foreach_add_.List
+  #- _foreach_add_.List
   - _foreach_sub.List
   - _foreach_sub_.List
   - _foreach_mul.List
