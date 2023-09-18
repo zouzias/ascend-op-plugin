@@ -19,21 +19,22 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor scatter_update(
-    const at::Tensor& data,
+at::Tensor& scatter_update(
+    at::Tensor& self,
     const at::Tensor& indices,
     const at::Tensor& updates,
     int64_t axis) {
-  at::Tensor result = npu_preparation::apply_tensor(data);
+  string reduce = "update";
   at_npu::native::OpCommand cmd;
-  cmd.Name("ScatterElements")
-     .Input(data)
+  cmd.Name("Scatter")
+     .Input(self)
      .Input(indices)
      .Input(updates)
-     .Output(result)
+     .Output(self)
+     .Attr("reduce", reduce)
      .Attr("axis", axis)
      .Run();
-  return result;
+  return self;
 }
 
 } // namespace acl_op
