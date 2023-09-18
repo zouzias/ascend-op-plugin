@@ -2047,3 +2047,5 @@ custom:
     impl_ns: acl_op
   - func: scatter_update(Tensor data, Tensor indices, Tensor updates, int axis) -> Tensor
     impl_ns: acl_op
+  - func: npu_incre_flash_attention(Tensor query, Tensor key, Tensor value, int head_num, str input_layout, float scale=1., Tensor? padding_mask=None, Tensor? atten_mask=None, int[]? actual_seq_lengths=None, int kv_head_num=0) -> Tensor
+    impl_ns: op_api
