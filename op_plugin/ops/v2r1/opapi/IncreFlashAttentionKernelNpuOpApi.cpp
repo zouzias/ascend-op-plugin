@@ -24,7 +24,7 @@ at::Tensor npu_incre_flash_attention(
   at::TensorList keyTensors = {key};
   at::TensorList valueTensors = {value};
 
-  auto actSeqLen = (actual_seq_lengths.has_value()) ? actual_seq_lengths.value().vec() : std::vector<at::IntArrayRef::value::type>{};
+  auto actSeqLen = (actual_seq_lengths.has_value()) ? actual_seq_lengths.value().vec() : std::vector<at::IntArrayRef::value_type>{};
 
   // dispatch hostAPI
   EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnIncreFlashAttention, query, key, value, padding_mask, atten_mask, s,
