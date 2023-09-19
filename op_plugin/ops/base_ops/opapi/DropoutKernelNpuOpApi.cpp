@@ -14,22 +14,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/aten/CustomFunctions.h"
-
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-
 at::Tensor dropout(const at::Tensor& self, double p, bool train) {
-  if (p == 0 || !train || self.numel() == 0) {
+  DO_COMPATIBILITY(aclnnDropoutGenMask, acl_op::dropout(self, p, train));
+  DO_COMPATIBILITY(aclnnDropoutDoMask, acl_op::dropout(self, p, train));
+
+  if (!train) {
     return self;
   }
-  if (p == 1) {
-    return self.mul(at::zeros(self.sizes(), self.options()));
-  }
-  auto results = at_npu::native::custom_ops::_npu_dropout(self, p);
-  return std::get<0>(results);
+  at::Tensor result = std::get<0>(at::native_dropout(self, p, train));
+  return result;
 }
+
 }  // namespace op_api
+
