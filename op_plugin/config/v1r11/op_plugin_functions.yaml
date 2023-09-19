@@ -1790,6 +1790,12 @@ official:
    impl_ns: op_api
  - func: _foreach_sub_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
    impl_ns: op_api
+ - func: _foreach_mul.Scalar(Tensor[] tensors, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sigmoid(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sigmoid_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
 
 symint:
 
@@ -1882,8 +1888,6 @@ tocpu:
   - _foreach_frac_
   - _foreach_reciprocal
   - _foreach_reciprocal_
-  - _foreach_sigmoid
-  - _foreach_sigmoid_
   - _foreach_trunc
   - _foreach_trunc_
   - _foreach_addcdiv_.Scalar
