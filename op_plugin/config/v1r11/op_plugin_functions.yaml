@@ -1851,7 +1851,6 @@ tocpu:
   - _foreach_floor
   - _foreach_floor_
   - _foreach_log
-  # - _foreach_log_
   - _foreach_log10
   - _foreach_log10_
   - _foreach_log1p
