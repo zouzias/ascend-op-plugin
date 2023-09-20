@@ -97,7 +97,8 @@ bool mm_check_split_k(const at::Tensor &self, const at::Tensor &mat2, bool &is_s
   }
   // split_k rule, maybe modified afterwards
   const static int64_t kSplitKTimes = 8;
-  return self.size(1) >= kSplitKTimes * std::max(self.size(0), mat2.size(1));
+  bool targe_case_flag = ((self.size(0) == 10) && (mat2.size(1) == 3072) && (self.size(1) == 8192));
+  return (self.size(1) >= kSplitKTimes * std::max(self.size(0), mat2.size(1))) || targe_case_flag;
 }
 
 bool is_mm_transpose(const at::Tensor &tensor) {
