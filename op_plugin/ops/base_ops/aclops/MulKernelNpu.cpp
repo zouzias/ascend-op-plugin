@@ -26,7 +26,7 @@ namespace {
 at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Scalar& other, bool is_mix) {
   at::ScalarType other_dtype = self.scalar_type();
   if (is_mix) {
-    other_dtype = (other_dtype == at::Float) ? at::Half : at::Float;
+    other_dtype = (other_dtype == at::kFloat) ? at::kHalf : at::kFloat;
   }
 
   at_npu::native::OpCommand cmd;
