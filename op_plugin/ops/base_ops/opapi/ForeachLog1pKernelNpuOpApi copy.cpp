@@ -23,7 +23,7 @@ namespace op_api{
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_calcu_util = at_npu::native::CalcuOpUtil;
 
-void _foreach_log_(const at::TensorList self) {
+void _foreach_log1p_(const at::TensorList self) {
     at::native::check_foreach_api_restrictions(self);
     if (self.empty()) {
         return;
@@ -34,11 +34,11 @@ void _foreach_log_(const at::TensorList self) {
         is_support = false;
         TORCH_CHECK(is_support, "input must be half or float");
     }
-    EXEC_NPU_CMD(aclnnForeachLogInplace, self, self);
+    EXEC_NPU_CMD(aclnnForeachLog1pInplace, self, self);
 }
 
 
-std::vector<at::Tensor> _foreach_log(const at::TensorList self) {
+std::vector<at::Tensor> _foreach_log1p(const at::TensorList self) {
     at::native::check_foreach_api_restrictions(self);
 
     auto scalar_type = self[0].scalar_type();
@@ -56,7 +56,7 @@ std::vector<at::Tensor> _foreach_log(const at::TensorList self) {
     }
     at::TensorList result_ = at::TensorList(result);
 
-    EXEC_NPU_CMD(aclnnForeachLogInplace, self, result_);
+    EXEC_NPU_CMD(aclnnForeachLog1pInplace, self, result_);
     return result;
 }
 

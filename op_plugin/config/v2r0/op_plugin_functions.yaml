@@ -1732,6 +1732,28 @@ official:
    impl_ns: op_api
  - func: _foreach_log_(Tensor(a!)[] self) -> ()
     impl_ns: op_api
+ - func: _foreach_log(Tensor[] tensors) -> Tensor[]
+    impl_ns: op_api
+ - func: _foreach_log10_(Tensor(a!)[] self) -> ()
+    impl_ns: op_api
+ - func: _foreach_log10(Tensor[] tensors) -> Tensor[]
+    impl_ns: op_api
+ - func: _foreach_log2_(Tensor(a!)[] self) -> ()
+    impl_ns: op_api
+ - func: _foreach_log2(Tensor[] tensors) -> Tensor[]
+    impl_ns: op_api
+ - func: _foreach_log1p_(Tensor(a!)[] self) -> ()
+    impl_ns: op_api
+ - func: _foreach_log1p(Tensor[] tensors) -> Tensor[]
+    impl_ns: op_api
+ - func: _foreach_exp_(Tensor(a!)[] self) -> ()
+    impl_ns: op_api
+ - func: _foreach_exp(Tensor[] tensors) -> Tensor[]
+    impl_ns: op_api
+ - func: _foreach_expm1_(Tensor(a!)[] self) -> ()
+    impl_ns: op_api
+ - func: _foreach_expm1(Tensor[] tensors) -> Tensor[]
+    impl_ns: op_api
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
@@ -1760,9 +1782,7 @@ tocpu:
   - _foreach_sub_.List
   - _foreach_sub.ScalarList
   - _foreach_sub_.ScalarList
-  - _foreach_exp
   - _foreach_zero_
-  - _foreach_exp_
   - _foreach_abs
   - _foreach_abs_
   - _foreach_acos
@@ -1781,17 +1801,8 @@ tocpu:
   - _foreach_erf_
   - _foreach_erfc
   - _foreach_erfc_
-  - _foreach_expm1
-  - _foreach_expm1_
   - _foreach_floor
   - _foreach_floor_
-  - _foreach_log
-  - _foreach_log10
-  - _foreach_log10_
-  - _foreach_log1p
-  - _foreach_log1p_
-  - _foreach_log2
-  - _foreach_log2_
   - _foreach_neg
   - _foreach_neg_
   - _foreach_tan
