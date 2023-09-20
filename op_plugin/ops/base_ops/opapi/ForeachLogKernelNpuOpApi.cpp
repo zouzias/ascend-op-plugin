@@ -37,6 +37,7 @@ void _foreach_log_(const at::TensorList self) {
     EXEC_NPU_CMD(aclnnForeachLogInplace, self, self);
 }
 
+
 std::vector<at::Tensor> _foreach_log(const at::TensorList self) {
     at::native::check_foreach_api_restrictions(self);
 
