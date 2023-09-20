@@ -1,5 +1,4 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -14,22 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/aten/CustomFunctions.h"
-
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-
-at::Tensor dropout(const at::Tensor& self, double p, bool train) {
-  if (p == 0 || !train || self.numel() == 0) {
-    return self;
-  }
-  if (p == 1) {
-    return self.mul(at::zeros(self.sizes(), self.options()));
-  }
-  auto results = at_npu::native::custom_ops::_npu_dropout(self, p);
-  return std::get<0>(results);
+at::Tensor& isin_out(const at::Scalar& element, const at::Tensor &test_element,
+                     bool assume_unique, bool invert, at::Tensor& result) {
+  DO_COMPATIBILITY(aclnnIsInScalarTensor, acl_op::isin_out(element, test_element, assume_unique, invert, result));
+  c10::SmallVector<int64_t, SIZE> shape_small_vec;
+  at_npu::native::OpPreparation::check_tensor({test_element}, result, at::ScalarType::Bool, shape_small_vec);
+  EXEC_NPU_CMD(aclnnIsInScalarTensor, element, test_element, assume_unique, invert, result);
+  return result;
 }
-}  // namespace op_api
+} // namespace op_api

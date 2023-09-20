@@ -21,27 +21,26 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor _pdist_forward(const at::Tensor& self, double p) {
-  DO_COMPATIBILITY(aclnnPdist, acl_op::_pdist_forward(self, p));
-  TORCH_CHECK(p >= 0, "pdist only supports non-negative p values");
-  // double is not supported in NPU,  type of P needs to be converted from double to float.
-  float p_float;
-  if (std::isinf(p)) {
-    p_float = std::numeric_limits<float>::infinity();
-  } else {
-    TORCH_CHECK(p <= std::numeric_limits<float>::max(), "p dose not support float64 currently." );
-    p_float = static_cast<float>(p);
-  }
-  auto output_size = op_infer::pdist_npu_output_size(self, p_float);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
-  EXEC_NPU_CMD(aclnnPdist, self, p_float, result);
+at::Tensor mm(const at::Tensor &self,
+              const at::Tensor &mat2) {
+  DO_COMPATIBILITY(aclnnMm, acl_op::mm(self, mat2));
+  auto output_size = {self.size(0), mat2.size(1)};
+  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
+  int8_t cube_math_type = 1;
+  EXEC_NPU_CMD(aclnnMm, self, mat2, result, cube_math_type);
   return result;
 }
 
-at::Tensor pdist(
-    const at::Tensor& self,
-    double p) {
-  return op_api::_pdist_forward(self, p);
+at::Tensor& mm_out(const at::Tensor &self,
+                   const at::Tensor &mat2,
+                   at::Tensor &result) {
+  DO_COMPATIBILITY(aclnnMm, acl_op::mm_out(self, mat2, result));
+  auto output_size = {self.size(0), mat2.size(1)};
+  npu_preparation::check_tensor({self, mat2}, result, self.scalar_type(), output_size);
+  int8_t cube_math_type = 1;
+  EXEC_NPU_CMD(aclnnMm, self, mat2, result, cube_math_type);
+  return result;
 }
 
-} // namespace op_api
+}  // namespace op_api
+

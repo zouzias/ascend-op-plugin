@@ -14,22 +14,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "torch_npu/csrc/aten/CustomFunctions.h"
-
 #include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/OpApiInterface.h"
-#include "op_plugin/utils/op_api_common.h"
 
-namespace op_api {
-
-at::Tensor dropout(const at::Tensor& self, double p, bool train) {
-  if (p == 0 || !train || self.numel() == 0) {
-    return self;
-  }
-  if (p == 1) {
-    return self.mul(at::zeros(self.sizes(), self.options()));
-  }
-  auto results = at_npu::native::custom_ops::_npu_dropout(self, p);
-  return std::get<0>(results);
+namespace acl_op {
+std::tuple<at::Tensor, at::Tensor, at::Tensor> _native_batch_norm_legit(
+    const at::Tensor& self,
+    const c10::optional<at::Tensor>& weight_opt,
+    const c10::optional<at::Tensor>& bias_opt,
+    at::Tensor& running_mean_opt,
+    at::Tensor& running_var_opt,
+    bool train,
+    double momentum,
+    double eps) {
+  return acl_op::native_batch_norm(
+      self, weight_opt, bias_opt, running_mean_opt, running_var_opt, train, momentum, eps);
 }
-}  // namespace op_api
+} // namespace acl_op
