@@ -53,7 +53,6 @@ static at::Tensor _calc_convolution(const at::Tensor &input, const at::Tensor &w
                              const c10::optional<at::Tensor> &bias, at::IntArrayRef stride,
                              at::IntArrayRef padding, at::IntArrayRef dilation, bool transposed,
                              at::IntArrayRef output_padding, int64_t groups) {
-
   int64_t k = weight.ndimension();
   int64_t inputK = input.ndimension();
   int64_t dim = k - 2; // Subtract nonspatial dimensions: 2
