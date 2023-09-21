@@ -1787,7 +1787,9 @@ official:
  - func: selu_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: _foreach_mul_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
-   impl_ns: op_api
+    impl_ns: op_api
+ - func: _foreach_log_(Tensor(a!)[] self) -> ()
+    impl_ns: op_api
 
 symint:
 
@@ -1856,7 +1858,6 @@ tocpu:
   - _foreach_floor
   - _foreach_floor_
   - _foreach_log
-  - _foreach_log_
   - _foreach_log10
   - _foreach_log10_
   - _foreach_log1p
