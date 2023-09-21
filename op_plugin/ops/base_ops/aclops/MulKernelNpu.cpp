@@ -23,7 +23,9 @@ using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Scalar& other, bool is_mix) {
+at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Scalar& other,
+    c10::optional<bool> is_mix_op) {
+  bool is_mix = is_mix_op.has_value() ? is_mix_op.value() : false;
   at::ScalarType other_dtype = self.scalar_type();
   if (is_mix) {
     other_dtype = (other_dtype == at::kFloat) ? at::kHalf : at::kFloat;
@@ -139,7 +141,7 @@ at::Tensor mul(const at::Tensor& self, const at::Tensor& other) {
 
 at::Tensor mul(const at::Tensor& self, const at::Scalar& other) {
   at::Tensor result = npu_preparation::apply_tensor(self);
-  mul_out_npu_nocheck(result, self, other, false);
+  mul_out_npu_nocheck(result, self, other);
   return result;
 }
 
@@ -150,10 +152,10 @@ at::Tensor& mul_(at::Tensor& self, const at::Tensor& other) {
 at::Tensor& mul_(at::Tensor& self, const at::Scalar& other) {
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    mul_out_npu_nocheck(contiguous_self, contiguous_self, other, false);
+    mul_out_npu_nocheck(contiguous_self, contiguous_self, other);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
-    mul_out_npu_nocheck(self, self, other, false);
+    mul_out_npu_nocheck(self, self, other);
   }
   return self;
 }
