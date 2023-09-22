@@ -19,6 +19,7 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
+using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 at::Tensor& addmm_out(
@@ -43,11 +44,13 @@ at::Tensor addmm(
     const at::Scalar& beta,
     const at::Scalar& alpha) {
   auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
+  auto self_format = calcu_op_util::GetTensorNpuFormat(self);
 
   // add supports NZ with 1 dimension, and this axis can be added by ND divisible by 16,
   // then directly get NZ result
-  int64_t res_format = (self.dim() == 1 && self.size(0) % 16 == 0 && self.scalar_type() == at::kHalf) ?
-     ACL_FORMAT_FRACTAL_NZ : ACL_FORMAT_ND;
+  int64_t res_format = (self_format == ACL_FORMAT_FRACTAL_NZ && self.dim() == 1 && self.size(0) % 16 == 0 &&
+      self.scalar_type() == at::kHalf) ?
+      ACL_FORMAT_FRACTAL_NZ : ACL_FORMAT_ND;
   at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), res_format);
 
   acl_op::addmm_out(self, mat1, mat2, beta, alpha, result);
