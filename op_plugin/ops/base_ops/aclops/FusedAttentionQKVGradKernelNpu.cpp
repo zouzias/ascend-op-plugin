@@ -33,9 +33,11 @@ std::vector<at::Tensor> npu_fused_attention_qkv_grad(
   at::Tensor grad_w_query = npu_preparation::apply_tensor(query_kernel);
   at::Tensor grad_w_key = npu_preparation::apply_tensor(key_kernel);
   at::Tensor grad_w_value = npu_preparation::apply_tensor(value_kernel);
-  at::Tensor grad_b_query = npu_preparation::apply_tensor_with_format(query_kernel, query_kernel.size(0), ACL_FORMAT_ND);
+  at::Tensor grad_b_query = npu_preparation::apply_tensor_with_format(query_kernel, query_kernel.size(0),
+      ACL_FORMAT_ND);
   at::Tensor grad_b_key = npu_preparation::apply_tensor_with_format(key_kernel, key_kernel.size(0), ACL_FORMAT_ND);
-  at::Tensor grad_b_value = npu_preparation::apply_tensor_with_format(value_kernel, value_kernel.size(0), ACL_FORMAT_ND);
+  at::Tensor grad_b_value = npu_preparation::apply_tensor_with_format(value_kernel, value_kernel.size(0),
+      ACL_FORMAT_ND);
 
   at_npu::native::OpCommand cmd;
   cmd.Name("AttentionQKVGradX")
