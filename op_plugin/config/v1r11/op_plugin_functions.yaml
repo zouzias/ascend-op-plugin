@@ -1087,9 +1087,9 @@ official:
  - func: mish_backward(Tensor grad_output, Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: mm(Tensor self, Tensor mat2) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: mm.out(Tensor self, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: mse_loss(Tensor self, Tensor target, int reduction=Mean) -> Tensor
    impl_ns: acl_op, op_api
  - func: mse_loss.out(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)
@@ -1483,9 +1483,9 @@ official:
  - func: soft_margin_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: softmax.Dimname(Tensor self, Dimname dim, *, ScalarType? dtype=None) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: softmax.int(Tensor self, int dim, ScalarType? dtype=None) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: softplus(Tensor self, Scalar beta=1, Scalar threshold=20) -> Tensor
    impl_ns: acl_op, op_api
  - func: softplus.out(Tensor self, Scalar beta=1, Scalar threshold=20, *, Tensor(a!) out) -> Tensor(a!)
@@ -1788,9 +1788,55 @@ official:
    impl_ns: acl_op, op_api
  - func: selu_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: _foreach_ceil_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_floor_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_trunc_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_round_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
  - func: _foreach_mul_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
    impl_ns: op_api
  - func: _foreach_sub_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
+   impl_ns: op_api
+ - func: _foreach_add.List(Tensor[] tensors1, Tensor[] tensors2, *, Scalar alpha=1) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_add_.List(Tensor(a!)[] self, Tensor[] other, *, Scalar alpha=1) -> ()
+   impl_ns: op_api
+ - func: _foreach_sub.List(Tensor[] tensors1, Tensor[] tensors2, *, Scalar alpha=1) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sub_.List(Tensor(a!)[] self, Tensor[] other, *, Scalar alpha=1) -> ()
+   impl_ns: op_api
+ - func: _foreach_mul.List(Tensor[] tensors1, Tensor[] tensors2) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_mul_.List(Tensor(a!)[] self, Tensor[] other) -> ()
+   impl_ns: op_api
+ - func: _foreach_div.List(Tensor[] tensors1, Tensor[] tensors2) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_div_.List(Tensor(a!)[] self, Tensor[] other) -> ()
+   impl_ns: op_api
+ - func: _foreach_add.ScalarList(Tensor[] tensors, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_add_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_sub.ScalarList(Tensor[] tensors, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sub_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_div.ScalarList(Tensor[] tensors, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_div_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_mul.ScalarList(Tensor[] tensors, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_mul_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_mul.Scalar(Tensor[] tensors, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sigmoid(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sigmoid_(Tensor(a!)[] self) -> ()
    impl_ns: op_api
 
 symint:
@@ -1812,25 +1858,8 @@ tocpu:
   - _foreach_add.Scalar
   - _foreach_add_.Scalar
   - _foreach_sub.Scalar
-  - _foreach_mul.Scalar
   - _foreach_div.Scalar
   - _foreach_div_.Scalar
-  - _foreach_add.List
-  - _foreach_add_.List
-  - _foreach_sub.List
-  - _foreach_sub_.List
-  - _foreach_mul.List
-  - _foreach_mul_.List
-  - _foreach_div.List
-  - _foreach_div_.List
-  - _foreach_add.ScalarList
-  - _foreach_add_.ScalarList
-  - _foreach_sub.ScalarList
-  - _foreach_sub_.ScalarList
-  - _foreach_div.ScalarList
-  - _foreach_div_.ScalarList
-  - _foreach_mul.ScalarList
-  - _foreach_mul_.ScalarList
   - _foreach_exp
   - _foreach_zero_
   - _foreach_exp_
@@ -1845,7 +1874,6 @@ tocpu:
   - _foreach_atan
   - _foreach_atan_
   - _foreach_ceil
-  - _foreach_ceil_
   - _foreach_cos
   - _foreach_cos_
   - _foreach_cosh
@@ -1857,7 +1885,6 @@ tocpu:
   - _foreach_expm1
   - _foreach_expm1_
   - _foreach_floor
-  - _foreach_floor_
   - _foreach_log
   - _foreach_log_
   - _foreach_log10
@@ -1877,17 +1904,13 @@ tocpu:
   - _foreach_sinh
   - _foreach_sinh_
   - _foreach_round
-  - _foreach_round_
   - _foreach_lgamma
   - _foreach_lgamma_
   - _foreach_frac
   - _foreach_frac_
   - _foreach_reciprocal
   - _foreach_reciprocal_
-  - _foreach_sigmoid
-  - _foreach_sigmoid_
   - _foreach_trunc
-  - _foreach_trunc_
   - _foreach_addcdiv_.Scalar
   - _foreach_addcmul_.Scalar
   - _foreach_addcdiv_.ScalarList

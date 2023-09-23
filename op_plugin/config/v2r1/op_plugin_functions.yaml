@@ -1053,9 +1053,9 @@ official:
  - func: mish_backward(Tensor grad_output, Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: mm(Tensor self, Tensor mat2) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: mm.out(Tensor self, Tensor mat2, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: mse_loss(Tensor self, Tensor target, int reduction=Mean) -> Tensor
    impl_ns: acl_op, op_api
  - func: mse_loss.out(Tensor self, Tensor target, int reduction=Mean, *, Tensor(a!) out) -> Tensor(a!)
@@ -1439,9 +1439,9 @@ official:
  - func: soft_margin_loss_backward.grad_input(Tensor grad_output, Tensor self, Tensor target, int reduction, *, Tensor(a!) grad_input) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: softmax.Dimname(Tensor self, Dimname dim, *, ScalarType? dtype=None) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: softmax.int(Tensor self, int dim, ScalarType? dtype=None) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: softplus(Tensor self, Scalar beta=1, Scalar threshold=20) -> Tensor
    impl_ns: acl_op, op_api
  - func: softplus.out(Tensor self, Scalar beta=1, Scalar threshold=20, *, Tensor(a!) out) -> Tensor(a!)
@@ -1754,9 +1754,55 @@ official:
    impl_ns: op_api
  - func: index_copy_(Tensor(a!) self, int dim, Tensor index, Tensor source) -> Tensor(a!)
    impl_ns: op_api
+ - func: _foreach_ceil_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_floor_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_trunc_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_round_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
  - func: _foreach_mul_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
    impl_ns: op_api
  - func: _foreach_sub_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
+   impl_ns: op_api
+ - func: _foreach_add.List(Tensor[] tensors1, Tensor[] tensors2, *, Scalar alpha=1) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_add_.List(Tensor(a!)[] self, Tensor[] other, *, Scalar alpha=1) -> ()
+   impl_ns: op_api
+ - func: _foreach_sub.List(Tensor[] tensors1, Tensor[] tensors2, *, Scalar alpha=1) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sub_.List(Tensor(a!)[] self, Tensor[] other, *, Scalar alpha=1) -> ()
+   impl_ns: op_api
+ - func: _foreach_mul.List(Tensor[] tensors1, Tensor[] tensors2) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_mul_.List(Tensor(a!)[] self, Tensor[] other) -> ()
+   impl_ns: op_api
+ - func: _foreach_div.List(Tensor[] tensors1, Tensor[] tensors2) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_div_.List(Tensor(a!)[] self, Tensor[] other) -> ()
+   impl_ns: op_api
+ - func: _foreach_add.ScalarList(Tensor[] tensors, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_add_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_sub.ScalarList(Tensor[] tensors, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sub_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_div.ScalarList(Tensor[] tensors, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_div_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_mul.ScalarList(Tensor[] tensors, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_mul_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_mul.Scalar(Tensor[] tensors, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sigmoid(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sigmoid_(Tensor(a!)[] self) -> ()
    impl_ns: op_api
 
 symint:
@@ -2059,3 +2105,7 @@ custom:
     impl_ns: acl_op
   - func: scatter_update(Tensor data, Tensor indices, Tensor updates, int axis) -> Tensor
     impl_ns: acl_op
+  - func: npu_prompt_flash_attention(Tensor query, Tensor key, Tensor value, *, Tensor? padding_mask=None, Tensor? atten_mask=None, int[]? actual_seq_lengths=None, int num_heads=1, float scale_value=1.0, int pre_tokens=2147473647, int next_tokens=0, str input_layout="BSH", int num_key_value_heads=0) -> Tensor
+    impl_ns: op_api
+  - func: npu_incre_flash_attention(Tensor query, Tensor key, Tensor value, *, Tensor? padding_mask=None, Tensor? atten_mask=None, int[]? actual_seq_lengths=None, int num_heads=1, float scale_value=1.0, str input_layout="BSH", int num_key_value_heads=0) -> Tensor
+    impl_ns: op_api
