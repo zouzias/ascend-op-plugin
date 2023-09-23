@@ -439,7 +439,7 @@ official:
  - func: col2im.out(Tensor self, SymInt[2] output_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: constant_pad_nd(Tensor self, SymInt[] pad, Scalar value=0) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: conv_tbc(Tensor self, Tensor weight, Tensor bias, int pad=0) -> Tensor
    impl_ns: acl_op
  - func: conv_tbc_backward(Tensor self, Tensor input, Tensor weight, Tensor bias, int pad) -> (Tensor, Tensor, Tensor)
@@ -706,6 +706,8 @@ official:
    impl_ns: acl_op
  - func: hardshrink(Tensor self, Scalar lambd=0.5) -> Tensor
    impl_ns: acl_op
+ - func: hardshrink.out(Tensor self, Scalar lambd=0.5, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
  - func: hardshrink_backward(Tensor grad_out, Tensor self, Scalar lambd) -> Tensor
    impl_ns: acl_op
  - func: hardshrink_backward.grad_input(Tensor grad_out, Tensor self, Scalar lambd, *, Tensor(a!) grad_input) -> Tensor(a!)
@@ -835,6 +837,10 @@ official:
  - func: linalg_cross(Tensor self, Tensor other, *, int dim=-1) -> Tensor
    impl_ns: acl_op
  - func: linalg_cross.out(Tensor self, Tensor other, *, int dim=-1, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op
+ - func: linalg_qr(Tensor self, str mode='reduced') -> (Tensor Q, Tensor R)
+   impl_ns: acl_op
+ - func: linalg_qr.out(Tensor self, str mode='reduced', *, Tensor(a!) Q, Tensor(b!) R) -> (Tensor(a!) Q, Tensor(b!) R)
    impl_ns: acl_op
  - func: linspace(Scalar start, Scalar end, int steps, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op
@@ -1215,10 +1221,6 @@ official:
  - func: prod.int_out(Tensor self, int dim, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: put_(Tensor(a!) self, Tensor index, Tensor source, bool accumulate=False) -> Tensor(a!)
-   impl_ns: acl_op
- - func: qr(Tensor self, bool some=True) -> (Tensor Q, Tensor R)
-   impl_ns: acl_op
- - func: qr.Q(Tensor self, bool some=True, *, Tensor(a!) Q, Tensor(b!) R) -> (Tensor(a!) Q, Tensor(b!) R)
    impl_ns: acl_op
  - func: quantize_per_channel(Tensor self, Tensor scales, Tensor zero_points, int axis, ScalarType dtype) -> Tensor
    impl_ns: acl_op
@@ -1738,6 +1740,46 @@ official:
    impl_ns: op_api
  - func: _foreach_mul_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
    impl_ns: op_api
+ - func: _foreach_sub_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
+   impl_ns: op_api
+ - func: _foreach_add.List(Tensor[] tensors1, Tensor[] tensors2, *, Scalar alpha=1) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_add_.List(Tensor(a!)[] self, Tensor[] other, *, Scalar alpha=1) -> ()
+   impl_ns: op_api
+ - func: _foreach_sub.List(Tensor[] tensors1, Tensor[] tensors2, *, Scalar alpha=1) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sub_.List(Tensor(a!)[] self, Tensor[] other, *, Scalar alpha=1) -> ()
+   impl_ns: op_api
+ - func: _foreach_mul.List(Tensor[] tensors1, Tensor[] tensors2) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_mul_.List(Tensor(a!)[] self, Tensor[] other) -> ()
+   impl_ns: op_api
+ - func: _foreach_div.List(Tensor[] tensors1, Tensor[] tensors2) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_div_.List(Tensor(a!)[] self, Tensor[] other) -> ()
+   impl_ns: op_api
+ - func: _foreach_add.ScalarList(Tensor[] tensors, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_add_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_sub.ScalarList(Tensor[] tensors, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sub_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_div.ScalarList(Tensor[] tensors, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_div_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_mul.ScalarList(Tensor[] tensors, Scalar[] scalars) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_mul_.ScalarList(Tensor(a!)[] self, Scalar[] scalars) -> ()
+   impl_ns: op_api
+ - func: _foreach_mul.Scalar(Tensor[] tensors, Scalar scalar) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sigmoid(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_sigmoid_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
@@ -1761,11 +1803,6 @@ tocpu:
   - _fft_c2c
   - _fft_c2c.out
   - _foreach_sub.Scalar
-  - _foreach_sub_.Scalar
-  - _foreach_sub.List
-  - _foreach_sub_.List
-  - _foreach_sub.ScalarList
-  - _foreach_sub_.ScalarList
   - _foreach_exp
   - _foreach_zero_
   - _foreach_exp_
@@ -1814,8 +1851,6 @@ tocpu:
   - _foreach_frac_
   - _foreach_reciprocal
   - _foreach_reciprocal_
-  - _foreach_sigmoid
-  - _foreach_sigmoid_
   - _foreach_trunc
   - _foreach_maximum.List
   - _foreach_minimum.List
