@@ -133,8 +133,13 @@ std::tuple<at::Tensor, at::Tensor> dropout_v1_out_nocheck(
 std::tuple<at::Tensor, at::Tensor> _npu_dropout(
     const at::Tensor& self,
     double p) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  return dropout_v1_out_nocheck(result, self, p);
+  auto& self_desc = torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_;
+  at::Tensor self_cp = self;
+  if (self_desc.npu_format_ != self_desc.origin_format_) {
+    at::Tensor self_cp = at_npu::native::custom_ops::npu_format_cast(self, self_desc.origin_format_);
+  }
+  at::Tensor result = npu_preparation::apply_tensor(self_cp);
+  return dropout_v1_out_nocheck(result, self_cp, p);
 }
 
 at::Tensor npu_dropout_gen_mask(
