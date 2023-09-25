@@ -1861,6 +1861,8 @@ official:
  - func: _foreach_cos(Tensor[] tensors) -> Tensor[]
    impl_ns: op_api
 
+ - func: _foreach_add_.List(Tensor(a!)[] self, Tensor[] other, *, Scalar alpha=1) -> ()
+   impl_ns: op_api
 
 symint:
 
