@@ -1806,6 +1806,10 @@ official:
    impl_ns: op_api
  - func: _foreach_cos(Tensor[] tensors) -> Tensor[]
    impl_ns: op_api
+ - func: _foreach_neg(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_neg_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
@@ -1859,8 +1863,6 @@ tocpu:
   - _foreach_log1p_
   - _foreach_log2
   - _foreach_log2_
-  - _foreach_neg
-  - _foreach_neg_
   - _foreach_tan
   - _foreach_tan_
   - _foreach_tanh
