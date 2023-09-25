@@ -44,8 +44,8 @@ at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t
         result.resize_({steps});
     }
 
-      EXEC_NPU_CMD(aclnnLinspace, start, end, steps, result);
-      return result;
+    EXEC_NPU_CMD(aclnnLinspace, start, end, steps, result);
+    return result;
 }
 
 }  // namespace op_api
