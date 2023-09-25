@@ -49,7 +49,7 @@ at::Tensor& lt_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at::S
 at::ScalarType get_lt_calculate_type(const at::Tensor& self, const at::Tensor& other) {
   at::ScalarType calculate_type = at::native::result_type(self, other);
   if (isIntegralType(calculate_type, true)) {
-    calculate_type = at::kFloat; 
+    calculate_type = at::kFloat;
   }
   return calculate_type;
 }
@@ -57,14 +57,14 @@ at::ScalarType get_lt_calculate_type(const at::Tensor& self, const at::Tensor& o
 at::ScalarType get_lt_calculate_type(const at::Tensor& self, const at::Scalar& other) {
   at::ScalarType calculate_type = at::native::result_type(self, other);
   if (isIntegralType(calculate_type, true)) {
-    calculate_type = at::kFloat; 
+    calculate_type = at::kFloat;
   }
   return calculate_type;
 }
 } // namespace
 
 at::Tensor& lt_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-if (npu_preparation::IsCPUScalar(other)) {
+  if (npu_preparation::IsCPUScalar(other)) {
     return acl_op::lt_out(self, other.item(), result);
   } else if (npu_preparation::IsCPUScalar(self)) {
     return acl_op::gt_out(other, self.item(), result);
