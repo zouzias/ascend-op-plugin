@@ -875,7 +875,7 @@ official:
  - func: linspace(Scalar start, Scalar end, int steps, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op, op_api
  - func: linspace.out(Scalar start, Scalar end, int steps, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op op_api
+   impl_ns: acl_op, op_api
  - func: log(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: log.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
