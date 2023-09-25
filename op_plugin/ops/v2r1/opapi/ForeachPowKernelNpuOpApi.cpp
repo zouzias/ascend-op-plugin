@@ -9,10 +9,10 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::vector<at::Tensor> _foreach_mul(at::TensorList tensors1, at::TensorList tensors2) {
+std::vector<at::Tensor> _foreach_pow(at::TensorList tensors1, at::TensorList tensors2) {
   at::native::check_foreach_api_restrictions(tensors1, tensors2);
-  if (!at::native::can_use_fast_route(tensors1, tensors2, false)) {
-    return at::native::foreach_tensor_mul_list_kernel_slow(tensors1, tensors2);
+  if (!at::native::can_use_fast_route(tensors1, tensors2, true)) {
+    return at::native::foreach_tensor_pow_list_kernel_slow(tensors1, tensors2);
   }
   // construct the output tensorlist of the NPU
   auto scalar_type = tensors1[0].scalar_type();
@@ -24,30 +24,30 @@ std::vector<at::Tensor> _foreach_mul(at::TensorList tensors1, at::TensorList ten
   }
   at::TensorList result_ = at::TensorList(result);
 
-  EXEC_NPU_CMD(aclnnForeachMulList, tensors1, tensors2, result_);
+  EXEC_NPU_CMD(aclnnForeachPowList, tensors1, tensors2, result_);
   return result;
 }
 
-void _foreach_mul_(at::TensorList tensors1, at::TensorList tensors2) {
+void _foreach_pow_(at::TensorList tensors1, at::TensorList tensors2) {
   at::native::check_foreach_api_restrictions(tensors1, tensors2);
-  if (!at::native::can_use_fast_route(tensors1, tensors2, false)) {
-    return at::native::foreach_tensor_mul_list_kernel_slow_(tensors1, tensors2);
+  if (!at::native::can_use_fast_route(tensors1, tensors2, true)) {
+    return at::native::foreach_tensor_pow_list_kernel_slow_(tensors1, tensors2);
   }
 
-  EXEC_NPU_CMD(aclnnForeachMulList, tensors1, tensors2, tensors1);
+  EXEC_NPU_CMD(aclnnForeachPowList, tensors1, tensors2, tensors1);
   return;
 }
 
-std::vector<at::Tensor> _foreach_mul(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars) {
+std::vector<at::Tensor> _foreach_pow(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars) {
   // default slow path for now, wait for ascendc aclnn framwork support scalarlist type
   at::native::check_foreach_api_restrictions(tensors, scalars);
-  return at::native::foreach_tensor_mul_scalarlist_kernel_slow(tensors, scalars);
+  return at::native::foreach_tensor_pow_scalarlist_kernel_slow(tensors, scalars);
 }
 
-void _foreach_mul_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars) {
+void _foreach_pow_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars) {
   // default slow path for now, wait for ascendc aclnn framwork support scalarlist type
   at::native::check_foreach_api_restrictions(tensors, scalars);
-  return at::native::foreach_tensor_mul_scalarlist_kernel_slow_(tensors, scalars);
+  return at::native::foreach_tensor_pow_scalarlist_kernel_slow_(tensors, scalars);
 }
 
 }  // namespace op_api
