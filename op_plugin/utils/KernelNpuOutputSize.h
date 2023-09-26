@@ -25,10 +25,14 @@
 #include <vector>
 
 namespace op_infer {
-
 const int N = 32;
 // npu tensor max size
 const int SIZE = 8;
+
+using tuple_array_vector = std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>;
+using tuple_vector = std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>;
+using tuple_vectors =
+    std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>;
 
 inline c10::IntArrayRef infershape_for_elewise(const at::Tensor& x) { return x.sizes(); }
 
@@ -110,11 +114,10 @@ c10::SmallVector<int64_t, SIZE> conv_npu_output_size(const at::Tensor &input, co
                                                      c10::IntArrayRef output_padding, c10::IntArrayRef stride,
                                                      c10::IntArrayRef dilation, int64_t groups, bool transposed);
 
-std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::SmallVector<int64_t, SIZE>>
-conv_transpose2d_backward_npu_output_size(const at::Tensor& input, const at::Tensor& grad_output,
-                                          const at::Tensor& weight, c10::IntArrayRef padding,
-                                          c10::IntArrayRef output_padding, c10::IntArrayRef stride,
-                                          c10::IntArrayRef dilation, int64_t groups);
+tuple_array_vector conv_transpose2d_backward_npu_output_size(const at::Tensor& input, const at::Tensor& grad_output,
+                                                             const at::Tensor& weight, c10::IntArrayRef padding,
+                                                             c10::IntArrayRef output_padding, c10::IntArrayRef stride,
+                                                             c10::IntArrayRef dilation, int64_t groups);
 
 c10::SmallVector<int64_t, SIZE> conv_transpose2d_npu_output_size(const at::Tensor& input, const at::Tensor& weight,
                                                                  const at::Tensor& bias, c10::IntArrayRef padding,
@@ -167,8 +170,7 @@ c10::SmallVector<int64_t, SIZE> nnpack_spatial_convolution_npu_output_size(const
                                                                            c10::IntArrayRef padding,
                                                                            c10::IntArrayRef stride);
 
-std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>
-nms_with_mask_npu_output_size(const at::Tensor& self);
+tuple_vectors nms_with_mask_npu_output_size(const at::Tensor& self);
 
 c10::SmallVector<int64_t, SIZE> nonzero_npu_max_output_size(const at::Tensor& self);
 
@@ -236,8 +238,7 @@ c10::IntArrayRef smooth_l1_loss_npu_output_size(const at::Tensor& self, const at
 
 c10::SmallVector<int64_t, SIZE> transpose_npu_output_size(const at::Tensor& self, c10::IntArrayRef perm);
 
-std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>
-softmax_cross_entropy_with_logits_impl_npu_output_size(const at::Tensor& self);
+tuple_vector softmax_cross_entropy_with_logits_impl_npu_output_size(const at::Tensor& self);
 
 c10::SmallVector<int64_t, SIZE> sum_npu_output_size(const at::Tensor& self, c10::IntArrayRef dim, bool keepdim);
 
