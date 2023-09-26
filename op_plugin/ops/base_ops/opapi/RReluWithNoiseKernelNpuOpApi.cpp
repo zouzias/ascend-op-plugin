@@ -28,7 +28,8 @@ at::Tensor rrelu_with_noise(
     const at::Scalar& lower,
     const at::Scalar& upper,
     bool training,
-    c10::optional<at::Generator> generator) {
+    c10::optional<at::Generator> generator)
+{
   DO_COMPATIBILITY(aclnnRReluWithNoise, acl_op::rrelu_with_noise(self, noise, lower, upper, training, generator));
   at::Tensor result = npu_preparation::apply_tensor_without_format(self);
   auto gen_ =
@@ -48,7 +49,8 @@ at::Tensor& rrelu_with_noise_(
     const at::Scalar& lower,
     const at::Scalar& upper,
     bool training,
-    c10::optional<at::Generator> generator) {
+    c10::optional<at::Generator> generator)
+{
   DO_COMPATIBILITY(aclnnInplaceRReluWithNoise,
                    acl_op::rrelu_with_noise_(self, noise, lower, upper, training, generator));
   auto gen_ =
@@ -68,7 +70,8 @@ at::Tensor& rrelu_with_noise_out(
     const at::Scalar& upper,
     bool training,
     c10::optional<at::Generator> generator,
-    at::Tensor& output) {
+    at::Tensor& output)
+{
   DO_COMPATIBILITY(aclnnRReluWithNoise,
                    acl_op::rrelu_with_noise_out(self, noise, lower, upper, training, generator, output));
   npu_preparation::check_tensor(
