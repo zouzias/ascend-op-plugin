@@ -14,17 +14,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/OpApiInterface.h"
 #include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/KernelNpuOutputSize.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
 const int8_t ALLOW_FP32_DOWN_PRECISION = 1;
 const int8_t KEEP_DTYPE = 0;
 
-static inline void matmul_implement_npu(at::Tensor &out,
-                                        const at::Tensor &self,
+using npu_preparation = at_npu::native::OpPreparation;
+static inline void matmul_implement_npu(at::Tensor &out, const at::Tensor &self,
                                         const at::Tensor &mat2) {
   // allow dicrease precision
   int8_t cube_math_type = ALLOW_FP32_DOWN_PRECISION;
@@ -32,66 +32,18 @@ static inline void matmul_implement_npu(at::Tensor &out,
   return;
 }
 
-static c10::SmallVector<int64_t, op_infer::SIZE> get_output_size(const at::Tensor &tensor1,
-                                                                 const at::Tensor &tensor2) {
-  c10::SmallVector<int64_t, op_infer::SIZE> output_size;
-  auto dim_tensor1 = tensor1.dim();
-  auto dim_tensor2 = tensor2.dim();
-
-  TORCH_CHECK(dim_tensor1 > 0 && dim_tensor2 > 0,
-              "matmul got error dimentions: ", "(", dim_tensor1, ", ", dim_tensor2, ")");
-
-  if (dim_tensor1 == 1 && dim_tensor2 == 1) {
-    output_size = {};
-  } else if (dim_tensor1 == 2 && dim_tensor2 == 1) {
-    output_size = {tensor1.size(0)};
-  } else if (dim_tensor1 == 1 && dim_tensor2 == 2) {
-    output_size = {tensor2.size(1)};
-  } else if (dim_tensor1 == 2 && dim_tensor2 == 2) {
-    output_size = {tensor1.size(0), tensor2.size(1)};
-  } else if (dim_tensor1 >= 3 && (dim_tensor2 == 1 || dim_tensor2 == 2)) {
-    // t1:(N, n, m) * t2:(m, p)
-    auto size1 = tensor1.sizes();
-    auto tmp = c10::SmallVector<int64_t, op_infer::SIZE>{tensor2.size(0), 1};
-    auto size2 = dim_tensor2 == 1 ? tmp : tensor2.sizes();
-    output_size.insert(output_size.end(), size1.begin(), size1.end() - 1);
-    if (dim_tensor2 > 1) {
-      output_size.push_back(size2[dim_tensor2 - 1]);
-    }
-  } else if ((dim_tensor1 == 1 || dim_tensor1 == 2) && dim_tensor2 >= 3) {
-    auto tmp = c10::SmallVector<int64_t, op_infer::SIZE>{1, tensor1.size(0)};
-    auto size1 = dim_tensor1 == 1 ? tmp : tensor1.sizes();
-    auto size2 = tensor2.sizes();
-    output_size.insert(output_size.end(), size2.begin(), size2.end() - 2);
-    if (dim_tensor1 > 1) {
-      output_size.push_back(size1[0]);
-    }
-    output_size.push_back(size2[dim_tensor2 - 1]);
-  } else if (dim_tensor1 >= 3 && dim_tensor2 >= 3) {
-    // t1:(b1, n, m1) * t2:(x2, m2, p)
-    int64_t n = tensor1.size(-2);
-    at::IntArrayRef batch_tensor1(tensor1.sizes().data(), dim_tensor1 - 2);
-    int64_t p = tensor2.size(-1);
-    at::IntArrayRef batch_tensor2(tensor2.sizes().data(), dim_tensor2 - 2);
-    std::vector<int64_t> expand_batch_portion = at::infer_size(batch_tensor1, batch_tensor2);
-    c10::SmallVector<int64_t, op_infer::SIZE> output_expand_size(expand_batch_portion);
-    output_expand_size.insert(output_expand_size.end(), {n, p});
-    output_size = output_expand_size;
-  } else {
-    TORCH_CHECK(false, "matmul got error sizes: ", "(", dim_tensor1, ", ", dim_tensor2, ")");
-  }
-
-  return output_size;
+// if input was column-major, return grad as column-order for efficiency
+static inline bool is_column_major(const at::Tensor &mat) {
+  bool row_major = (mat.stride(-1) == 1 && mat.stride(-2) == mat.size(-1));
+  return false == row_major;
 }
 
-at::Tensor matmul_mat1_backward(const at::Tensor self,
-                                const at::Tensor other,
-                                const at::Tensor grad_output) {
+at::Tensor matmul_mat1_backward(const at::Tensor &self, const at::Tensor &other,
+                                const at::Tensor &grad_output) {
   /*mat1_grad = grad * mat2^T*/
   at::Tensor mat1 = self;
   at::Tensor mat2 = other;
   at::Tensor grad = grad_output;
-
   // strip mat: (1, 1, m, n)-> (m, n)
   while (mat1.dim() > 2 && mat1.size(0) == 1) {
     mat1 = mat1.squeeze(0);
@@ -106,25 +58,45 @@ at::Tensor matmul_mat1_backward(const at::Tensor self,
     grad = grad.unsqueeze(-2);
   }
   at::Tensor output;
-  if (mat1.dim() == 2 && mat2.dim() > 2) { // mm
-    output = at_npu::native::OpPreparation::apply_tensor_without_format(mat1.sizes(), grad.options());
-    mat2 = mat2.transpose(-2, -1);
-    mat2 = mat2.reshape({-1, mat2.size(-1)});
-    grad = grad.view({grad.size(-2), -1});
-    matmul_implement_npu(output, grad, mat2);
-    output = output.reshape(self.sizes());
+  if (mat1.dim() == 2) { // mat2 is 2维, from mm
+    // 先转置在后面一个tensor:先转置再合并k轴
+    if (is_column_major(mat1) && mat2.dim() == 2) { // mat2 is 2维
+      output = npu_preparation::ApplyTensorWithSizes(mat1.t().sizes(), grad.options());
+      // 列主序, (mat2*grad^T)^T:
+      grad = grad.transpose(-2, -1);
+      grad = grad.reshape({-1, grad.size(-1)});
+      mat2 = mat2.reshape({mat2.size(-2), -1}); // 列向连续，列向融合？？
+      matmul_implement_npu(output, mat2, grad);
+      output = output.t();
+      output = output.reshape(self.sizes());
+    } else {
+      output = npu_preparation::ApplyTensorWithSizes(mat1.sizes(), grad.options());
+      // grad * mat2^T:先转置再合并k轴
+      mat2 = mat2.transpose(-2, -1);
+      mat2 = mat2.reshape({-1, mat2.size(-1)});
+      grad = grad.reshape({grad.size(-2), -1});
+      matmul_implement_npu(output, grad, mat2);
+      output = output.reshape(self.sizes());
+    }
   } else { // bmm
-    mat2 = mat2.transpose(-2, -1);
-    auto expend_sizes = get_output_size(grad, mat2);
-    output = at_npu::native::OpPreparation::apply_tensor_without_format(expend_sizes, grad.options());
-    matmul_implement_npu(output, grad, mat2);
+    if (is_column_major(mat1) && !is_column_major(mat2)) { // (mat2*grad^T)^T:
+      grad = grad.transpose(-2, -1);
+      auto expend_sizes = op_infer::matmul_output_size(mat2, grad);
+      output = npu_preparation::ApplyTensorWithSizes(expend_sizes, grad.options());
+      matmul_implement_npu(output, mat2, grad);
+      output = output.transpose(-2, -1);
+    } else { // grad * mat2^T
+      mat2 = mat2.transpose(-2, -1);
+      auto expend_sizes = op_infer::matmul_output_size(grad, mat2);
+      output = npu_preparation::ApplyTensorWithSizes(expend_sizes, grad.options());
+      matmul_implement_npu(output, grad, mat2);
+    }
   }
   return output;
 }
 
-at::Tensor matmul_mat2_backward(const at::Tensor self,
-                                const at::Tensor other,
-                                const at::Tensor grad_output) {
+at::Tensor matmul_mat2_backward(const at::Tensor &self, const at::Tensor &other,
+                                const at::Tensor &grad_output) {
   /*mat2_grad = mat1^T * grad*/
   at::Tensor mat1 = self;
   at::Tensor mat2 = other;
@@ -143,40 +115,57 @@ at::Tensor matmul_mat2_backward(const at::Tensor self,
     grad = grad.unsqueeze(-2);
   }
   at::Tensor output;
-  if (mat2.dim() == 2 && mat1.dim() > 2) { // mm
-    output = at_npu::native::OpPreparation::apply_tensor_without_format(mat2.sizes(), mat1.options());
-    mat1 = mat1.reshape({-1, mat1.size(-1)});
-    grad = grad.reshape({-1, grad.size(-1)});
-    mat1 = mat1.transpose(-2, -1);
-    matmul_implement_npu(output, mat1, grad);
-    output = output.reshape(other.sizes());
+  if (mat2.dim() == 2) { // mat2 is 2维,form mm
+    if (is_column_major(mat2)) {
+      output = npu_preparation::ApplyTensorWithSizes(mat2.t().sizes(),
+                                                     mat1.options());
+      // 列主序, (grad^T*mat1)^T:
+      grad = grad.reshape({-1, grad.size(-1)});
+      mat1 = mat1.reshape({-1, mat1.size(-1)});
+      grad = grad.transpose(-2, -1);
+      matmul_implement_npu(output, grad, mat1);
+      output = output.t();
+      output = output.reshape(other.sizes());
+    } else {
+      // mat1^T * grad:先合并k轴再转置
+      output = npu_preparation::ApplyTensorWithSizes(mat2.sizes(), mat1.options());
+      mat1 = mat1.reshape({-1, mat1.size(-1)});
+      grad = grad.reshape({-1, grad.size(-1)});
+      mat1 = mat1.transpose(-2, -1);
+      matmul_implement_npu(output, mat1, grad);
+      output = output.reshape(other.sizes());
+    }
   } else { // bmm
-    mat1 = mat1.transpose(-2, -1);
-    auto expend_sizes = get_output_size(mat1, grad);
-    output = at_npu::native::OpPreparation::apply_tensor_without_format(expend_sizes, mat1.options());
-    matmul_implement_npu(output, mat1, grad);
+    if (is_column_major(mat2) && !is_column_major(mat1)) { // (grad^T*mat1)^T:
+      grad = grad.transpose(-2, -1);
+      auto expend_sizes = op_infer::matmul_output_size(grad, mat1);
+      output = npu_preparation::ApplyTensorWithSizes(expend_sizes, mat1.options());
+      matmul_implement_npu(output, grad, mat1);
+      output = output.transpose(-2, -1);
+    } else { // mat1^T * grad
+      mat1 = mat1.transpose(-2, -1);
+      auto expend_sizes = op_infer::matmul_output_size(mat1, grad);
+      output = npu_preparation::ApplyTensorWithSizes(expend_sizes, mat1.options());
+      matmul_implement_npu(output, mat1, grad);
+    }
   }
   return output;
 }
 
-std::tuple<at::Tensor, at::Tensor> matmul_backward(const at::Tensor &grad,
-                                                   const at::Tensor &self,
-                                                   const at::Tensor &other,
-                                                   std::array<bool, 2> grad_input_mask) {
+std::tuple<at::Tensor, at::Tensor>
+matmul_backward(const at::Tensor &grad, const at::Tensor &self,
+                const at::Tensor &other, std::array<bool, 2> grad_input_mask) {
   if (!grad.defined()) {
     return std::make_tuple(at::Tensor(), at::Tensor());
   }
-  // backward mat1 and mat2 separately
   at::Tensor self_grad;
   at::Tensor other_grad;
   if (grad_input_mask[1]) {
     other_grad = matmul_mat2_backward(self, other, grad);
   }
-
   if (grad_input_mask[0]) {
     self_grad = matmul_mat1_backward(self, other, grad);
   }
-
   // strip added dim: (5,1)->(5)
   if (other.dim() == 1 && other_grad.size(-1) == 1) {
     other_grad = other_grad.squeeze(-1);
@@ -185,4 +174,3 @@ std::tuple<at::Tensor, at::Tensor> matmul_backward(const at::Tensor &grad,
 }
 
 } // namespace op_api
-
