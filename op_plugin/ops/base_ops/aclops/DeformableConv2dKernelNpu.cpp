@@ -19,8 +19,12 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-
+const int64_t DIM_N = 0;
+const int64_t DIM_C = 1;
+const int64_t DIM_H = 2;
+const int64_t DIM_W = 3;
 namespace {
+
 std::tuple<at::Tensor, at::Tensor> deformable_conv2d_nocheck(
     const at::Tensor& input,
     const at::Tensor& weight,
@@ -45,11 +49,12 @@ std::tuple<at::Tensor, at::Tensor> deformable_conv2d_nocheck(
   * In order to allow Transpose into binary,
   * Transpose is called explicitly in adapter.
   */
+ TORCH_CHECK(output_size.size() >= 4, "Output should have more than 4d")
   c10::SmallVector<int64_t, SIZE> nhwc_deformable_offsets_output_shape =
-      {output_size[0], output_size[2], output_size[3], output_size[1]};
+      {output_size[DIM_N], output_size[DIM_H], output_size[DIM_W], output_size[DIM]};
   at::Tensor nhwc_deformable_offsets_output = npu_preparation::apply_tensor_with_format(
       nhwc_deformable_offsets_output_shape, input.options(), ACL_FORMAT_NHWC);
-  c10::SmallVector<int64_t, SIZE> in_perm = {0, 2, 3, 1};
+  c10::SmallVector<int64_t, SIZE> in_perm = {DIM_N, DIM_H, DIM_W, DIM_C};
   at::Tensor ori_input = npu_preparation::CastBackToOriFormat(input);
   at::Tensor ori_offset = npu_preparation::CastBackToOriFormat(offset);
   at::Tensor nhwc_input = acl_op::npu_transpose(ori_input, in_perm, true);
@@ -63,8 +68,8 @@ std::tuple<at::Tensor, at::Tensor> deformable_conv2d_nocheck(
   nhwc_offset_desc.npu_format_ = ACL_FORMAT_NHWC;
   nhwc_offset_desc.origin_format_ = ACL_FORMAT_NHWC;
 
-  c10::SmallVector<int64_t, SIZE> nhwc_strides = {stride[0], stride[2], stride[3], stride[1]};
-  c10::SmallVector<int64_t, SIZE> nhwc_dilations = {dilation[0], dilation[2], dilation[3], dilation[1]};
+  c10::SmallVector<int64_t, SIZE> nhwc_strides = {stride[DIM_N], stride[DIM_H], stride[DIM_W], stride[DIM_C]};
+  c10::SmallVector<int64_t, SIZE> nhwc_dilations = {dilation[DIM_N], dilation[DIM_H], dilation[DIM_W], dilation[DIM_C]};
   string data_format = "NHWC";
   at_npu::native::OpCommand cmd;
   cmd.Name("DeformableOffsets")
@@ -80,7 +85,7 @@ std::tuple<at::Tensor, at::Tensor> deformable_conv2d_nocheck(
       .Attr("modulated", modulated)
       .Run();
 
-  c10::SmallVector<int64_t, SIZE> out_perm = {0, 3, 1, 2};
+  c10::SmallVector<int64_t, SIZE> out_perm = {DIM_N, DIM_W, DIM_C, DIM_H};
   nhwc_input_desc.npu_format_ = ACL_FORMAT_NCHW;
   nhwc_input_desc.origin_format_ = ACL_FORMAT_NCHW;
   nhwc_offset_desc.npu_format_ = ACL_FORMAT_NCHW;
@@ -136,7 +141,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_deformable_conv2d
   at::Tensor grad_weight = std::get<1>(conv2d_backward_output);
   at::Tensor grad_bias = std::get<2>(conv2d_backward_output);
 
-  c10::SmallVector<int64_t, SIZE> in_perm = {0, 2, 3, 1};
+  c10::SmallVector<int64_t, SIZE> in_perm = {DIM_N, DIM_H, DIM_W, DIM_C};
   auto nhwc_grad_input_shape = op_infer::transpose_npu_output_size(input, in_perm);
   auto nhwc_grad_offset_shape = op_infer::transpose_npu_output_size(offset, in_perm);
   at::Tensor nhwc_grad_input =
@@ -168,8 +173,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_deformable_conv2d
   nhwc_offset_desc.npu_format_ = ACL_FORMAT_NHWC;
   nhwc_offset_desc.origin_format_ = ACL_FORMAT_NHWC;
 
-  c10::SmallVector<int64_t, SIZE> nhwc_strides = {stride[0], stride[2], stride[3], stride[1]};
-  c10::SmallVector<int64_t, SIZE> nhwc_dilations = {dilation[0], dilation[2], dilation[3], dilation[1]};
+  c10::SmallVector<int64_t, SIZE> nhwc_strides = {stride[DIM_N], stride[DIM_H], stride[DIM_W], stride[DIM_C]};
+  c10::SmallVector<int64_t, SIZE> nhwc_dilations = {dilation[DIM_N], dilation[DIM_H], dilation[DIM_W], dilation[DIM_C]};
   string data_format = "NHWC";
   at_npu::native::OpCommand cmd;
   cmd.Name("DeformableOffsetsGrad")
