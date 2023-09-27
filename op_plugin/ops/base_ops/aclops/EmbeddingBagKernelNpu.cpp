@@ -19,10 +19,15 @@
 
 namespace acl_op {
 namespace {
+const int64_t SUM_MODE = 0;
+const int64_t MEAN_MODE = 1;
+
 c10::SmallVector<int64_t, SIZE> _embedding_bag_npu_output_size(
     const at::Tensor& weight,
     const at::Tensor& indices,
     const at::Tensor& offsets) {
+  TORCH_CHECK(weight.dim() >= 2, 
+              "Input to weight should be more than 2d.")
   c10::SmallVector<int64_t, SIZE> output_size = {indices.size(0), weight.size(1)};
   if (indices.dim() == 1) {
     output_size = {offsets.size(0), weight.size(1)};
@@ -32,9 +37,9 @@ c10::SmallVector<int64_t, SIZE> _embedding_bag_npu_output_size(
 
 string get_mode_str(bool mode) {
   string mode_str = "mean";
-  if (mode == 0) {
+  if (mode == SUM_MODE) {
     mode_str = "sum";
-  } else if (mode == 1) {
+  } else if (mode == MEAN_MODE) {
     mode_str = "mean";
   } else {
     mode_str = "max";
