@@ -24,13 +24,15 @@ using npu_preparation = at_npu::native::OpPreparation;
 const static int INT64T_SIZE = 8;
 
 // convert dim to non-negative value
-int64_t wrap_dim(const at::Tensor &self, c10::optional<int64_t> dim) {
+int64_t wrap_dim(const at::Tensor &self, c10::optional<int64_t> dim)
+{
     int64_t real_dim = dim.value_or(0);
     return (real_dim < 0) ? (real_dim + self.dim()) : real_dim;
 }
 
 // check tensor repeats is valid
-bool check_tensor_repeats(const at::Tensor &self, const at::Tensor &repeats, c10::optional<int64_t> dim) {
+bool check_tensor_repeats(const at::Tensor &self, const at::Tensor &repeats, c10::optional<int64_t> dim)
+{
     if (repeats.dim() == 0) {
         return true;
     }
@@ -42,8 +44,7 @@ bool check_tensor_repeats(const at::Tensor &self, const at::Tensor &repeats, c10
             if (repeats.size(0) == self.size(real_dim) || repeats.size(0) == 1) {
                 return true;
             }
-        }
-        else {
+        } else {
             // without dim: check repeats is rank 0/ rank 1 with 1 element / rank 1 with (self.numel()) elements
             if (repeats.size(0) == self.numel() || repeats.size(0) == 1) {
                 return true;
@@ -55,7 +56,8 @@ bool check_tensor_repeats(const at::Tensor &self, const at::Tensor &repeats, c10
 }
 
 // check dim is in range [-self.dim(), self.dim()-1]
-bool check_dim_valid(const at::Tensor &self, c10::optional<int64_t> dim) {
+bool check_dim_valid(const at::Tensor &self, c10::optional<int64_t> dim)
+{
     int64_t real_dim = dim.value_or(0);
     int64_t self_dim = self.dim();
     int64_t dim_min = std::min(-self_dim, self_dim - 1);
@@ -64,7 +66,8 @@ bool check_dim_valid(const at::Tensor &self, c10::optional<int64_t> dim) {
 }
 
 at::Tensor apply_result_tensor(const at::Tensor &self, c10::SmallVector<int64_t, INT64T_SIZE> &output_shape,
-    c10::optional<int64_t> dim, c10::optional<int64_t> output_size) {
+    c10::optional<int64_t> dim, c10::optional<int64_t> output_size)
+{
     int64_t cur_dim = wrap_dim(self, dim);
     int64_t output_size_expected = output_shape[cur_dim];
     if (output_size.has_value() && self.numel() != 0) {
@@ -75,11 +78,11 @@ at::Tensor apply_result_tensor(const at::Tensor &self, c10::SmallVector<int64_t,
 }
 
 at::Tensor repeat_interleave(const at::Tensor& self, int64_t repeats,
-    c10::optional<int64_t> dim, c10::optional<int64_t> output_size) {
+    c10::optional<int64_t> dim, c10::optional<int64_t> output_size)
+{
     if (dim.has_value()) {
         DO_COMPATIBILITY(aclnnRepeatInterleaveIntWithDim, acl_op::repeat_interleave(self, repeats, dim, output_size));
-    }
-    else {
+    } else {
         DO_COMPATIBILITY(aclnnRepeatInterleaveInt, acl_op::repeat_interleave(self, repeats, dim, output_size));
     }
 
@@ -96,8 +99,7 @@ at::Tensor repeat_interleave(const at::Tensor& self, int64_t repeats,
     if (dim.has_value()) {
         int64_t real_dim = dim.value_or(0);
         EXEC_NPU_CMD(aclnnRepeatInterleaveIntWithDim, self, repeats, real_dim, output_size_expected, result);
-    }
-    else {
+    } else {
         EXEC_NPU_CMD(aclnnRepeatInterleaveInt, self, repeats, output_size_expected, result);
     }
 
@@ -105,7 +107,8 @@ at::Tensor repeat_interleave(const at::Tensor& self, int64_t repeats,
 }
 
 at::Tensor repeat_interleave(const at::Tensor& self, const at::Tensor& repeats,
-    c10::optional<int64_t> dim, c10::optional<int64_t> output_size) {
+    c10::optional<int64_t> dim, c10::optional<int64_t> output_size)
+{
     if (dim.has_value()) {
         DO_COMPATIBILITY(aclnnRepeatInterleaveWithDim, acl_op::repeat_interleave(self, repeats, dim, output_size));
     } else {
@@ -125,8 +128,7 @@ at::Tensor repeat_interleave(const at::Tensor& self, const at::Tensor& repeats,
     if (dim.has_value()) {
         int64_t real_dim = dim.value_or(0);
         EXEC_NPU_CMD(aclnnRepeatInterleaveWithDim, self, repeats, real_dim, output_size_expected, result);
-    }
-    else {
+    } else {
         EXEC_NPU_CMD(aclnnRepeatInterleave, self, repeats, output_size_expected, result);
     }
 
