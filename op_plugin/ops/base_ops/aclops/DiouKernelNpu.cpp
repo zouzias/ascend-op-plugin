@@ -21,11 +21,15 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace{
+const int64_t IOF_MODE = 1;
+
 c10::SmallVector<int64_t, N> diou_output_size(
     const at::Tensor& self,
     const at::Tensor& gtboxes,
     bool is_cross) {
   c10::SmallVector<int64_t, N> output_size;
+    TORCH_CHECK(gtboxes.dim() >= 2 && self.dim() >=2, 
+                "Input of self and gtboxes should have more than 2d.")
   if (is_cross) {
     output_size = {gtboxes.size(1), self.size(1)};
   } else {
@@ -42,7 +46,7 @@ at::Tensor& diou_out_npu_nocheck(
     bool is_cross,
     int64_t mode) {
   auto output_size = diou_output_size(self, gtboxes, is_cross);
-  string mode_str = mode == 1 ? "iof" : "iou";
+  string mode_str = mode == IOF_MODE ? "iof" : "iou";
 
   at_npu::native::OpCommand cmd;
   cmd.Name("DIoU")
@@ -88,7 +92,7 @@ std::tuple<at::Tensor&, at::Tensor&> diou_backward_out_npu_nocheck(
     bool trans,
     bool is_cross,
     int64_t mode) {
-  string mode_str = mode == 1 ? "iof" : "iou";
+  string mode_str = mode == IOF_MODE ? "iof" : "iou";
   at_npu::native::OpCommand cmd;
   cmd.Name("DIoUGrad")
       .Input(grad)

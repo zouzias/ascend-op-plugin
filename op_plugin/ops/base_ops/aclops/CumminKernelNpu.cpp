@@ -47,6 +47,7 @@ void _cummin_helper(const at::Tensor& self, at::Tensor& values, at::Tensor& indi
     int64_t first_dim = op_plugin::utils::make_warp_dim(0, self.dim());
     if (dim != first_dim) {
       c10::SmallVector<int64_t, SIZE> perm;
+      TORCH_CHECK(perm.size() >= self.dim(), "Size of perm should be greater than dim num of self.")
       for (int64_t i = 0; i < self.dim(); i++) {
         perm.emplace_back(i);
       }
