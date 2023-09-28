@@ -995,11 +995,11 @@ official:
  - func: masked_select.out(Tensor self, Tensor mask, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: matmul(Tensor self, Tensor other) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: matmul_backward(Tensor grad, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: matmul.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: max(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: max.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)
