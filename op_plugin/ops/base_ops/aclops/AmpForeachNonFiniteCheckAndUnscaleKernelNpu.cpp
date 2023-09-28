@@ -75,7 +75,7 @@ void _amp_foreach_non_finite_check_and_unscale_(
       TORCH_CHECK(t.dtype() == expected_dtype, "scaled_grads must have the same dtype.");
       TORCH_CHECK(t.layout() == at::kStrided, "one of scaled_grads was not a strided tensor.");
 
-      t.mul_(inv_scale);
+      acl_op::mul(t, inv_scale);
     }
   } else {
     found_inf.add_(1);
