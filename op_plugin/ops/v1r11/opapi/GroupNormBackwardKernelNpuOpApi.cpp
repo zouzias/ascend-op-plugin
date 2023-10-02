@@ -18,40 +18,44 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm_backward(
-    const at::Tensor& dY,
+    std::tuple < at::Tensor, at::Tensor, at::Tensor > native_group_norm_backward(const at::Tensor& dY,
     const at::Tensor& X,
     const at::Tensor& mean,
     const at::Tensor& rstd,
-    const c10::optional<at::Tensor>& gamma_opt,
+    const c10::optional < at::Tensor >& gamma_opt,
     int64_t N,
     int64_t C,
     int64_t HxW,
     int64_t group,
-    std::array<bool, 3> grad_input_mask)
-{
-    DO_COMPATIBILITY(aclnnGroupNormBackward,
-                     acl_op::native_group_norm_backward(dY, X, mean, rstd, gamma_opt, N, C, HxW, group,
-                                                        grad_input_mask));
+    std::array < bool, 3 > grad_input_mask)
+    {
+        DO_COMPATIBILITY(aclnnGroupNormBackward,
+        acl_op::native_group_norm_backward(dY, X, mean, rstd, gamma_opt, N, C, HxW, group,
+        grad_input_mask));
 
-    at::Tensor grad_x;
-    at::Tensor grad_gamma;
-    at::Tensor grad_beta;
-    if (grad_input_mask[0]) {
-        grad_x = npu_preparation::apply_tensor_without_format(dY);
-    }
-    if (grad_input_mask[1]) {
-        grad_gamma = npu_preparation::apply_tensor_without_format(X, {C});
-    }
-    if (grad_input_mask[2]) {
-        grad_beta = npu_preparation::apply_tensor_without_format(X, {C});
+        at::Tensor grad_x;
+        at::Tensor grad_gamma;
+        at::Tensor grad_beta;
+        if (grad_input_mask[0]) {
+            grad_x = npu_preparation::apply_tensor_without_format(dY);
+        }
+        if (grad_input_mask[1]) {
+            grad_gamma = npu_preparation::apply_tensor_without_format(X, {
+                C
+            });
+        }
+        if (grad_input_mask[2]) {
+            grad_beta = npu_preparation::apply_tensor_without_format(X, {
+                C
+            });
+        }
+
+        EXEC_NPU_CMD(aclnnGroupNormBackward, dY, X, mean, rstd, gamma_opt, N, C, HxW, group, grad_input_mask,
+        grad_x, grad_gamma, grad_beta);
+        return std::make_tuple(grad_x, grad_gamma, grad_beta);
     }
 
-    EXEC_NPU_CMD(aclnnGroupNormBackward, dY, X, mean, rstd, gamma_opt, N, C, HxW, group, grad_input_mask,
-                 grad_x, grad_gamma, grad_beta);
-    return std::make_tuple(grad_x, grad_gamma, grad_beta);
 }
-
-} // namespace op_api
+// namespace op_api

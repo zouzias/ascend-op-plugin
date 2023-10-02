@@ -18,20 +18,19 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor& sum_out(
-    const at::Tensor& self,
+    at::Tensor& sum_out(const at::Tensor& self,
     at::IntArrayRef dim,
     bool keepdim,
-    c10::optional<c10::ScalarType> dtype,
+    c10::optional < c10::ScalarType > dtype,
     at::Tensor& result) {
-  return sum_out_common_nocheck(result, self, dim, keepdim, dtype);
-}
+        return sum_out_common_nocheck(result, self, dim, keepdim, dtype);
+    }
 
-at::Tensor sum(
-    const at::Tensor& self,
+    at::Tensor sum(const at::Tensor& self,
     at::IntArrayRef dim,
     bool keepdim,
-    c10::optional<c10::ScalarType> dtype) {
-  return sum_common_nocheck(self, dim, keepdim, dtype);
+    c10::optional < c10::ScalarType > dtype) {
+        return sum_common_nocheck(self, dim, keepdim, dtype);
+    }
 }
-} // namespace acl_op
+// namespace acl_op

@@ -17,28 +17,27 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor scatter_update(
-    const at::Tensor& data,
+    at::Tensor scatter_update(const at::Tensor& data,
     const at::Tensor& indices,
     const at::Tensor& updates,
     int64_t axis) {
-  TORCH_NPU_WARN_ONCE(
-      "Warning: kernel [scatter_update] is a out-of-place op, but it is supported by another in-place op cann.Scatter."
-      "This current usage may cause the input to be changed unexpectedly, "
-      "and the caller needs to pay attention to this feature.");
-  at::Tensor result = npu_preparation::apply_tensor(data);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Scatter")
-     .Input(data)
-     .Input(indices)
-     .Input(updates)
-     .Output(result)
-     .Attr("reduce", (string)"update")
-     .Attr("axis", axis)
-     .Run();
-  return data;
-}
+        TORCH_NPU_WARN_ONCE("Warning: kernel [scatter_update] is a out-of-place op, but it is supported by another in-place op cann.Scatter."
+        "This current usage may cause the input to be changed unexpectedly, "
+        "and the caller needs to pay attention to this feature.");
+        at::Tensor result = npu_preparation::apply_tensor(data);
+        at_npu::native::OpCommand cmd;
+        cmd.Name("Scatter")
+        .Input(data)
+        .Input(indices)
+        .Input(updates)
+        .Output(result)
+        .Attr("reduce", (string)"update")
+        .Attr("axis", axis)
+        .Run();
+        return data;
+    }
 
-} // namespace acl_op
+}
+// namespace acl_op

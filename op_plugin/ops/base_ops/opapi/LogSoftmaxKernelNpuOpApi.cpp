@@ -20,29 +20,30 @@
 
 namespace op_api {
 
-at::Tensor _log_softmax(const at::Tensor& self, int64_t dim, bool half_to_float) {
-  DO_COMPATIBILITY(aclnnLogSoftmax, acl_op::_log_softmax(self, dim, half_to_float));
-  // construct the output tensor of the NPU
-  at::Tensor result;
-  if (half_to_float) {
-    result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(), 
-                                        self.options().dtype(c10::ScalarType::Float));
-  } else {
-    result = at_npu::native::OpPreparation::apply_tensor_without_format(self);
-  }
+    at::Tensor _log_softmax(const at::Tensor& self, int64_t dim, bool half_to_float) {
+        DO_COMPATIBILITY(aclnnLogSoftmax, acl_op::_log_softmax(self, dim, half_to_float));
+        // construct the output tensor of the NPU
+        at::Tensor result;
+        if (half_to_float) {
+            result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(),
+            self.options().dtype(c10::ScalarType::Float));
+        } else {
+            result = at_npu::native::OpPreparation::apply_tensor_without_format(self);
+        }
 
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnLogSoftmax, self, dim, result);
+        // calculate the output result of the NPU
+        EXEC_NPU_CMD(aclnnLogSoftmax, self, dim, result);
 
-  return result;
+        return result;
+    }
+
+    at::Tensor& _log_softmax_out(const at::Tensor& self, int64_t dim, bool half_to_float,
+    at::Tensor& out) {
+        // calculate the output result of the NPU
+        EXEC_NPU_CMD(aclnnLogSoftmax, self, dim, out);
+        return out;
+    }
+
 }
-
-at::Tensor& _log_softmax_out(const at::Tensor& self, int64_t dim, bool half_to_float,
-                             at::Tensor& out) {
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnLogSoftmax, self, dim, out);
-  return out;
-}
-
-}  // namespace op_api
+// namespace op_api
 

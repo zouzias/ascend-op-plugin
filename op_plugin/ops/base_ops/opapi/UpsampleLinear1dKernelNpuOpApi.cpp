@@ -19,45 +19,46 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& upsample_linear1d_out(
-    const at::Tensor& self,
+    at::Tensor& upsample_linear1d_out(const at::Tensor& self,
     at::IntArrayRef output_size,
     bool align_corners,
-    c10::optional<double> scales,
+    c10::optional < double > scales,
     at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnUpsampleLinear1d, acl_op::upsample_linear1d_out(self, output_size,
-                                                                        align_corners,
-                                                                        scales,
-                                                                        result));
+        DO_COMPATIBILITY(aclnnUpsampleLinear1d, acl_op::upsample_linear1d_out(self, output_size,
+        align_corners,
+        scales,
+        result));
 
-  auto outsize = op_infer::upsample_linear1d_npu_output_size(self, output_size,
-                                                             align_corners, scales);
-  npu_preparation::check_tensor({self}, result, self, outsize);
-  double scales_h_attr = scales.value_or(-1);
+        auto outsize = op_infer::upsample_linear1d_npu_output_size(self, output_size,
+        align_corners, scales);
+        npu_preparation::check_tensor({
+            self
+        }, result, self, outsize);
+        double scales_h_attr = scales.value_or(-1);
 
-  EXEC_NPU_CMD(aclnnUpsampleLinear1d, self, output_size, align_corners, scales_h_attr, result);
-  return result;
-}
+        EXEC_NPU_CMD(aclnnUpsampleLinear1d, self, output_size, align_corners, scales_h_attr, result);
+        return result;
+    }
 
-at::Tensor upsample_linear1d(
-    const at::Tensor& self,
+    at::Tensor upsample_linear1d(const at::Tensor& self,
     at::IntArrayRef output_size,
     bool align_corners,
-    c10::optional<double> scales) {
-  DO_COMPATIBILITY(aclnnUpsampleLinear1d, acl_op::upsample_linear1d(self, output_size,
-                                                                    align_corners,
-                                                                    scales));
+    c10::optional < double > scales) {
+        DO_COMPATIBILITY(aclnnUpsampleLinear1d, acl_op::upsample_linear1d(self, output_size,
+        align_corners,
+        scales));
 
-  auto outsize = op_infer::upsample_linear1d_npu_output_size(self, output_size,
-                                                             align_corners, scales);
-  double scales_h_attr = scales.value_or(-1);
+        auto outsize = op_infer::upsample_linear1d_npu_output_size(self, output_size,
+        align_corners, scales);
+        double scales_h_attr = scales.value_or(-1);
 
-  at::Tensor result = npu_preparation::apply_tensor_without_format(outsize, self.options());
+        at::Tensor result = npu_preparation::apply_tensor_without_format(outsize, self.options());
 
-  EXEC_NPU_CMD(aclnnUpsampleLinear1d, self, output_size, align_corners, scales_h_attr, result);
-  return result;
+        EXEC_NPU_CMD(aclnnUpsampleLinear1d, self, output_size, align_corners, scales_h_attr, result);
+        return result;
+    }
+
 }
-
-} // namespace op_api
+// namespace op_api

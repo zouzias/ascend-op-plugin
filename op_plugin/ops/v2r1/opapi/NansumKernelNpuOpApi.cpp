@@ -18,55 +18,59 @@
 
 namespace op_api {
 
-at::Tensor& nansum_out(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim,
-                       c10::optional<c10::ScalarType> dtype, at::Tensor& result)
-{
-    at::IntArrayRef dimArray;
-    c10::SmallVector<int64_t, N> dimlist;
-    if (dim.has_value()) {
-        dimArray = dim.value();
-    } else {
-        dimlist = op_plugin::utils::get_dimlist_for_tensor(self);
-        dimArray = dimlist;
+    at::Tensor& nansum_out(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim,
+    c10::optional < c10::ScalarType > dtype, at::Tensor& result)
+    {
+        at::IntArrayRef dimArray;
+        c10::SmallVector < int64_t, N > dimlist;
+        if (dim.has_value()) {
+            dimArray = dim.value();
+        } else {
+            dimlist = op_plugin::utils::get_dimlist_for_tensor(self);
+            dimArray = dimlist;
+        }
+
+        c10::ScalarType dstType;
+        if (dtype.has_value()) {
+            dstType = dtype.value();
+        } else
+            if (result.defined()) {
+                dstType = result.scalar_type();
+            } else {
+                dstType = self.scalar_type();
+            }
+        // infer reduecshape
+        auto output_size = op_infer::reduce_ops_npu_output_size(self, dimArray, keepdim);
+        at_npu::native::OpPreparation::check_tensor({
+            self
+        }, result, result.scalar_type(), output_size);
+
+        EXEC_NPU_CMD(aclnnReduceNansum, self, dimArray, keepdim, dstType, result);
+        return result;
     }
 
-    c10::ScalarType dstType;
-    if (dtype.has_value()) {
-        dstType = dtype.value();
-    } else if (result.defined()) {
-        dstType = result.scalar_type();
-    } else {
-        dstType = self.scalar_type();
-    }
-    // infer reduecshape
-    auto output_size = op_infer::reduce_ops_npu_output_size(self, dimArray, keepdim);
-    at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), output_size);
-
-    EXEC_NPU_CMD(aclnnReduceNansum, self, dimArray, keepdim, dstType, result);
-    return result;
-}
-
-at::Tensor nansum(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim,
-                  c10::optional<c10::ScalarType> dtype)
-{
-    // create result tensor with int64 if dtype has no value and self is inte
-    c10::ScalarType promoteInteSelf = isIntegralType(self.scalar_type(), true) ? at::kLong : self.scalar_type();
-    c10::ScalarType dstType = dtype.has_value() ? dtype.value() : promoteInteSelf;
-    at::IntArrayRef dimArray;
-    c10::SmallVector<int64_t, N> dimlist;
-    if (dim.has_value()) {
-        dimArray = dim.value();
-    } else {
-        dimlist = op_plugin::utils::get_dimlist_for_tensor(self);
-        dimArray = dimlist;
-    }
-    auto output_size = op_infer::reduce_ops_npu_output_size(self, dimArray, keepdim);
-    at::Tensor result =
+    at::Tensor nansum(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim,
+    c10::optional < c10::ScalarType > dtype)
+    {
+        // create result tensor with int64 if dtype has no value and self is inte
+        c10::ScalarType promoteInteSelf = isIntegralType(self.scalar_type(), true) ? at::kLong : self.scalar_type();
+        c10::ScalarType dstType = dtype.has_value() ? dtype.value() : promoteInteSelf;
+        at::IntArrayRef dimArray;
+        c10::SmallVector < int64_t, N > dimlist;
+        if (dim.has_value()) {
+            dimArray = dim.value();
+        } else {
+            dimlist = op_plugin::utils::get_dimlist_for_tensor(self);
+            dimArray = dimlist;
+        }
+        auto output_size = op_infer::reduce_ops_npu_output_size(self, dimArray, keepdim);
+        at::Tensor result =
         at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options().dtype(dstType));
 
-    // calculate the output result of the NPU
-    op_api::nansum_out(self, dim, keepdim, dtype, result);
-    return result;
-}
+        // calculate the output result of the NPU
+        op_api::nansum_out(self, dim, keepdim, dtype, result);
+        return result;
+    }
 
-}  // namespace op_api
+}
+// namespace op_api

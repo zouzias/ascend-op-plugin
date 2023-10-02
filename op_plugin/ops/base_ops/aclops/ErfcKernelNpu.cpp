@@ -18,42 +18,45 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
-using npu_utils = at_npu::native::NpuUtils;
+    using npu_preparation = at_npu::native::OpPreparation;
+    using npu_utils = at_npu::native::NpuUtils;
 
-namespace {
-at::Tensor& erfc_out_npu_no_check(at::Tensor& result, const at::Tensor& self) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Erfc")
-      .Input(self)
-      .Output(result)
-      .Run();
-  return result;
-}
-} // namespace
+    namespace {
+        at::Tensor& erfc_out_npu_no_check(at::Tensor& result, const at::Tensor& self) {
+            at_npu::native::OpCommand cmd;
+            cmd.Name("Erfc")
+            .Input(self)
+            .Output(result)
+            .Run();
+            return result;
+        }
+    }
+    // namespace
 
-at::Tensor& erfc_out(const at::Tensor& self, at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    erfc_out_npu_no_check(contiguous_result, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    erfc_out_npu_no_check(result, self);
-  }
-  return result;
-}
+    at::Tensor& erfc_out(const at::Tensor& self, at::Tensor& result) {
+        npu_preparation::CheckOut({
+            self
+        },
+        result,
+        self);
+        if (!npu_utils::check_match(&result)) {
+            at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+            erfc_out_npu_no_check(contiguous_result, self);
+            npu_utils::format_fresh_view(result, contiguous_result);
+        } else {
+            erfc_out_npu_no_check(result, self);
+        }
+        return result;
+    }
 
-at::Tensor erfc(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  erfc_out_npu_no_check(result, self);
-  return result;
-}
+    at::Tensor erfc(const at::Tensor& self) {
+        at::Tensor result = npu_preparation::apply_tensor(self);
+        erfc_out_npu_no_check(result, self);
+        return result;
+    }
 
-at::Tensor& erfc_(at::Tensor& self) {
-  return acl_op::erfc_out(self, self);
+    at::Tensor& erfc_(at::Tensor& self) {
+        return acl_op::erfc_out(self, self);
+    }
 }
-} // namespace acl_op
+// namespace acl_op

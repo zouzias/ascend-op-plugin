@@ -20,26 +20,29 @@
 #include "op_plugin/utils/KernelNpuOutputSize.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& cosh_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnCosh, acl_op::cosh_out(self, result));
-  npu_preparation::check_tensor({self}, result, self);
-  EXEC_NPU_CMD(aclnnCosh, self, result);
-  return result;
-}
+    at::Tensor& cosh_out(const at::Tensor& self, at::Tensor& result) {
+        DO_COMPATIBILITY(aclnnCosh, acl_op::cosh_out(self, result));
+        npu_preparation::check_tensor({
+            self
+        }, result, self);
+        EXEC_NPU_CMD(aclnnCosh, self, result);
+        return result;
+    }
 
-at::Tensor cosh(const at::Tensor &self) {
-  DO_COMPATIBILITY(aclnnCosh, acl_op::cosh(self));
-  auto out_size = op_infer::input_same_output_size(self);
-  auto result = npu_preparation::apply_tensor_without_format(out_size, self.options());
-  EXEC_NPU_CMD(aclnnCosh, self, result);
-  return result;
-}
+    at::Tensor cosh(const at::Tensor & self) {
+        DO_COMPATIBILITY(aclnnCosh, acl_op::cosh(self));
+        auto out_size = op_infer::input_same_output_size(self);
+        auto result = npu_preparation::apply_tensor_without_format(out_size, self.options());
+        EXEC_NPU_CMD(aclnnCosh, self, result);
+        return result;
+    }
 
-at::Tensor& cosh_(at::Tensor &self) {
-  DO_COMPATIBILITY(aclnnInplaceCosh, acl_op::cosh_(self));
-  EXEC_NPU_CMD(aclnnInplaceCosh, self);
-  return self;
+    at::Tensor& cosh_(at::Tensor & self) {
+        DO_COMPATIBILITY(aclnnInplaceCosh, acl_op::cosh_(self));
+        EXEC_NPU_CMD(aclnnInplaceCosh, self);
+        return self;
+    }
 }
-} // namespace op_api
+// namespace op_api

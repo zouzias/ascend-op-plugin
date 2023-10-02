@@ -17,19 +17,19 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor leaky_relu_backward_out_nocheck(
-    at::Tensor result,
+    at::Tensor leaky_relu_backward_out_nocheck(at::Tensor result,
     const at::Tensor& grad_output,
     const at::Tensor& self,
     at::Scalar negval,
     bool is_result) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("LeakyReluGrad")
-      .Input(grad_output)
-      .Input(self)
-      .Output(result)
-      .Attr("negative_slope", negval)
-      .Run();
-  return result;
+        at_npu::native::OpCommand cmd;
+        cmd.Name("LeakyReluGrad")
+        .Input(grad_output)
+        .Input(self)
+        .Output(result)
+        .Attr("negative_slope", negval)
+        .Run();
+        return result;
+    }
 }
-} // namespace acl_op
+// namespace acl_op

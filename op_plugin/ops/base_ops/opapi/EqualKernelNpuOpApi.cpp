@@ -19,12 +19,16 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-bool equal(const at::Tensor& self, const at::Tensor& other) {
-  DO_COMPATIBILITY(aclnnEqual, acl_op::equal(self, other));
-  at::Tensor result = npu_preparation::apply_tensor_without_format({1}, self.options().dtype(at::kBool));
-  EXEC_NPU_CMD(aclnnEqual, self, other, result);
-  return result.item().to<bool>();
+    bool equal(const at::Tensor& self, const at::Tensor& other) {
+        DO_COMPATIBILITY(aclnnEqual, acl_op::equal(self, other));
+        at::Tensor result = npu_preparation::apply_tensor_without_format({
+            1
+        }, self.options().dtype(at::kBool));
+        EXEC_NPU_CMD(aclnnEqual, self, other, result);
+        return result.item().to <
+        bool>();
+    }
 }
-} // namespace op_api
+// namespace op_api

@@ -20,17 +20,18 @@
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& uniform_(at::Tensor& self, double from, double to,
-                     c10::optional<at::Generator> gen_) {
-  DO_COMPATIBILITY(aclnnInplaceUniform, acl_op::uniform_(self, from, to, gen_));
-  auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen_, at_npu::detail::getDefaultNPUGenerator());
-  auto pair = gen->philox_engine_inputs(10);
-  int64_t seed = pair.first;
-  int64_t offset = pair.second;
-  EXEC_NPU_CMD(aclnnInplaceUniform, self, from, to, seed, offset);
-  return self;
+    at::Tensor& uniform_(at::Tensor& self, double from, double to,
+    c10::optional < at::Generator > gen_) {
+        DO_COMPATIBILITY(aclnnInplaceUniform, acl_op::uniform_(self, from, to, gen_));
+        auto gen = at::get_generator_or_default < at_npu::NPUGeneratorImpl >(gen_, at_npu::detail::getDefaultNPUGenerator());
+        auto pair = gen->philox_engine_inputs(10);
+        int64_t seed = pair.first;
+        int64_t offset = pair.second;
+        EXEC_NPU_CMD(aclnnInplaceUniform, self, from, to, seed, offset);
+        return self;
+    }
+
 }
-
-}  // namespace op_api
+// namespace op_api

@@ -18,10 +18,9 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor npu_bounding_box_encode(
-    const at::Tensor& anchor_box,
+    at::Tensor npu_bounding_box_encode(const at::Tensor& anchor_box,
     const at::Tensor& ground_truth_box,
     double means0,
     double means1,
@@ -31,25 +30,30 @@ at::Tensor npu_bounding_box_encode(
     double stds1,
     double stds2,
     double stds3) {
-  at::Tensor result = npu_preparation::apply_tensor(anchor_box, {anchor_box.size(0), 4});
-  c10::SmallVector<float, SIZE> means = {
-      static_cast<float>(means0),
-      static_cast<float>(means1),
-      static_cast<float>(means2),
-      static_cast<float>(means3)};
-  c10::SmallVector<float, SIZE> stds = {
-      static_cast<float>(stds0),
-      static_cast<float>(stds1),
-      static_cast<float>(stds2),
-      static_cast<float>(stds3)};
-  at_npu::native::OpCommand cmd;
-  cmd.Name("BoundingBoxEncode")
-      .Input(anchor_box)
-      .Input(ground_truth_box)
-      .Output(result)
-      .Attr("means", means)
-      .Attr("stds", stds)
-      .Run();
-  return result;
+        at::Tensor result = npu_preparation::apply_tensor(anchor_box, {
+            anchor_box.size(0), 4
+        });
+        c10::SmallVector < float, SIZE > means = {
+            static_cast < float > (means0),
+            static_cast < float > (means1),
+            static_cast < float > (means2),
+            static_cast < float > (means3)
+        };
+        c10::SmallVector < float, SIZE > stds = {
+            static_cast < float > (stds0),
+            static_cast < float > (stds1),
+            static_cast < float > (stds2),
+            static_cast < float > (stds3)
+        };
+        at_npu::native::OpCommand cmd;
+        cmd.Name("BoundingBoxEncode")
+        .Input(anchor_box)
+        .Input(ground_truth_box)
+        .Output(result)
+        .Attr("means", means)
+        .Attr("stds", stds)
+        .Run();
+        return result;
+    }
 }
-} // namespace acl_op
+// namespace acl_op

@@ -19,27 +19,30 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& triu_out(const at::Tensor& self, int64_t diagonal, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnTriu, acl_op::triu_out(self, diagonal, result));
-  npu_preparation::check_tensor({self}, result, self);
-  EXEC_NPU_CMD(aclnnTriu, self, diagonal, result);
-  return result;
+    at::Tensor& triu_out(const at::Tensor& self, int64_t diagonal, at::Tensor& result) {
+        DO_COMPATIBILITY(aclnnTriu, acl_op::triu_out(self, diagonal, result));
+        npu_preparation::check_tensor({
+            self
+        }, result, self);
+        EXEC_NPU_CMD(aclnnTriu, self, diagonal, result);
+        return result;
+    }
+
+    at::Tensor triu(const at::Tensor& self, int64_t diagonal) {
+        DO_COMPATIBILITY(aclnnTriu, acl_op::triu(self, diagonal));
+        at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+        EXEC_NPU_CMD(aclnnTriu, self, diagonal, result);
+        return result;
+    }
+
+    at::Tensor& triu_(at::Tensor& self, int64_t diagonal) {
+        DO_COMPATIBILITY(aclnnInplaceTriu, acl_op::triu_(self, diagonal));
+        EXEC_NPU_CMD(aclnnInplaceTriu, self, diagonal);
+        return self;
+    }
+
 }
-
-at::Tensor triu(const at::Tensor& self, int64_t diagonal) {
-  DO_COMPATIBILITY(aclnnTriu, acl_op::triu(self, diagonal));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnTriu, self, diagonal, result);
-  return result;
-}
-
-at::Tensor& triu_(at::Tensor& self, int64_t diagonal) {
-  DO_COMPATIBILITY(aclnnInplaceTriu, acl_op::triu_(self, diagonal));
-  EXEC_NPU_CMD(aclnnInplaceTriu, self, diagonal);
-  return self;
-}
-
-} // namespace op_api
+// namespace op_api
 

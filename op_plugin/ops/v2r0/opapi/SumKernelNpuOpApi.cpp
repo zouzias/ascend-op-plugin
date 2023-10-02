@@ -20,18 +20,19 @@
 #include "op_plugin/utils/custom_functions/opapi/inner_compute_op_api.h"
 
 namespace op_api {
-at::Tensor& sum_out(const at::Tensor &self,
-                    at::OptionalIntArrayRef dim,
-                    bool keepdim,
-                    c10::optional<c10::ScalarType> dtype,
-                    at::Tensor &result) {
-  return op_api::sum_out_common_nocheck(self, dim.value(), keepdim, dtype, result);
-}
+    at::Tensor& sum_out(const at::Tensor & self,
+    at::OptionalIntArrayRef dim,
+    bool keepdim,
+    c10::optional < c10::ScalarType > dtype,
+    at::Tensor & result) {
+        return op_api::sum_out_common_nocheck(self, dim.value(), keepdim, dtype, result);
+    }
 
-at::Tensor sum(const at::Tensor &self,
-               at::OptionalIntArrayRef dim,
-               bool keepdim,
-               c10::optional<c10::ScalarType> dtype) {
-  return op_api::sum_common_nocheck(self, dim.value(), keepdim, dtype);
+    at::Tensor sum(const at::Tensor & self,
+    at::OptionalIntArrayRef dim,
+    bool keepdim,
+    c10::optional < c10::ScalarType > dtype) {
+        return op_api::sum_common_nocheck(self, dim.value(), keepdim, dtype);
+    }
 }
-} // namespace op_api
+// namespace op_api

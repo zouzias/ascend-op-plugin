@@ -18,23 +18,24 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor npu_rotated_box_encode(
-    const at::Tensor& self,
+    at::Tensor npu_rotated_box_encode(const at::Tensor& self,
     const at::Tensor& gtBox,
     const at::Tensor& weight) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  at::Tensor weight_cpu = weight.to(at::Device(at::kCPU), at::kFloat);
-  at::ArrayRef<float> weight_list(weight_cpu.data_ptr<float>(), weight_cpu.numel());
+        at::Tensor result = npu_preparation::apply_tensor(self);
+        at::Tensor weight_cpu = weight.to(at::Device(at::kCPU), at::kFloat);
+        at::ArrayRef < float > weight_list(weight_cpu.data_ptr <
+        float>(), weight_cpu.numel());
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("RotatedBoxEncode")
-      .Input(self)
-      .Input(gtBox)
-      .Output(result)
-      .Attr("weight", weight_list)
-      .Run();
-  return result;
+        at_npu::native::OpCommand cmd;
+        cmd.Name("RotatedBoxEncode")
+        .Input(self)
+        .Input(gtBox)
+        .Output(result)
+        .Attr("weight", weight_list)
+        .Run();
+        return result;
+    }
 }
-} // namespace acl_op
+// namespace acl_op

@@ -19,15 +19,15 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor softplus_backward(
-    const at::Tensor& grad_output,
+    at::Tensor softplus_backward(const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Scalar& beta,
     const at::Scalar& threshold) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  softplus_backward_out_common_nocheck(result, grad_output, self, beta, threshold);
-  return result;
+        at::Tensor result = npu_preparation::apply_tensor(self);
+        softplus_backward_out_common_nocheck(result, grad_output, self, beta, threshold);
+        return result;
+    }
 }
-} // namespace acl_op
+// namespace acl_op

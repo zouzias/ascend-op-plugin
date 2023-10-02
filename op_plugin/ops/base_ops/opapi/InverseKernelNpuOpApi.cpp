@@ -19,19 +19,22 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& inverse_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnInverse, acl_op::inverse_out(self, result));
-  npu_preparation::check_tensor({self}, result, self.sizes());
-  EXEC_NPU_CMD(aclnnInverse, self, result);
-  return result;
-}
+    at::Tensor& inverse_out(const at::Tensor& self, at::Tensor& result) {
+        DO_COMPATIBILITY(aclnnInverse, acl_op::inverse_out(self, result));
+        npu_preparation::check_tensor({
+            self
+        }, result, self.sizes());
+        EXEC_NPU_CMD(aclnnInverse, self, result);
+        return result;
+    }
 
-at::Tensor inverse(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInverse, acl_op::inverse(self));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnInverse, self, result);
-  return result;
+    at::Tensor inverse(const at::Tensor& self) {
+        DO_COMPATIBILITY(aclnnInverse, acl_op::inverse(self));
+        at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+        EXEC_NPU_CMD(aclnnInverse, self, result);
+        return result;
+    }
 }
-} // namespace op_api
+// namespace op_api

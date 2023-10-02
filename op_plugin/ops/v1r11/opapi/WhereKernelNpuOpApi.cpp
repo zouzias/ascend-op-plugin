@@ -19,27 +19,26 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor _s_where(
-    const at::Tensor& condition,
+    at::Tensor _s_where(const at::Tensor& condition,
     const at::Tensor& self,
     const at::Tensor& other) {
-  DO_COMPATIBILITY(aclnnSWhere, acl_op::_s_where(condition, self, other));
-  auto broadcast_output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  auto output_size = op_infer::broadcast_ops_npu_output_size(condition.sizes(), broadcast_output_size);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
-  EXEC_NPU_CMD(aclnnSWhere, condition, self, other, result);
-  return result;
-}
+        DO_COMPATIBILITY(aclnnSWhere, acl_op::_s_where(condition, self, other));
+        auto broadcast_output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+        auto output_size = op_infer::broadcast_ops_npu_output_size(condition.sizes(), broadcast_output_size);
+        at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
+        EXEC_NPU_CMD(aclnnSWhere, condition, self, other, result);
+        return result;
+    }
 
-at::Tensor where(
-    const at::Tensor& condition,
+    at::Tensor where(const at::Tensor& condition,
     const at::Tensor& self,
     const at::Tensor& other) {
-  DO_COMPATIBILITY(aclnnSWhere, acl_op::where(condition, self, other));
-  return at::_s_where(condition, self, other);
-}
+        DO_COMPATIBILITY(aclnnSWhere, acl_op::where(condition, self, other));
+        return at::_s_where(condition, self, other);
+    }
 
-} // namespace op_api
+}
+// namespace op_api
 

@@ -20,57 +20,57 @@
 #include "op_plugin/AclOpsInterface.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& upsample_trilinear3d_backward_opapi(
-    const at::Tensor& grad_output,
+    at::Tensor& upsample_trilinear3d_backward_opapi(const at::Tensor& grad_output,
     at::IntArrayRef output_size,
     at::IntArrayRef input_size,
     bool align_corners,
-    c10::optional<double> scales_d,
-    c10::optional<double> scales_h,
-    c10::optional<double> scales_w,
+    c10::optional < double > scales_d,
+    c10::optional < double > scales_h,
+    c10::optional < double > scales_w,
     at::Tensor& result) {
-  double scales_d_value = scales_d.value_or(0);
-  double scales_h_value = scales_h.value_or(0);
-  double scales_w_value = scales_w.value_or(0);
-  EXEC_NPU_CMD(aclnnUpsampleTrilinear3dBackward, grad_output, output_size, input_size, align_corners,
-               scales_d_value, scales_h_value, scales_w_value, result);
-  return result;
-}
+        double scales_d_value = scales_d.value_or(0);
+        double scales_h_value = scales_h.value_or(0);
+        double scales_w_value = scales_w.value_or(0);
+        EXEC_NPU_CMD(aclnnUpsampleTrilinear3dBackward, grad_output, output_size, input_size, align_corners,
+        scales_d_value, scales_h_value, scales_w_value, result);
+        return result;
+    }
 
-at::Tensor& upsample_trilinear3d_backward_out(
-    const at::Tensor& grad_output,
+    at::Tensor& upsample_trilinear3d_backward_out(const at::Tensor& grad_output,
     at::IntArrayRef output_size,
     at::IntArrayRef input_size,
     bool align_corners,
-    c10::optional<double> scales_d,
-    c10::optional<double> scales_h,
-    c10::optional<double> scales_w,
+    c10::optional < double > scales_d,
+    c10::optional < double > scales_h,
+    c10::optional < double > scales_w,
     at::Tensor& grad_input) {
-  DO_COMPATIBILITY(aclnnUpsampleTrilinear3dBackward,
-                   acl_op::upsample_trilinear3d_backward_out(grad_output, output_size, input_size,
-                                                             align_corners, scales_d, scales_h,
-                                                             scales_w, grad_input));
-  npu_preparation::check_tensor({grad_output}, grad_input, grad_output, input_size);
-  return upsample_trilinear3d_backward_opapi(grad_output, output_size, input_size, align_corners, scales_d,
-                                             scales_h, scales_w, grad_input);
-}
+        DO_COMPATIBILITY(aclnnUpsampleTrilinear3dBackward,
+        acl_op::upsample_trilinear3d_backward_out(grad_output, output_size, input_size,
+        align_corners, scales_d, scales_h,
+        scales_w, grad_input));
+        npu_preparation::check_tensor({
+            grad_output
+        }, grad_input, grad_output, input_size);
+        return upsample_trilinear3d_backward_opapi(grad_output, output_size, input_size, align_corners, scales_d,
+        scales_h, scales_w, grad_input);
+    }
 
-at::Tensor upsample_trilinear3d_backward(
-    const at::Tensor& grad_output,
+    at::Tensor upsample_trilinear3d_backward(const at::Tensor& grad_output,
     at::IntArrayRef output_size,
     at::IntArrayRef input_size,
     bool align_corners,
-    c10::optional<double> scales_d,
-    c10::optional<double> scales_h,
-    c10::optional<double> scales_w) {
-  DO_COMPATIBILITY(aclnnUpsampleTrilinear3dBackward,
-                   acl_op::upsample_trilinear3d_backward(grad_output, output_size, input_size,
-                                                         align_corners, scales_d, scales_h, scales_w));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(grad_output, input_size);
-  return upsample_trilinear3d_backward_opapi(grad_output, output_size, input_size, align_corners, scales_d,
-                                             scales_h, scales_w, result);
-}
+    c10::optional < double > scales_d,
+    c10::optional < double > scales_h,
+    c10::optional < double > scales_w) {
+        DO_COMPATIBILITY(aclnnUpsampleTrilinear3dBackward,
+        acl_op::upsample_trilinear3d_backward(grad_output, output_size, input_size,
+        align_corners, scales_d, scales_h, scales_w));
+        at::Tensor result = npu_preparation::apply_tensor_without_format(grad_output, input_size);
+        return upsample_trilinear3d_backward_opapi(grad_output, output_size, input_size, align_corners, scales_d,
+        scales_h, scales_w, result);
+    }
 
-} // namespace op_api
+}
+// namespace op_api

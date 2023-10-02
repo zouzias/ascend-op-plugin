@@ -20,15 +20,15 @@ thread_local char g_hash_buf[g_hash_buf_size];
 thread_local int g_hash_offset = 0;
 constexpr int g_mix64Shift = 33;
 
-typedef void(*AddTensorAddrToCachedList) (void *addr);
+typedef void (* AddTensorAddrToCachedList) (void * addr);
 
-void add_param_to_buf(const at::Tensor &at_tensor) {
+void add_param_to_buf(const at::Tensor & at_tensor) {
     static const auto addTensorAddrToCachedListAddr = GetOpApiFuncAddr("AddTensorAddrToCachedList");
     AddTensorAddrToCachedList addTensorAddrToCachedListFunc =
-        reinterpret_cast<AddTensorAddrToCachedList>(addTensorAddrToCachedListAddr);
+    reinterpret_cast < AddTensorAddrToCachedList > (addTensorAddrToCachedListAddr);
     if (!at_tensor.defined()) {
         MEMCPY_TO_BUF(",", 1);
-        return;
+        return ;
     }
     // view shape
     MEMCPY_TO_BUF(at_tensor.sizes().data(), at_tensor.sizes().size() * sizeof(int64_t));
@@ -44,16 +44,16 @@ void add_param_to_buf(const at::Tensor &at_tensor) {
     MEMCPY_TO_BUF(&so, sizeof(so));
     // storage shape
     aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(st);
-    c10::SmallVector<int64_t, 5> storageDims;
+    c10::SmallVector < int64_t, 5 > storageDims;
     if (acl_data_type != ACL_STRING) {
         storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
     }
     MEMCPY_TO_BUF(storageDims.data(), storageDims.size() * sizeof(int64_t));
 
-    addTensorAddrToCachedListFunc(const_cast<void*>(at_tensor.storage().data()));
+    addTensorAddrToCachedListFunc(const_cast < void* > (at_tensor.storage().data()));
 }
 
-void add_param_to_buf(const at::Scalar &at_scalar) {
+void add_param_to_buf(const at::Scalar & at_scalar) {
     at::ScalarType scalar_data_type = at_scalar.type();
     switch (scalar_data_type) {
         case at::ScalarType::Double: {
@@ -82,23 +82,23 @@ void add_param_to_buf(const at::Scalar &at_scalar) {
     }
 }
 
-void add_param_to_buf(const at::IntArrayRef &at_array) {
+void add_param_to_buf(const at::IntArrayRef & at_array) {
     MEMCPY_TO_BUF(at_array.data(), at_array.size() * sizeof(int64_t));
 }
 
-void add_param_to_buf(const at::ArrayRef<bool> &at_array) {
+void add_param_to_buf(const at::ArrayRef < bool > & at_array) {
     MEMCPY_TO_BUF(at_array.data(), at_array.size() * sizeof(bool));
 }
 
-void add_param_to_buf(const at::TensorList &at_tensor_list) {
+void add_param_to_buf(const at::TensorList & at_tensor_list) {
     for (size_t i = 0; i < at_tensor_list.size(); i++) {
-        add_param_to_buf(at_tensor_list[i]);
+        add_param_to_buf (at_tensor_list[i]);
     }
     auto counter = at_tensor_list.size();
     MEMCPY_TO_BUF(&counter, sizeof(counter));
 }
 
-void add_param_to_buf(const c10::optional<at::Tensor> &opt_tensor) {
+void add_param_to_buf(const c10::optional < at::Tensor > & opt_tensor) {
     if (opt_tensor.has_value() && opt_tensor.value().defined()) {
         add_param_to_buf(opt_tensor.value());
     } else {
@@ -106,7 +106,7 @@ void add_param_to_buf(const c10::optional<at::Tensor> &opt_tensor) {
     }
 }
 
-void add_param_to_buf(const c10::optional<at::IntArrayRef> &opt_array) {
+void add_param_to_buf(const c10::optional < at::IntArrayRef > & opt_array) {
     if (opt_array.has_value()) {
         add_param_to_buf(opt_array.value());
     } else {
@@ -114,7 +114,7 @@ void add_param_to_buf(const c10::optional<at::IntArrayRef> &opt_array) {
     }
 }
 
-void add_param_to_buf(const c10::optional<at::Scalar> &opt_scalar) {
+void add_param_to_buf(const c10::optional < at::Scalar > & opt_scalar) {
     if (opt_scalar.has_value()) {
         add_param_to_buf(opt_scalar.value());
     } else {
@@ -130,7 +130,8 @@ void add_param_to_buf(const string& s) {
     MEMCPY_TO_BUF(s.c_str(), s.size());
 }
 
-void add_param_to_buf() {}
+void add_param_to_buf() {
+}
 
 inline uint64_t rotl64(uint64_t x, int8_t r) {
     return (x << r) | (x >> (64 - r));
@@ -139,7 +140,7 @@ inline uint64_t rotl64(uint64_t x, int8_t r) {
 #define ROTL64(x, y) rotl64(x, y)
 #define BIG_CONSTANT(x) (x##LLU)
 
-inline uint64_t GetBlock64(const uint64_t *p, int i) {
+inline uint64_t GetBlock64(const uint64_t * p, int i) {
     return p[i];
 }
 
@@ -155,8 +156,8 @@ inline uint64_t fmix64(uint64_t k) {
     return k;
 }
 
-uint64_t murmur_hash(const void *key, const int len, const uint32_t seed = 0xdeadb0d7) {
-    const uint8_t *data = (const uint8_t *)key;
+uint64_t murmur_hash(const void * key, const int len, const uint32_t seed = 0xdeadb0d7) {
+    const uint8_t * data = (const uint8_t *)key;
     // the length of each block is 16 bytes
     const int nblocks = len / 16;
     uint64_t h1 = seed;
@@ -167,7 +168,7 @@ uint64_t murmur_hash(const void *key, const int len, const uint32_t seed = 0xdea
     const uint64_t c1 = BIG_CONSTANT(0x87c37b91114253d5);
     const uint64_t c2 = BIG_CONSTANT(0x4cf5ad432745937f);
 
-    const uint64_t *blocks = (const uint64_t *)(data);
+    const uint64_t * blocks = (const uint64_t *)(data);
 
     for (int i = 0; i < nblocks; i++) {
         int even_num = 2;
@@ -177,7 +178,7 @@ uint64_t murmur_hash(const void *key, const int len, const uint32_t seed = 0xdea
 
         int8_t k1_shift = 31;
         k1 *= c1;
-        k1  = ROTL64(k1, k1_shift);
+        k1 = ROTL64(k1, k1_shift);
         k1 *= c2;
         h1 ^= k1;
 
@@ -189,7 +190,7 @@ uint64_t murmur_hash(const void *key, const int len, const uint32_t seed = 0xdea
 
         int8_t k2_shift = 33;
         k2 *= c2;
-        k2  = ROTL64(k2, k2_shift);
+        k2 = ROTL64(k2, k2_shift);
         k2 *= c1;
         h2 ^= k2;
 
@@ -201,67 +202,83 @@ uint64_t murmur_hash(const void *key, const int len, const uint32_t seed = 0xdea
     }
 
     // the length of each block is 16 bytes
-    const uint8_t *tail = (const uint8_t*)(data + nblocks * 16);
+    const uint8_t * tail = (const uint8_t*)(data + nblocks * 16);
     uint64_t k1 = 0;
     uint64_t k2 = 0;
     // because the size of a block is 16, different offsets are calculated for tail blocks
     // for different sizes
     switch (len & 15)
     {
-    case 15:
+        case 15:
         k2 ^= ((uint64_t)tail[14]) << 48;
-        [[fallthrough]];;
-    case 14:
+        [[fallthrough]];
+        ;
+        case 14:
         k2 ^= ((uint64_t)tail[13]) << 40;
-        [[fallthrough]];;
-    case 13:
+        [[fallthrough]];
+        ;
+        case 13:
         k2 ^= ((uint64_t)tail[12]) << 32;
-        [[fallthrough]];;
-    case 12:
+        [[fallthrough]];
+        ;
+        case 12:
         k2 ^= ((uint64_t)tail[11]) << 24;
-        [[fallthrough]];;
-    case 11:
+        [[fallthrough]];
+        ;
+        case 11:
         k2 ^= ((uint64_t)tail[10]) << 16;
-        [[fallthrough]];;
-    case 10:
+        [[fallthrough]];
+        ;
+        case 10:
         k2 ^= ((uint64_t)tail[9]) << 8;
-        [[fallthrough]];;
-    case 9:
+        [[fallthrough]];
+        ;
+        case 9:
         k2 ^= ((uint64_t)tail[8]) << 0;
         k2 *= c2;
         k2 = ROTL64(k2, 33);
         k2 *= c1;
         h2 ^= k2;
-        [[fallthrough]];;
-    case 8:
+        [[fallthrough]];
+        ;
+        case 8:
         k1 ^= ((uint64_t)tail[7]) << 56;
-        [[fallthrough]];;
-    case 7:
+        [[fallthrough]];
+        ;
+        case 7:
         k1 ^= ((uint64_t)tail[6]) << 48;
-        [[fallthrough]];;
-    case 6:
+        [[fallthrough]];
+        ;
+        case 6:
         k1 ^= ((uint64_t)tail[5]) << 40;
-        [[fallthrough]];;
-    case 5:
+        [[fallthrough]];
+        ;
+        case 5:
         k1 ^= ((uint64_t)tail[4]) << 32;
-        [[fallthrough]];;
-    case 4:
+        [[fallthrough]];
+        ;
+        case 4:
         k1 ^= ((uint64_t)tail[3]) << 24;
-        [[fallthrough]];;
-    case 3:
+        [[fallthrough]];
+        ;
+        case 3:
         k1 ^= ((uint64_t)tail[2]) << 16;
-        [[fallthrough]];;
-    case 2:
+        [[fallthrough]];
+        ;
+        case 2:
         k1 ^= ((uint64_t)tail[1]) << 8;
-        [[fallthrough]];;
-    case 1:
+        [[fallthrough]];
+        ;
+        case 1:
         k1 ^= ((uint64_t)tail[0]) << 0;
         k1 *= c1;
         k1 = ROTL64(k1, 31);
         k1 *= c2;
         h1 ^= k1;
-        [[fallthrough]];;
-    };
+        [[fallthrough]];
+        ;
+    }
+    ;
 
     h1 ^= len;
     h2 ^= len;

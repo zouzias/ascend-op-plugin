@@ -18,17 +18,19 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
-  
-at::Tensor trace(const at::Tensor &self) {
-  DO_COMPATIBILITY(aclnnTrace, acl_op::trace(self));
-  c10::SmallVector<int64_t, op_infer::N> outputSize = {};
-  auto out_dtype = (isIntegralType(self.scalar_type(), true)) ?
-                    at::kLong : self.scalar_type();
-  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(out_dtype));
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnTrace, self, result);
-  return result;
+    using npu_preparation = at_npu::native::OpPreparation;
+
+    at::Tensor trace(const at::Tensor & self) {
+        DO_COMPATIBILITY(aclnnTrace, acl_op::trace(self));
+        c10::SmallVector < int64_t, op_infer::N > outputSize = {
+        };
+        auto out_dtype = (isIntegralType(self.scalar_type(), true)) ?
+        at::kLong : self.scalar_type();
+        at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(out_dtype));
+        // calculate the output result of the NPU
+        EXEC_NPU_CMD(aclnnTrace, self, result);
+        return result;
+    }
 }
-} // namespace op_api
+// namespace op_api
 

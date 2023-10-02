@@ -20,12 +20,13 @@
 
 namespace op_api {
 
-at::Tensor kl_div_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& target,
-                           int64_t reduction, bool log_target) {
-  DO_COMPATIBILITY(aclnnKlDivBackward, acl_op::kl_div_backward(grad_output, self, target, reduction, log_target));
+    at::Tensor kl_div_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& target,
+    int64_t reduction, bool log_target) {
+        DO_COMPATIBILITY(aclnnKlDivBackward, acl_op::kl_div_backward(grad_output, self, target, reduction, log_target));
 
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnKlDivBackward, grad_output, self, target, reduction, log_target, result);
-  return result;
+        at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self);
+        EXEC_NPU_CMD(aclnnKlDivBackward, grad_output, self, target, reduction, log_target, result);
+        return result;
+    }
 }
-}  // namespace op_api
+// namespace op_api

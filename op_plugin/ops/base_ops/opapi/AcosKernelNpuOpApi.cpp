@@ -19,35 +19,38 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& acos_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnAcos, acl_op::acos_out(self, result));
-  TORCH_CHECK(!isIntegralType(result.scalar_type(), true), "result dtype can't be cast to the desired output type.\n");
-  auto outputSize = self.sizes();
-  npu_preparation::check_tensor({self}, result, result.scalar_type(), outputSize);
-  EXEC_NPU_CMD(aclnnAcos, self, result);
-  return result;
+    at::Tensor& acos_out(const at::Tensor& self, at::Tensor& result) {
+        DO_COMPATIBILITY(aclnnAcos, acl_op::acos_out(self, result));
+        TORCH_CHECK(!isIntegralType(result.scalar_type(), true), "result dtype can't be cast to the desired output type.\n");
+        auto outputSize = self.sizes();
+        npu_preparation::check_tensor({
+            self
+        }, result, result.scalar_type(), outputSize);
+        EXEC_NPU_CMD(aclnnAcos, self, result);
+        return result;
+    }
+
+    at::Tensor acos(const at::Tensor& self) {
+        DO_COMPATIBILITY(aclnnAcos, acl_op::acos(self));
+        auto outputSize = self.sizes();
+        auto outDtype = self.dtype();
+        if (isIntegralType(self.scalar_type(), true)) {
+            outDtype = at::kFloat;
+        }
+        at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(outDtype));
+        EXEC_NPU_CMD(aclnnAcos, self, result);
+
+        return result;
+    }
+
+    at::Tensor& acos_(at::Tensor& self) {
+        DO_COMPATIBILITY(aclnnInplaceAcos, acl_op::acos_(self));
+        TORCH_CHECK(!isIntegralType(self.scalar_type(), true), "result dtype can't be cast to the desired output type.\n");
+        EXEC_NPU_CMD(aclnnInplaceAcos, self);
+        return self;
+    }
+
 }
-
-at::Tensor acos(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnAcos, acl_op::acos(self));
-  auto outputSize = self.sizes();
-  auto outDtype = self.dtype();
-  if (isIntegralType(self.scalar_type(), true)) {
-    outDtype = at::kFloat;
-  }
-  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(outDtype));
-  EXEC_NPU_CMD(aclnnAcos, self, result);
-
-  return result;
-}
-
-at::Tensor& acos_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceAcos, acl_op::acos_(self));
-  TORCH_CHECK(!isIntegralType(self.scalar_type(), true), "result dtype can't be cast to the desired output type.\n");
-  EXEC_NPU_CMD(aclnnInplaceAcos, self);
-  return self;
-}
-
-}  // namespace op_api
+// namespace op_api

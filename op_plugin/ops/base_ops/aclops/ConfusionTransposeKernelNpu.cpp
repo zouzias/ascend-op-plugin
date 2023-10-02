@@ -18,31 +18,32 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor npu_confusion_transpose(const at::Tensor& self,
+    at::Tensor npu_confusion_transpose(const at::Tensor& self,
     at::IntArrayRef perm,
     at::IntArrayRef shape,
     bool transpose_first) {
-  c10::SmallVector<int64_t, SIZE> output_size;
-  if (transpose_first) {
-    output_size = op_infer::array_to_small_vector(shape);
-  } else {
-    for (int i = 0; i < perm.size(); i++) {
-      output_size.emplace_back(shape[perm[i]]);
+        c10::SmallVector < int64_t, SIZE > output_size;
+        if (transpose_first) {
+            output_size = op_infer::array_to_small_vector(shape);
+        } else {
+            for (int i = 0; i < perm.size(); i++) {
+                output_size.emplace_back(shape[perm[i]]);
+            }
+        }
+
+        at::Tensor result = npu_preparation::apply_tensor(self, output_size);
+        at_npu::native::OpCommand cmd;
+        cmd.Name("ConfusionTransposeD")
+        .Input(self)
+        .Output(result)
+        .Attr("perm", perm)
+        .Attr("shape", shape)
+        .Attr("transpose_first", transpose_first)
+        .Run();
+
+        return result;
     }
-  }
-
-  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("ConfusionTransposeD")
-      .Input(self)
-      .Output(result)
-      .Attr("perm", perm)
-      .Attr("shape", shape)
-      .Attr("transpose_first", transpose_first)
-      .Run();
-
-  return result;
 }
-} // namespace acl_op
+// namespace acl_op

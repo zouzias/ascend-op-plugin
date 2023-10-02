@@ -20,50 +20,58 @@
 
 namespace op_api {
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(
-    const at::Tensor& input, at::IntArrayRef normalized_shape, const c10::optional<at::Tensor>& weight_ex,
-    const c10::optional<at::Tensor>& bias_ex, double eps) {
-  DO_COMPATIBILITY(aclnnLayerNorm,
-                   acl_op::native_layer_norm(input, normalized_shape, weight_ex, bias_ex, eps));
-  const at::Tensor& weight_op = c10::value_or_else(weight_ex, [] { return at::Tensor(); });
-  const at::Tensor& bias_op = c10::value_or_else(bias_ex, [] { return at::Tensor(); });
-  at::Tensor weight =
-      weight_op.defined() ? weight_op.resize_(normalized_shape) : at::ones(normalized_shape, input.options());
-  at::Tensor bias =
-      bias_op.defined() ? bias_op.resize_(normalized_shape) : at::zeros(normalized_shape, input.options());
+    std::tuple < at::Tensor, at::Tensor, at::Tensor > native_layer_norm(const at::Tensor& input, at::IntArrayRef normalized_shape, const c10::optional < at::Tensor >& weight_ex,
+    const c10::optional < at::Tensor >& bias_ex, double eps) {
+        DO_COMPATIBILITY(aclnnLayerNorm,
+        acl_op::native_layer_norm(input, normalized_shape, weight_ex, bias_ex, eps));
+        const at::Tensor & weight_op = c10::value_or_else(weight_ex, [] {
+            return at::Tensor();
+        });
+        const at::Tensor & bias_op = c10::value_or_else(bias_ex, [] {
+            return at::Tensor();
+        });
+        at::Tensor weight =
+        weight_op.defined() ? weight_op.resize_(normalized_shape) : at::ones(normalized_shape, input.options());
+        at::Tensor bias =
+        bias_op.defined() ? bias_op.resize_(normalized_shape) : at::zeros(normalized_shape, input.options());
 
-  // 构造HostApi接口所需的输出
-  auto output = at_npu::native::OpPreparation::apply_tensor_without_format(input);
-  at::Tensor mean_out;
-  at::Tensor rstd_out;
+        // 构造HostApi接口所需的输出
+        auto output = at_npu::native::OpPreparation::apply_tensor_without_format(input);
+        at::Tensor mean_out;
+        at::Tensor rstd_out;
 
-  const size_t norm_ndim = normalized_shape.size();
-  const size_t input_ndim = input.dim();
-  const size_t begin_axis = input_ndim - norm_ndim;
+        const size_t norm_ndim = normalized_shape.size();
+        const size_t input_ndim = input.dim();
+        const size_t begin_axis = input_ndim - norm_ndim;
 
-  const auto input_shape = input.sizes();
+        const auto input_shape = input.sizes();
 
-  const int64_t M =
-      std::accumulate(input_shape.cbegin(), input_shape.cbegin() + begin_axis, 1LL, std::multiplies<int64_t>());
-  // 根据M是否大于0，决定输出shape的大小
-  if (M <= 0) {
-    mean_out = at_npu::native::OpPreparation::apply_tensor_without_format({M}, input.options());
-    rstd_out = at_npu::native::OpPreparation::apply_tensor_without_format({M}, input.options());
-  } else {
-    at::SmallVector<int64_t, 8> mean_shape;
-    for (size_t index = 0; index < begin_axis; index++) {
-      mean_shape.emplace_back(input.size(index));
+        const int64_t M =
+        std::accumulate(input_shape.cbegin(), input_shape.cbegin() + begin_axis, 1LL, std::multiplies < int64_t >());
+        // 根据M是否大于0，决定输出shape的大小
+        if (M <= 0) {
+            mean_out = at_npu::native::OpPreparation::apply_tensor_without_format({
+                M
+            }, input.options());
+            rstd_out = at_npu::native::OpPreparation::apply_tensor_without_format({
+                M
+            }, input.options());
+        } else {
+            at::SmallVector < int64_t, 8 > mean_shape;
+            for (size_t index = 0; index < begin_axis; index++) {
+                mean_shape.emplace_back(input.size(index));
+            }
+            for (size_t index = begin_axis; index < input_ndim; index++) {
+                mean_shape.emplace_back(1);
+            }
+            mean_out = at_npu::native::OpPreparation::apply_tensor_without_format(mean_shape, input.options());
+            rstd_out = at_npu::native::OpPreparation::apply_tensor_without_format(mean_shape, input.options());
+        }
+        // 调用HostAPI接口
+        EXEC_NPU_CMD(aclnnLayerNorm, input, normalized_shape, weight, bias, eps, output, mean_out, rstd_out);
+        return std::tie(output, mean_out, rstd_out);
     }
-    for (size_t index = begin_axis; index < input_ndim; index++) {
-      mean_shape.emplace_back(1);
-    }
-    mean_out = at_npu::native::OpPreparation::apply_tensor_without_format(mean_shape, input.options());
-    rstd_out = at_npu::native::OpPreparation::apply_tensor_without_format(mean_shape, input.options());
-  }
-  // 调用HostAPI接口
-  EXEC_NPU_CMD(aclnnLayerNorm, input, normalized_shape, weight, bias, eps, output, mean_out, rstd_out);
-  return std::tie(output, mean_out, rstd_out);
+
 }
-
-}  // namespace op_api
+// namespace op_api
 

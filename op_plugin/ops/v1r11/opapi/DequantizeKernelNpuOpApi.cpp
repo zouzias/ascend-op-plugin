@@ -19,8 +19,9 @@
 
 namespace op_api {
 
-at::Tensor dequantize(const at::Tensor& self) {
-  return self.to(at::kFloat);
-}
+    at::Tensor dequantize(const at::Tensor& self) {
+        return self.to(at::kFloat);
+    }
 
-} // namespace op_api
+}
+// namespace op_api

@@ -19,26 +19,29 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& sigmoid_backward_out(const at::Tensor& grad_output, const at::Tensor& output, at::Tensor& result)
-{
-  DO_COMPATIBILITY(aclnnSigmoidBackward, acl_op::sigmoid_backward_out(grad_output, output, result));
-  auto output_size = op_infer::broadcast_ops_npu_output_size(grad_output, output);
-  npu_preparation::check_tensor({grad_output, output}, result, result.scalar_type(), output_size);
-  EXEC_NPU_CMD(aclnnSigmoidBackward, grad_output, output, result);
-  return result;
+    at::Tensor& sigmoid_backward_out(const at::Tensor& grad_output, const at::Tensor& output, at::Tensor& result)
+    {
+        DO_COMPATIBILITY(aclnnSigmoidBackward, acl_op::sigmoid_backward_out(grad_output, output, result));
+        auto output_size = op_infer::broadcast_ops_npu_output_size(grad_output, output);
+        npu_preparation::check_tensor({
+            grad_output, output
+        }, result, result.scalar_type(), output_size);
+        EXEC_NPU_CMD(aclnnSigmoidBackward, grad_output, output, result);
+        return result;
+    }
+
+    at::Tensor sigmoid_backward(const at::Tensor& grad_output, const at::Tensor& output)
+    {
+        DO_COMPATIBILITY(aclnnSigmoidBackward, acl_op::sigmoid_backward(grad_output, output));
+        auto output_size = op_infer::broadcast_ops_npu_output_size(grad_output, output);
+        at::ScalarType promote_type = at::native::result_type(grad_output, output);
+        at::Tensor grad_input = npu_preparation::apply_tensor_without_format(output_size, promote_type);
+        EXEC_NPU_CMD(aclnnSigmoidBackward, grad_output, output, grad_input);
+        return grad_input;
+    }
+
 }
-
-at::Tensor sigmoid_backward(const at::Tensor& grad_output, const at::Tensor& output)
-{
-  DO_COMPATIBILITY(aclnnSigmoidBackward, acl_op::sigmoid_backward(grad_output, output));
-  auto output_size = op_infer::broadcast_ops_npu_output_size(grad_output, output);
-  at::ScalarType promote_type = at::native::result_type(grad_output, output);
-  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(output_size, promote_type);
-  EXEC_NPU_CMD(aclnnSigmoidBackward, grad_output, output, grad_input);
-  return grad_input;
-}
-
-}  // namespace op_api
+// namespace op_api
 

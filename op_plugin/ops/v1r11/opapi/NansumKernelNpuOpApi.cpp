@@ -18,40 +18,45 @@
 
 namespace op_api {
 
-at::Tensor& nansum_out(const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
-                       c10::optional<c10::ScalarType> dtype, at::Tensor& result)
-{
-    c10::ScalarType dstType;
-    if (dtype.has_value()) {
-        dstType = dtype.value();
-    } else if (result.defined()) {
-        dstType = result.scalar_type();
-    } else {
-        dstType = self.scalar_type();
+    at::Tensor& nansum_out(const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
+    c10::optional < c10::ScalarType > dtype, at::Tensor& result)
+    {
+        c10::ScalarType dstType;
+        if (dtype.has_value()) {
+            dstType = dtype.value();
+        } else
+            if (result.defined()) {
+                dstType = result.scalar_type();
+            } else {
+                dstType = self.scalar_type();
+            }
+        auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
+        at_npu::native::OpPreparation::check_tensor({
+            self
+        }, result, result.scalar_type(), output_size);
+
+        EXEC_NPU_CMD(aclnnReduceNansum, self, dim, keepdim, dstType, result);
+        return result;
     }
-    auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-    at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), output_size);
 
-    EXEC_NPU_CMD(aclnnReduceNansum, self, dim, keepdim, dstType, result);
-    return result;
-}
-
-at::Tensor nansum(const at::Tensor& self, at::IntArrayRef dim, bool keepdim, c10::optional<c10::ScalarType> dtype)
-{
-    // create result tensor with int64 if dtype has no value and self is intergal
-    c10::ScalarType promoteInteSelf = isIntegralType(self.scalar_type(), true) ? at::kLong : self.scalar_type();
-    c10::ScalarType dstType = dtype.has_value() ? dtype.value() : promoteInteSelf;
-    auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-    at::Tensor result =
+    at::Tensor nansum(const at::Tensor& self, at::IntArrayRef dim, bool keepdim, c10::optional < c10::ScalarType > dtype)
+    {
+        // create result tensor with int64 if dtype has no value and self is intergal
+        c10::ScalarType promoteInteSelf = isIntegralType(self.scalar_type(), true) ? at::kLong : self.scalar_type();
+        c10::ScalarType dstType = dtype.has_value() ? dtype.value() : promoteInteSelf;
+        auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
+        at::Tensor result =
         at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options().dtype(dstType));
 
-    op_api::nansum_out(self, dim, keepdim, dtype, result);
-    return result;
-}
+        op_api::nansum_out(self, dim, keepdim, dtype, result);
+        return result;
+    }
 
-at::Tensor nansum(const at::Tensor& self, c10::optional<c10::ScalarType> dtype)
-{
-    return op_api::nansum(self, c10::SmallVector<int64_t, N>{}, false, dtype);
-}
+    at::Tensor nansum(const at::Tensor& self, c10::optional < c10::ScalarType > dtype)
+    {
+        return op_api::nansum(self, c10::SmallVector < int64_t, N >{
+        }, false, dtype);
+    }
 
-}  // namespace op_api
+}
+// namespace op_api

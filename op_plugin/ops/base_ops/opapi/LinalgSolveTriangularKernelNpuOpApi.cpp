@@ -20,65 +20,64 @@
 #include <ATen/native/LinearAlgebraUtils.h>
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-namespace {
-at::Tensor exec_triangular_solve(
-    const at::Tensor& self,
-    const at::Tensor& A,
-    bool upper,
-    bool transpose,
-    bool unitriangular)
-{
-  at::Tensor self_broadcasted;
-  at::Tensor a_broadcasted;
-  std::tie(self_broadcasted, a_broadcasted) = at::native::_linalg_broadcast_batch_dims(self, A, "triangular_solve");
-  auto self_working_copy = npu_preparation::apply_tensor(self_broadcasted);
-  auto a_working_copy = a_broadcasted.clone();
-  EXEC_NPU_CMD(aclnnTriangularSolve, self, A, upper, transpose, unitriangular, self_working_copy, a_working_copy);
-  return self_working_copy;
-}
+    namespace {
+        at::Tensor exec_triangular_solve(const at::Tensor& self,
+        const at::Tensor& A,
+        bool upper,
+        bool transpose,
+        bool unitriangular)
+        {
+            at::Tensor self_broadcasted;
+            at::Tensor a_broadcasted;
+            std::tie(self_broadcasted, a_broadcasted) = at::native::_linalg_broadcast_batch_dims(self, A, "triangular_solve");
+            auto self_working_copy = npu_preparation::apply_tensor(self_broadcasted);
+            auto a_working_copy = a_broadcasted.clone();
+            EXEC_NPU_CMD(aclnnTriangularSolve, self, A, upper, transpose, unitriangular, self_working_copy, a_working_copy);
+            return self_working_copy;
+        }
 
-} // namespace
+    }
+    // namespace
 
-at::Tensor& linalg_solve_triangular_out(
-    const at::Tensor& self,
+    at::Tensor& linalg_solve_triangular_out(const at::Tensor& self,
     const at::Tensor& B,
     bool upper,
     bool left,
     bool unitriangular,
     at::Tensor& out)
-{
-  at::Tensor X;
-  at::Tensor X_transpose;
-  bool transpose = false;
-  if (left) {
-    X = exec_triangular_solve(B, self, upper, transpose, unitriangular);
-    return X;
-  } else {
-    X = exec_triangular_solve(B.transpose(-2, -1), self.transpose(-2, -1), !upper, transpose, unitriangular);
-    X_transpose = X.transpose(-2, -1);
-    return X_transpose;
-  }
-}
+    {
+        at::Tensor X;
+        at::Tensor X_transpose;
+        bool transpose = false;
+        if (left) {
+            X = exec_triangular_solve(B, self, upper, transpose, unitriangular);
+            return X;
+        } else {
+            X = exec_triangular_solve(B.transpose(-2, -1), self.transpose(-2, -1), !upper, transpose, unitriangular);
+            X_transpose = X.transpose(-2, -1);
+            return X_transpose;
+        }
+    }
 
-at::Tensor linalg_solve_triangular(
-    const at::Tensor& self,
+    at::Tensor linalg_solve_triangular(const at::Tensor& self,
     const at::Tensor& B,
     bool upper,
     bool left,
     bool unitriangular)
-{
-  at::Tensor X;
-  at::Tensor X_transpose;
-  bool transpose = false;
-  if (left) {
-    X = exec_triangular_solve(B, self, upper, transpose, unitriangular);
-    return X;
-  } else {
-    X = exec_triangular_solve(B.transpose(-2, -1), self.transpose(-2, -1), !upper, transpose, unitriangular);
-    X_transpose = X.transpose(-2, -1);
-    return X_transpose;
-  }
+    {
+        at::Tensor X;
+        at::Tensor X_transpose;
+        bool transpose = false;
+        if (left) {
+            X = exec_triangular_solve(B, self, upper, transpose, unitriangular);
+            return X;
+        } else {
+            X = exec_triangular_solve(B.transpose(-2, -1), self.transpose(-2, -1), !upper, transpose, unitriangular);
+            X_transpose = X.transpose(-2, -1);
+            return X_transpose;
+        }
+    }
 }
-}  // namespace op_api
+// namespace op_api

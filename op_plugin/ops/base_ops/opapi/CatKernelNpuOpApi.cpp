@@ -20,16 +20,17 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& cat_out(at::TensorList tensors, at::Dimname dim, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnCat, acl_op::cat_out(tensors, dim, result));
-  return at::cat_out(result, tensors, dimname_to_position(tensors[0], dim));
+    at::Tensor& cat_out(at::TensorList tensors, at::Dimname dim, at::Tensor& result) {
+        DO_COMPATIBILITY(aclnnCat, acl_op::cat_out(tensors, dim, result));
+        return at::cat_out(result, tensors, dimname_to_position(tensors[0], dim));
+    }
+
+    at::Tensor cat(at::TensorList tensors, at::Dimname dim) {
+        DO_COMPATIBILITY(aclnnCat, acl_op::cat(tensors, dim));
+        return at::cat(tensors, dimname_to_position(tensors[0], dim));
+    }
+
 }
-
-at::Tensor cat(at::TensorList tensors, at::Dimname dim) {
-  DO_COMPATIBILITY(aclnnCat, acl_op::cat(tensors, dim));
-  return at::cat(tensors, dimname_to_position(tensors[0], dim));
-}
-
-}  // namespace op_api
+// namespace op_api

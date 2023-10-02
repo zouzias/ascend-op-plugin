@@ -18,30 +18,29 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& hardshrink_backward_out(
-    const at::Tensor& grad_output,
+    at::Tensor& hardshrink_backward_out(const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Scalar& lambd,
     at::Tensor& grad_input) {
-  TORCH_CHECK(false, "hardshrink_backward.grad_input is not supported.");
-  return grad_input;
-}
+        TORCH_CHECK(false, "hardshrink_backward.grad_input is not supported.");
+        return grad_input;
+    }
 
-at::Tensor hardshrink_backward(
-    const at::Tensor& grad_output,
+    at::Tensor hardshrink_backward(const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Scalar& lambd) {
-  at::Tensor grad_input = npu_preparation::apply_tensor(self);
-  at_npu::native::OpCommand cmd;
-  cmd.Name("HardShrinkGrad")
-      .Input(grad_output)
-      .Input(self)
-      .Attr("lambd", lambd)
-      .Output(grad_input)
-      .Run();
+        at::Tensor grad_input = npu_preparation::apply_tensor(self);
+        at_npu::native::OpCommand cmd;
+        cmd.Name("HardShrinkGrad")
+        .Input(grad_output)
+        .Input(self)
+        .Attr("lambd", lambd)
+        .Output(grad_input)
+        .Run();
 
-  return grad_input;
+        return grad_input;
+    }
 }
-} // namespace acl_op
+// namespace acl_op

@@ -20,68 +20,73 @@
 
 namespace op_api {
 
-at::Tensor& mean_out(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim,
-                     c10::optional<c10::ScalarType> dtype, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnMean, acl_op::mean_out(self, dim, keepdim, dtype, result));
-  at::IntArrayRef dimArray;
-  if (dim.has_value()) {
-    dimArray = dim.value();
-  } else {
-    dimArray = op_plugin::utils::get_dimlist_for_tensor(self);
-  }
+    at::Tensor& mean_out(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim,
+    c10::optional < c10::ScalarType > dtype, at::Tensor& result) {
+        DO_COMPATIBILITY(aclnnMean, acl_op::mean_out(self, dim, keepdim, dtype, result));
+        at::IntArrayRef dimArray;
+        if (dim.has_value()) {
+            dimArray = dim.value();
+        } else {
+            dimArray = op_plugin::utils::get_dimlist_for_tensor(self);
+        }
 
-  c10::ScalarType dstType;
-  if (dtype.has_value()) {
-    dstType = dtype.value();
-  } else if (result.defined()) {
-    dstType = result.scalar_type();
-  } else {
-    dstType = self.scalar_type();
-  }
-  // 推导reduecshape
-  auto outputSize = op_infer::reduce_ops_npu_output_size(self, dimArray, keepdim);
-  at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), outputSize);
+        c10::ScalarType dstType;
+        if (dtype.has_value()) {
+            dstType = dtype.value();
+        } else
+            if (result.defined()) {
+                dstType = result.scalar_type();
+            } else {
+                dstType = self.scalar_type();
+            }
+        // 推导reduecshape
+        auto outputSize = op_infer::reduce_ops_npu_output_size(self, dimArray, keepdim);
+        at_npu::native::OpPreparation::check_tensor({
+            self
+        }, result, result.scalar_type(), outputSize);
 
-  EXEC_NPU_CMD(aclnnMean, self, dimArray, keepdim, dstType, result);
-  return result;
+        EXEC_NPU_CMD(aclnnMean, self, dimArray, keepdim, dstType, result);
+        return result;
+    }
+
+    at::Tensor mean(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim,
+    c10::optional < c10::ScalarType > dtype) {
+        DO_COMPATIBILITY(aclnnMean, acl_op::mean(self, dim, keepdim, dtype));
+        c10::ScalarType dstType = dtype.has_value() ? dtype.value() : self.scalar_type();
+        at::IntArrayRef dimArray;
+        if (dim.has_value()) {
+            dimArray = dim.value();
+        } else {
+            dimArray = op_plugin::utils::get_dimlist_for_tensor(self);
+        }
+        // calculate the output size
+        auto outputSize = op_infer::reduce_ops_npu_output_size(self, dimArray, keepdim);
+
+        // construct the output tensor of the NPU
+        at::Tensor result =
+        at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, self.options().dtype(dstType));
+
+        // calculate the output result of the NPU
+        op_api::mean_out(self, dim, keepdim, dtype, result);
+        return result;
+    }
+
+    at::Tensor mean(const at::Tensor& self, at::DimnameList dim, bool keepdim, c10::optional < c10::ScalarType > dtype) {
+        DO_COMPATIBILITY(aclnnMean, acl_op::mean(self, dim, keepdim, dtype));
+        return op_api::mean(self, dimnames_to_positions(self, dim), keepdim, dtype);
+    }
+
+    at::Tensor& mean_out(const at::Tensor& self, at::DimnameList dim, bool keepdim, c10::optional < c10::ScalarType > dtype,
+    at::Tensor& result) {
+        DO_COMPATIBILITY(aclnnMean, acl_op::mean_out(self, dim, keepdim, dtype, result));
+        return op_api::mean_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
+    }
+
+    at::Tensor mean(const at::Tensor& self, c10::optional < c10::ScalarType > dtype) {
+        DO_COMPATIBILITY(aclnnMean, acl_op::mean(self, dtype));
+        return op_api::mean(self, c10::SmallVector < int64_t, N >{
+        }, false, dtype);
+    }
+
 }
-
-at::Tensor mean(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim,
-                c10::optional<c10::ScalarType> dtype) {
-  DO_COMPATIBILITY(aclnnMean, acl_op::mean(self, dim, keepdim, dtype));
-  c10::ScalarType dstType = dtype.has_value() ? dtype.value() : self.scalar_type();
-  at::IntArrayRef dimArray;
-  if (dim.has_value()) {
-    dimArray = dim.value();
-  } else {
-    dimArray = op_plugin::utils::get_dimlist_for_tensor(self);
-  }
-  // calculate the output size
-  auto outputSize = op_infer::reduce_ops_npu_output_size(self, dimArray, keepdim);
-
-  // construct the output tensor of the NPU
-  at::Tensor result =
-      at_npu::native::OpPreparation::apply_tensor_without_format(outputSize, self.options().dtype(dstType));
-
-  // calculate the output result of the NPU
-  op_api::mean_out(self, dim, keepdim, dtype, result);
-  return result;
-}
-
-at::Tensor mean(const at::Tensor& self, at::DimnameList dim, bool keepdim, c10::optional<c10::ScalarType> dtype) {
-  DO_COMPATIBILITY(aclnnMean, acl_op::mean(self, dim, keepdim, dtype));
-  return op_api::mean(self, dimnames_to_positions(self, dim), keepdim, dtype);
-}
-
-at::Tensor& mean_out(const at::Tensor& self, at::DimnameList dim, bool keepdim, c10::optional<c10::ScalarType> dtype,
-                     at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnMean, acl_op::mean_out(self, dim, keepdim, dtype, result));
-  return op_api::mean_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
-}
-
-at::Tensor mean(const at::Tensor& self, c10::optional<c10::ScalarType> dtype) {
-  DO_COMPATIBILITY(aclnnMean, acl_op::mean(self, dtype));
-  return op_api::mean(self, c10::SmallVector<int64_t, N>{}, false, dtype);
-}
-
-}  // namespace op_api
+// namespace op_api

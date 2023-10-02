@@ -19,56 +19,53 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> std_mean(
-    const at::Tensor& self,
+    std::tuple < at::Tensor, at::Tensor > std_mean(const at::Tensor& self,
     at::DimnameList dim,
-    const c10::optional<at::Scalar>& correction,
+    const c10::optional < at::Scalar >& correction,
     bool keepdim) {
-  return op_api::std_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
-}
+        return op_api::std_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
+    }
 
-std::tuple<at::Tensor, at::Tensor> std_mean(
-    const at::Tensor& self,
+    std::tuple < at::Tensor, at::Tensor > std_mean(const at::Tensor& self,
     at::OptionalIntArrayRef dim,
-    const c10::optional<at::Scalar>& correction,
+    const c10::optional < at::Scalar >& correction,
     bool keepdim) {
-  DO_COMPATIBILITY(aclnnStdMeanCorrection, acl_op::std_mean(self, dim, correction, keepdim));
-  c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
-  if (dim.has_value()) {
-    real_dim = op_infer::array_to_small_vector(dim.value());
-  }
-  auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
+        DO_COMPATIBILITY(aclnnStdMeanCorrection, acl_op::std_mean(self, dim, correction, keepdim));
+        c10::SmallVector < int64_t, SIZE > real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
+        if (dim.has_value()) {
+            real_dim = op_infer::array_to_small_vector(dim.value());
+        }
+        auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
 
-  at::Tensor std_out = npu_preparation::apply_tensor_without_format(self, output_size);
-  at::Tensor mean_out = npu_preparation::apply_tensor_without_format(self, output_size);
+        at::Tensor std_out = npu_preparation::apply_tensor_without_format(self, output_size);
+        at::Tensor mean_out = npu_preparation::apply_tensor_without_format(self, output_size);
 
-  int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
-  auto real_dim_array = at::IntArrayRef(real_dim);
-  EXEC_NPU_CMD(aclnnStdMeanCorrection, self, real_dim_array, real_correction, keepdim, std_out, mean_out);
-  return std::tie(std_out, mean_out);
-}
+        int64_t real_correction = correction.has_value() ? correction.value().toInt() : 1;
+        auto real_dim_array = at::IntArrayRef(real_dim);
+        EXEC_NPU_CMD(aclnnStdMeanCorrection, self, real_dim_array, real_correction, keepdim, std_out, mean_out);
+        return std::tie(std_out, mean_out);
+    }
 
-std::tuple<at::Tensor, at::Tensor> std_mean(
-    const at::Tensor& self,
+    std::tuple < at::Tensor, at::Tensor > std_mean(const at::Tensor& self,
     at::DimnameList dim,
     bool unbiased,
     bool keepdim) {
-  return op_api::std_mean(self, dimnames_to_positions(self, dim), unbiased, keepdim);
-}
+        return op_api::std_mean(self, dimnames_to_positions(self, dim), unbiased, keepdim);
+    }
 
-std::tuple<at::Tensor, at::Tensor> std_mean(
-    const at::Tensor& self,
+    std::tuple < at::Tensor, at::Tensor > std_mean(const at::Tensor& self,
     at::OptionalIntArrayRef dim,
     bool unbiased,
     bool keepdim) {
-  return op_api::std_mean(self, at::OptionalIntArrayRef(dim),
-                          c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
-}
+        return op_api::std_mean(self, at::OptionalIntArrayRef(dim),
+        c10::make_optional < c10::Scalar >(unbiased ? 1 : 0), keepdim);
+    }
 
-std::tuple<at::Tensor, at::Tensor> std_mean(const at::Tensor& self, bool unbiased) {
-  return op_api::std_mean(self, c10::nullopt, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), false);
-}
+    std::tuple < at::Tensor, at::Tensor > std_mean(const at::Tensor& self, bool unbiased) {
+        return op_api::std_mean(self, c10::nullopt, c10::make_optional < c10::Scalar >(unbiased ? 1 : 0), false);
+    }
 
-} // namespace op_api
+}
+// namespace op_api

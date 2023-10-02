@@ -19,31 +19,32 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& erf_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnErf, acl_op::erf_out(self, result));
-  result.resize_(self.sizes());
-  EXEC_NPU_CMD(aclnnErf, self, result);
-  return result;
-}
+    at::Tensor& erf_out(const at::Tensor& self, at::Tensor& result) {
+        DO_COMPATIBILITY(aclnnErf, acl_op::erf_out(self, result));
+        result.resize_(self.sizes());
+        EXEC_NPU_CMD(aclnnErf, self, result);
+        return result;
+    }
 
-at::Tensor& erf_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceErf, acl_op::erf_(self));
-  EXEC_NPU_CMD(aclnnInplaceErf, self);
-  return self;
-}
+    at::Tensor& erf_(at::Tensor& self) {
+        DO_COMPATIBILITY(aclnnInplaceErf, acl_op::erf_(self));
+        EXEC_NPU_CMD(aclnnInplaceErf, self);
+        return self;
+    }
 
-at::Tensor erf(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnErf, acl_op::erf(self));
-  at::Tensor result;
-  if (self.scalar_type() == at::ScalarType::Bool || self.scalar_type() == at::ScalarType::Long ||
-      self.scalar_type() == at::ScalarType::Int) {
-    result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kFloat));
-  } else {
-    result = npu_preparation::apply_tensor_without_format(self);
-  }
-  EXEC_NPU_CMD(aclnnErf, self, result);
-  return result;
+    at::Tensor erf(const at::Tensor& self) {
+        DO_COMPATIBILITY(aclnnErf, acl_op::erf(self));
+        at::Tensor result;
+        if (self.scalar_type() == at::ScalarType::Bool || self.scalar_type() == at::ScalarType::Long ||
+        self.scalar_type() == at::ScalarType::Int) {
+            result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kFloat));
+        } else {
+            result = npu_preparation::apply_tensor_without_format(self);
+        }
+        EXEC_NPU_CMD(aclnnErf, self, result);
+        return result;
+    }
 }
-} // namespace op_api
+// namespace op_api

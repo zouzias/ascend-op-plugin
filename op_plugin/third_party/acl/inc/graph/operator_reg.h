@@ -13,9 +13,9 @@
 #include "graph/graph.h"
 
 namespace ge {
-using std::function;
-using std::string;
-using std::vector;
+    using std::function;
+    using std::string;
+    using std::vector;
 
 #define ATTR_String(x, ...)                                                 \
   graphStatus get_attr_##x(AscendString &ret) const {                       \
@@ -150,26 +150,47 @@ using std::vector;
 #define REQUIRED_ATTR_ListType(x)
 #define REQUIRED_ATTR_ListNamedAttrs(x)
 
-class OpReg {
-public:
-  OpReg &N() { return *this; }
 
-  OpReg &ATTR() { return *this; }
+    class OpReg {
+        public:
 
-  OpReg &REQUIRED_ATTR() { return *this; }
+        OpReg & N() {
+            return *this;
+        }
 
-  OpReg &INPUT() { return *this; }
+        OpReg & ATTR() {
+            return *this;
+        }
 
-  OpReg &OPTIONAL_INPUT() { return *this; }
+        OpReg & REQUIRED_ATTR() {
+            return *this;
+        }
 
-  OpReg &OUTPUT() { return *this; }
+        OpReg & INPUT() {
+            return *this;
+        }
 
-  OpReg &GRAPH() { return *this; }
+        OpReg & OPTIONAL_INPUT() {
+            return *this;
+        }
 
-  OpReg &DYNAMIC_GRAPH() { return *this; }
+        OpReg & OUTPUT() {
+            return *this;
+        }
 
-  OpReg &INFER_SHAPE_AND_TYPE() { return *this; }
-};
+        OpReg & GRAPH() {
+            return *this;
+        }
+
+        OpReg & DYNAMIC_GRAPH() {
+            return *this;
+        }
+
+        OpReg & INFER_SHAPE_AND_TYPE() {
+            return *this;
+        }
+
+    };
 
 #define REG_OP(x)                                                    \
   namespace op {                                                     \
@@ -481,7 +502,7 @@ public:
   }
 #define OP_END_FACTORY_REG(x) OP_END_IMPL(x, __COUNTER__)
 
-// Specialized shape inferencer macro
+    // Specialized shape inferencer macro
 
 #define IMPLEMT_INFERFUNC(op_name, func_name) \
   GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY static graphStatus func_name(op::(op_name) &op)
@@ -492,7 +513,7 @@ public:
 #define IMPLEMT_INFERFORMAT_FUNC(op_name, func_name) \
   GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY static graphStatus func_name(op::(op_name) &op)
 
-// Specialized verifier macro
+    // Specialized verifier macro
 
 #define IMPLEMT_VERIFIER(op_name, func_name) \
   GE_FUNC_DEV_VISIBILITY GE_FUNC_HOST_VISIBILITY static graphStatus func_name(op::op_name op)
@@ -510,7 +531,7 @@ public:
 #define INFER_FORMAT_FUNC_REG_IMPL(op_name, x, n) \
   static const InferFormatFuncRegister PASTE(ff_register, n)(#op_name, x)
 
-// Shape inferencer & verifier register macro
+    // Shape inferencer & verifier register macro
 
 #define INFER_FUNC_REG(op_name, x) INFER_FUNC_REG_IMPL(op_name, INFER_VERIFY_FUNC(op_name, x), __COUNTER__)
 
@@ -518,11 +539,11 @@ public:
 
 #define VERIFY_FUNC_REG(op_name, x) VERIFY_FUNC_REG_IMPL(op_name, INFER_VERIFY_FUNC(op_name, x), __COUNTER__)
 
-// Infer format func reg
+    // Infer format func reg
 #define INFER_FORMAT_FUNC_REG(op_name, x) \
   INFER_FORMAT_FUNC_REG_IMPL(op_name, INFER_FORMAT_FUNC(op_name, x), __COUNTER__)
 
-// Common shape inferencer
+    // Common shape inferencer
 
 #define ELMTWISE_INFER_SHAPEANDTYPE(in_name, out_name)            \
   [](Operator op)->graphStatus {                                  \
@@ -535,9 +556,10 @@ public:
     return op.UpdateOutputDesc(out_name, op_output_desc);         \
   }
 
-graphStatus BroadCastInfer(const function<vector<int64_t>()> &get_in1_shape,
-                           const function<vector<int64_t>()> &get_in2_shape,
-                           const function<void(const vector<int64_t> &y_shape)> &set_out_shape);
+
+    graphStatus BroadCastInfer(const function < vector < int64_t >() > & get_in1_shape,
+    const function < vector < int64_t >() > & get_in2_shape,
+    const function < void(const vector < int64_t > & y_shape) > & set_out_shape);
 
 #define BROADCAST_INFER(in1_name, in2_name, out_name)                                       \
   [](Operator op) -> graphStatus {                                                          \
@@ -548,5 +570,7 @@ graphStatus BroadCastInfer(const function<vector<int64_t>()> &get_in1_shape,
                             op_output_desc.SetShape(ge::Shape(y_shape));                    \
                             (void)op.UpdateOutputDesc(out_name, op_output_desc);});         \
   }
+
 }  // namespace ge
-#endif  // INC_EXTERNAL_GRAPH_OPERATOR_REG_H_
+#endif
+// INC_EXTERNAL_GRAPH_OPERATOR_REG_H_

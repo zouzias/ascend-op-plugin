@@ -21,9 +21,9 @@
 #include <ATen/Tensor.h>
 
 namespace op_api {
-at::Tensor& sum_out_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
-                                   c10::optional<c10::ScalarType> dtype, at::Tensor& result);
-at::Tensor sum_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
-                              c10::optional<c10::ScalarType> dtype);
+    at::Tensor & sum_out_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
+    c10::optional < c10::ScalarType > dtype, at::Tensor& result);
+    at::Tensor sum_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
+    c10::optional < c10::ScalarType > dtype);
 } // namespace op_api
 #endif

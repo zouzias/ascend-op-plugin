@@ -19,33 +19,33 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& binary_cross_entropy_backward_out_npu_nocheck(at::Tensor& grad_input, const at::Tensor& grad_output,
-                                                          const at::Tensor& self, const at::Tensor& target,
-                                                          const c10::optional<at::Tensor>& weight_opt,
-                                                          int64_t reduction) {
-  EXEC_NPU_CMD(aclnnBinaryCrossEntropyBackward, grad_output, self, target, weight_opt, reduction, grad_input);
-  return grad_input;
-}
+    at::Tensor& binary_cross_entropy_backward_out_npu_nocheck(at::Tensor& grad_input, const at::Tensor& grad_output,
+    const at::Tensor& self, const at::Tensor& target,
+    const c10::optional < at::Tensor >& weight_opt,
+    int64_t reduction) {
+        EXEC_NPU_CMD(aclnnBinaryCrossEntropyBackward, grad_output, self, target, weight_opt, reduction, grad_input);
+        return grad_input;
+    }
 
-at::Tensor& binary_cross_entropy_backward_out(const at::Tensor& grad_output, const at::Tensor& self,
-                                              const at::Tensor& target, const c10::optional<at::Tensor>& weight_opt,
-                                              int64_t reduction, at::Tensor& grad_input) {
-  DO_COMPATIBILITY(aclnnBinaryCrossEntropyBackward, acl_op::binary_cross_entropy_backward_out(
-                                                        grad_output, self, target, weight_opt, reduction, grad_input));
-  binary_cross_entropy_backward_out_npu_nocheck(grad_input, grad_output, self, target, weight_opt, reduction);
-  return grad_input;
-}
+    at::Tensor& binary_cross_entropy_backward_out(const at::Tensor& grad_output, const at::Tensor& self,
+    const at::Tensor& target, const c10::optional < at::Tensor >& weight_opt,
+    int64_t reduction, at::Tensor& grad_input) {
+        DO_COMPATIBILITY(aclnnBinaryCrossEntropyBackward, acl_op::binary_cross_entropy_backward_out(grad_output, self, target, weight_opt, reduction, grad_input));
+        binary_cross_entropy_backward_out_npu_nocheck(grad_input, grad_output, self, target, weight_opt, reduction);
+        return grad_input;
+    }
 
-at::Tensor binary_cross_entropy_backward(const at::Tensor& grad_output, const at::Tensor& self,
-                                         const at::Tensor& target, const c10::optional<at::Tensor>& weight_opt,
-                                         int64_t reduction) {
-  DO_COMPATIBILITY(aclnnBinaryCrossEntropyBackward,
-                   acl_op::binary_cross_entropy_backward(grad_output, self, target, weight_opt, reduction));
-  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(self);
-  // calculate the output result of the NPU
-  binary_cross_entropy_backward_out_npu_nocheck(grad_input, grad_output, self, target, weight_opt, reduction);
-  return grad_input;
+    at::Tensor binary_cross_entropy_backward(const at::Tensor& grad_output, const at::Tensor& self,
+    const at::Tensor& target, const c10::optional < at::Tensor >& weight_opt,
+    int64_t reduction) {
+        DO_COMPATIBILITY(aclnnBinaryCrossEntropyBackward,
+        acl_op::binary_cross_entropy_backward(grad_output, self, target, weight_opt, reduction));
+        at::Tensor grad_input = npu_preparation::apply_tensor_without_format(self);
+        // calculate the output result of the NPU
+        binary_cross_entropy_backward_out_npu_nocheck(grad_input, grad_output, self, target, weight_opt, reduction);
+        return grad_input;
+    }
 }
-}  // namespace op_api
+// namespace op_api

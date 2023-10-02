@@ -19,27 +19,30 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& round_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnRound, acl_op::round_out(self, result));
-  npu_preparation::check_tensor({self}, result, self);
-  EXEC_NPU_CMD(aclnnRound, self, result);
-  return result;
+    at::Tensor& round_out(const at::Tensor& self, at::Tensor& result) {
+        DO_COMPATIBILITY(aclnnRound, acl_op::round_out(self, result));
+        npu_preparation::check_tensor({
+            self
+        }, result, self);
+        EXEC_NPU_CMD(aclnnRound, self, result);
+        return result;
+    }
+
+    at::Tensor round(const at::Tensor& self) {
+        DO_COMPATIBILITY(aclnnRound, acl_op::round(self));
+        at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+        EXEC_NPU_CMD(aclnnRound, self, result);
+        return result;
+    }
+
+    at::Tensor& round_(at::Tensor& self) {
+        DO_COMPATIBILITY(aclnnInplaceRound, acl_op::round_(self));
+        EXEC_NPU_CMD(aclnnInplaceRound, self);
+        return self;
+    }
+
 }
-
-at::Tensor round(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnRound, acl_op::round(self));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnRound, self, result);
-  return result;
-}
-
-at::Tensor& round_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceRound, acl_op::round_(self));
-  EXEC_NPU_CMD(aclnnInplaceRound, self);
-  return self;
-}
-
-}  // namespace op_api
+// namespace op_api
 

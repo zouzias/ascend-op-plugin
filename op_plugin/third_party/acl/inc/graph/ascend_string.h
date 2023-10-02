@@ -6,43 +6,50 @@
 #include <functional>
 
 namespace ge {
-class AscendString {
-public:
-  AscendString() = default;
 
-  ~AscendString() = default;
+    class AscendString {
+        public:
 
-  AscendString(const char* name);
+        AscendString() = default;
 
-  const char* GetString() const;
+        ~AscendString() = default;
 
-  bool operator<(const AscendString& d) const;
+        AscendString(const char* name);
 
-  bool operator>(const AscendString& d) const;
+        const char* GetString() const;
 
-  bool operator<=(const AscendString& d) const;
+        bool operator <(const AscendString& d) const;
 
-  bool operator>=(const AscendString& d) const;
+        bool operator >(const AscendString& d) const;
 
-  bool operator==(const AscendString& d) const;
+        bool operator <=(const AscendString& d) const;
 
-  bool operator!=(const AscendString& d) const;
+        bool operator >=(const AscendString& d) const;
 
-private:
-  std::shared_ptr<std::string> name_;
-};
-}  // namespace ge
+        bool operator ==(const AscendString& d) const;
+
+        bool operator !=(const AscendString& d) const;
+
+        private:
+        std::shared_ptr < std::string > name_;
+    };
+
+}
+// namespace ge
 
 namespace std {
-template <>
-struct hash<ge::AscendString> {
-  size_t operator()(const ge::AscendString &name) const {
-    std::string str_name;
-    if (name.GetString() != nullptr) {
-      str_name = name.GetString();
-    }
-    return hash<string>()(str_name);
-  }
-};
+    template < >
+    struct hash < ge::AscendString > {
+
+        size_t operator()(const ge::AscendString & name) const {
+            std::string str_name;
+            if (name.GetString() != nullptr) {
+                str_name = name.GetString();
+            }
+            return hash < string >()(str_name);
+        }
+
+    };
 }
-#endif  // INC_EXTERNAL_GRAPH_ASCEND_STRING_H_
+#endif
+// INC_EXTERNAL_GRAPH_ASCEND_STRING_H_

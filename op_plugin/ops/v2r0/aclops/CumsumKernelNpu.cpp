@@ -18,12 +18,12 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& cumsum_(
-    at::Tensor& self,
+    at::Tensor& cumsum_(at::Tensor& self,
     int64_t dim,
-    c10::optional<at::ScalarType> dtype) {
-  return acl_op::cumsum_out(self, dim, dtype, self);
+    c10::optional < at::ScalarType > dtype) {
+        return acl_op::cumsum_out(self, dim, dtype, self);
+    }
 }
-} // namespace acl_op
+// namespace acl_op

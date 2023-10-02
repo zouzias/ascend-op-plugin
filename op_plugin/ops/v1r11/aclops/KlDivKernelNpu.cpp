@@ -18,36 +18,39 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor kl_div(
-    const at::Tensor& self,
+    at::Tensor kl_div(const at::Tensor& self,
     const at::Tensor& target,
     int64_t reduction,
     bool log_target) {
-  at::Tensor result = reduction == at::Reduction::None ?
-      npu_preparation::apply_tensor(self) : npu_preparation::apply_tensor({}, self.options(), self);
-  std::string reduction_str;
-  if (reduction == at::Reduction::Mean) {
-    reduction_str = "batchmean";
-  } else if (reduction == at::Reduction::Sum) {
-    reduction_str = "sum";
-  } else if (reduction == at::Reduction::None) {
-    reduction_str = "none";
-  }
-  at_npu::native::OpCommand cmd;
-  cmd.Name("KLDiv")
-      .Input(self)
-      .Input(target)
-      .Output(result)
-      .Attr("reduction", reduction_str)
-      .Attr("log_target", log_target)
-      .Run();
-  if (reduction == at::Reduction::Mean) {
-    auto input_shape = self.sizes();
-    int batch_square_size = c10::multiply_integers(input_shape) / input_shape[0];
-    result.div_(batch_square_size);
-  }
-  return result;
+        at::Tensor result = reduction == at::Reduction::None ?
+        npu_preparation::apply_tensor(self) : npu_preparation::apply_tensor({
+        }, self.options(), self);
+        std::string reduction_str;
+        if (reduction == at::Reduction::Mean) {
+            reduction_str = "batchmean";
+        } else
+            if (reduction == at::Reduction::Sum) {
+                reduction_str = "sum";
+            } else
+                if (reduction == at::Reduction::None) {
+                    reduction_str = "none";
+                }
+        at_npu::native::OpCommand cmd;
+        cmd.Name("KLDiv")
+        .Input(self)
+        .Input(target)
+        .Output(result)
+        .Attr("reduction", reduction_str)
+        .Attr("log_target", log_target)
+        .Run();
+        if (reduction == at::Reduction::Mean) {
+            auto input_shape = self.sizes();
+            int batch_square_size = c10::multiply_integers(input_shape) / input_shape[0];
+            result.div_(batch_square_size);
+        }
+        return result;
+    }
 }
-} // namespace acl_op
+// namespace acl_op

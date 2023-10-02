@@ -18,35 +18,35 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-namespace{
-at::Tensor& cumprod_out_nocheck(
-    at::Tensor& result,
-    const at::Tensor& self,
-    int64_t dim) {
-  at::Tensor self_not_0d = (self.dim() == 0) ? self.unsqueeze(0) : self;
-  at::Scalar axis = dim;
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Cumprod")
-      .Input(self_not_0d)
-      .Input(axis, at::kLong)
-      .Attr("exclusive", (bool)false)
-      .Attr("reverse", (bool)false)
-      .Output(result)
-      .Run();
-  result = (self.dim() == 0) ? result.squeeze(0) : result;
-  return result;
-}
-} // namespace
+    namespace{
+        at::Tensor& cumprod_out_nocheck(at::Tensor& result,
+        const at::Tensor& self,
+        int64_t dim) {
+            at::Tensor self_not_0d = (self.dim() == 0) ? self.unsqueeze(0) : self;
+            at::Scalar axis = dim;
+            at_npu::native::OpCommand cmd;
+            cmd.Name("Cumprod")
+            .Input(self_not_0d)
+            .Input(axis, at::kLong)
+            .Attr("exclusive", (bool)false)
+            .Attr("reverse", (bool)false)
+            .Output(result)
+            .Run();
+            result = (self.dim() == 0) ? result.squeeze(0) : result;
+            return result;
+        }
+    }
+    // namespace
 
-at::Tensor cumprod(
-    const at::Tensor& self,
+    at::Tensor cumprod(const at::Tensor& self,
     int64_t dim,
-    c10::optional<at::ScalarType> dtype) {
-  at::Tensor self_cast = dtype.has_value() ? at_npu::native::custom_ops::npu_dtype_cast(self, dtype.value()) : self;
-  at::Tensor result = npu_preparation::apply_tensor(self_cast);
-  cumprod_out_nocheck(result, self_cast, dim);
-  return result;
+    c10::optional < at::ScalarType > dtype) {
+        at::Tensor self_cast = dtype.has_value() ? at_npu::native::custom_ops::npu_dtype_cast(self, dtype.value()) : self;
+        at::Tensor result = npu_preparation::apply_tensor(self_cast);
+        cumprod_out_nocheck(result, self_cast, dim);
+        return result;
+    }
 }
-} // namespace acl_op
+// namespace acl_op

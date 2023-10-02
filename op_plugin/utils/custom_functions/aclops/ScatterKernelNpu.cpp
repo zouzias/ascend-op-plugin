@@ -18,48 +18,47 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor& scatter_npu_common_nocheck(
-    at::Tensor& self,
+    at::Tensor& scatter_npu_common_nocheck(at::Tensor& self,
     int64_t dim,
     const at::Tensor& index,
     const at::Tensor& src) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("ScatterElements")
-      .Input(self)
-      .Input(index)
-      .Input(src)
-      .Output(self)
-      .Attr("axis", dim)
-      .Run();
-  return self;
-}
+        at_npu::native::OpCommand cmd;
+        cmd.Name("ScatterElements")
+        .Input(self)
+        .Input(index)
+        .Input(src)
+        .Output(self)
+        .Attr("axis", dim)
+        .Run();
+        return self;
+    }
 
-at::Tensor& scatter_npu_src_impl(
-    at::Tensor& self,
+    at::Tensor& scatter_npu_src_impl(at::Tensor& self,
     int64_t dim,
     const at::Tensor& index_ex,
     const at::Tensor& src_ex) {
-  at::ScalarType self_type = self.scalar_type();
-  if (self_type == at::ScalarType::Half) {
-    self = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
-  }
+        at::ScalarType self_type = self.scalar_type();
+        if (self_type == at::ScalarType::Half) {
+            self = acl_op::npu_dtype_cast(self, at::ScalarType::Float);
+        }
 
-  at::Tensor index(index_ex);
-  if (index.scalar_type() == at::ScalarType::Half) {
-    index = acl_op::npu_dtype_cast(index, at::ScalarType::Float);
-  }
+        at::Tensor index(index_ex);
+        if (index.scalar_type() == at::ScalarType::Half) {
+            index = acl_op::npu_dtype_cast(index, at::ScalarType::Float);
+        }
 
-  at::Tensor src(src_ex);
-  if (src.scalar_type() != self.scalar_type()) {
-    src = acl_op::npu_dtype_cast(src, self.scalar_type());
-  }
+        at::Tensor src(src_ex);
+        if (src.scalar_type() != self.scalar_type()) {
+            src = acl_op::npu_dtype_cast(src, self.scalar_type());
+        }
 
-  scatter_npu_common_nocheck(self, dim, index, src);
+        scatter_npu_common_nocheck(self, dim, index, src);
 
-  if (self.scalar_type() != self_type) {
-    self = acl_op::npu_dtype_cast(self, self_type);
-  }
+        if (self.scalar_type() != self_type) {
+            self = acl_op::npu_dtype_cast(self, self_type);
+        }
 
-  return self;
+        return self;
+    }
 }
-} // namespace acl_op
+// namespace acl_op

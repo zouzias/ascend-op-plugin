@@ -19,12 +19,13 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor threshold_backward(const at::Tensor &gradOutput, const at::Tensor &self, const at::Scalar &threshold) {
-  DO_COMPATIBILITY(aclnnThresholdBackward, acl_op::threshold_backward(gradOutput, self, threshold));
-  auto result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnThresholdBackward, gradOutput, self, threshold, result);
-  return result;
+    at::Tensor threshold_backward(const at::Tensor & gradOutput, const at::Tensor & self, const at::Scalar & threshold) {
+        DO_COMPATIBILITY(aclnnThresholdBackward, acl_op::threshold_backward(gradOutput, self, threshold));
+        auto result = npu_preparation::apply_tensor_without_format(self);
+        EXEC_NPU_CMD(aclnnThresholdBackward, gradOutput, self, threshold, result);
+        return result;
+    }
 }
-} // namespace op_api
+// namespace op_api
