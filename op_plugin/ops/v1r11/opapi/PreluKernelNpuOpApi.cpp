@@ -20,13 +20,14 @@
 
 namespace op_api {
 
-at::Tensor prelu(const at::Tensor& self, const at::Tensor& weight_) {
-  DO_COMPATIBILITY(aclnnPrelu, acl_op::prelu(self, weight_));
-  // calculate the output size
-  auto outputSize = op_infer::input_same_output_size(self);
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self, outputSize);
+    at::Tensor prelu(const at::Tensor& self, const at::Tensor& weight_) {
+        DO_COMPATIBILITY(aclnnPrelu, acl_op::prelu(self, weight_));
+        // calculate the output size
+        auto outputSize = op_infer::input_same_output_size(self);
+        at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self, outputSize);
 
-  EXEC_NPU_CMD(aclnnPrelu, self, weight_, result);
-  return result;
+        EXEC_NPU_CMD(aclnnPrelu, self, weight_, result);
+        return result;
+    }
 }
-}  // namespace op_api
+// namespace op_api

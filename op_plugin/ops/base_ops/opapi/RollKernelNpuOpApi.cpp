@@ -19,15 +19,16 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor roll(const at::Tensor& self, at::IntArrayRef shifts, at::IntArrayRef dims)
-{
-  DO_COMPATIBILITY(aclnnRoll, acl_op::roll(self, shifts, dims));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnRoll, self, shifts, dims, result);
-  return result;
+    at::Tensor roll(const at::Tensor& self, at::IntArrayRef shifts, at::IntArrayRef dims)
+    {
+        DO_COMPATIBILITY(aclnnRoll, acl_op::roll(self, shifts, dims));
+        at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+        EXEC_NPU_CMD(aclnnRoll, self, shifts, dims, result);
+        return result;
+    }
+
 }
-
-}  // namespace op_api
+// namespace op_api
 

@@ -19,39 +19,42 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& asin_out(const at::Tensor& self, at::Tensor& result)
-{
-  DO_COMPATIBILITY(aclnnAsin, acl_op::asin_out(self, result));
-  TORCH_CHECK(!isIntegralType(result.scalar_type(), true), "result type ", toString(self.scalar_type()),
-              " can't be cast to the desired output type ", toString(result.scalar_type()));
-  auto output_size = self.sizes();
-  npu_preparation::check_tensor({self}, result, result.scalar_type(), output_size);
-  EXEC_NPU_CMD(aclnnAsin, self, result);
-  return result;
-}
+    at::Tensor& asin_out(const at::Tensor& self, at::Tensor& result)
+    {
+        DO_COMPATIBILITY(aclnnAsin, acl_op::asin_out(self, result));
+        TORCH_CHECK(!isIntegralType(result.scalar_type(), true), "result type ", toString(self.scalar_type()),
+        " can't be cast to the desired output type ", toString(result.scalar_type()));
+        auto output_size = self.sizes();
+        npu_preparation::check_tensor({
+            self
+        }, result, result.scalar_type(), output_size);
+        EXEC_NPU_CMD(aclnnAsin, self, result);
+        return result;
+    }
 
-at::Tensor asin(const at::Tensor& self)
-{
-  DO_COMPATIBILITY(aclnnAsin, acl_op::asin(self));
-  auto output_size = self.sizes();
-  auto out_dtype = self.dtype();
-  if (isIntegralType(self.scalar_type(), true)) {
-    out_dtype = at::kFloat;
-  }
-  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(out_dtype));
-  EXEC_NPU_CMD(aclnnAsin, self, result);
-  return result;
-}
+    at::Tensor asin(const at::Tensor& self)
+    {
+        DO_COMPATIBILITY(aclnnAsin, acl_op::asin(self));
+        auto output_size = self.sizes();
+        auto out_dtype = self.dtype();
+        if (isIntegralType(self.scalar_type(), true)) {
+            out_dtype = at::kFloat;
+        }
+        at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(out_dtype));
+        EXEC_NPU_CMD(aclnnAsin, self, result);
+        return result;
+    }
 
-at::Tensor& asin_(at::Tensor& self)
-{
-  DO_COMPATIBILITY(aclnnInplaceAsin, acl_op::asin_(self));
-  TORCH_CHECK(!isIntegralType(self.scalar_type(), true), "result type Float can't be cast to the desired output type ",
-              toString(self.scalar_type()));
-  EXEC_NPU_CMD(aclnnInplaceAsin, self);
-  return self;
+    at::Tensor& asin_(at::Tensor& self)
+    {
+        DO_COMPATIBILITY(aclnnInplaceAsin, acl_op::asin_(self));
+        TORCH_CHECK(!isIntegralType(self.scalar_type(), true), "result type Float can't be cast to the desired output type ",
+        toString(self.scalar_type()));
+        EXEC_NPU_CMD(aclnnInplaceAsin, self);
+        return self;
+    }
 }
-}  // namespace op_api
+// namespace op_api
 

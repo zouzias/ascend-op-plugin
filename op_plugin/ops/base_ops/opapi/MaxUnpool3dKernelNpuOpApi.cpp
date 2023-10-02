@@ -19,32 +19,33 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& max_unpool3d_out(
-    const at::Tensor& self,
+    at::Tensor& max_unpool3d_out(const at::Tensor& self,
     const at::Tensor& indices,
     at::IntArrayRef output_size,
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnMaxUnpool3d, acl_op::max_unpool3d_out(self, indices, output_size, stride, padding, result));
-  auto out_shape = op_infer::max_pool3d_output_size(self, output_size);
-  npu_preparation::check_tensor({self, indices}, result, self.scalar_type(), out_shape);
-  EXEC_NPU_CMD(aclnnMaxUnpool3d, self, indices, output_size, stride, padding, result);
-  return result;
-}
+        DO_COMPATIBILITY(aclnnMaxUnpool3d, acl_op::max_unpool3d_out(self, indices, output_size, stride, padding, result));
+        auto out_shape = op_infer::max_pool3d_output_size(self, output_size);
+        npu_preparation::check_tensor({
+            self, indices
+        }, result, self.scalar_type(), out_shape);
+        EXEC_NPU_CMD(aclnnMaxUnpool3d, self, indices, output_size, stride, padding, result);
+        return result;
+    }
 
-at::Tensor max_unpool3d(
-    const at::Tensor& self,
+    at::Tensor max_unpool3d(const at::Tensor& self,
     const at::Tensor& indices,
     at::IntArrayRef output_size,
     at::IntArrayRef stride,
     at::IntArrayRef padding) {
-  DO_COMPATIBILITY(aclnnMaxUnpool3d, acl_op::max_unpool3d(self, indices, output_size, stride, padding));
-  auto out_shape = op_infer::max_pool3d_output_size(self, output_size);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self, out_shape);
-  EXEC_NPU_CMD(aclnnMaxUnpool3d, self, indices, output_size, stride, padding, result);
-  return result;
+        DO_COMPATIBILITY(aclnnMaxUnpool3d, acl_op::max_unpool3d(self, indices, output_size, stride, padding));
+        auto out_shape = op_infer::max_pool3d_output_size(self, output_size);
+        at::Tensor result = npu_preparation::apply_tensor_without_format(self, out_shape);
+        EXEC_NPU_CMD(aclnnMaxUnpool3d, self, indices, output_size, stride, padding, result);
+        return result;
+    }
 }
-} // namespace op_api
+// namespace op_api

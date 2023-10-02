@@ -18,11 +18,12 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor& cat_out(at::TensorList tensors, at::Dimname dim, at::Tensor& result) {
-  return at::cat_out(result, tensors, dimname_to_position(tensors[0], dim));
-}
+    at::Tensor& cat_out(at::TensorList tensors, at::Dimname dim, at::Tensor& result) {
+        return at::cat_out(result, tensors, dimname_to_position(tensors[0], dim));
+    }
 
-at::Tensor cat(at::TensorList tensors, at::Dimname dim) {
-  return at::cat(tensors, dimname_to_position(tensors[0], dim));
+    at::Tensor cat(at::TensorList tensors, at::Dimname dim) {
+        return at::cat(tensors, dimname_to_position(tensors[0], dim));
+    }
 }
-} // namespace acl_op
+// namespace acl_op

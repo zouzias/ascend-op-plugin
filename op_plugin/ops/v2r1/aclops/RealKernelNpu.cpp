@@ -17,15 +17,16 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
-using npu_utils = at_npu::native::NpuUtils;
+    using npu_preparation = at_npu::native::OpPreparation;
+    using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor real(const at::Tensor& self)
-{
-  TORCH_NPU_WARN_ONCE("Warning: kernel [real] is not supported by NPU currently. Now this kernel is running on CPU.");
-  at::Tensor self_cpu = self.to("cpu");
-  auto result = at::native::real(self_cpu);
-  at::Tensor output = result.to(self.device());
-  return output;
+    at::Tensor real(const at::Tensor& self)
+    {
+        TORCH_NPU_WARN_ONCE("Warning: kernel [real] is not supported by NPU currently. Now this kernel is running on CPU.");
+        at::Tensor self_cpu = self.to("cpu");
+        auto result = at::native::real(self_cpu);
+        at::Tensor output = result.to(self.device());
+        return output;
+    }
 }
-}  // namespace acl_op
+// namespace acl_op

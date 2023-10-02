@@ -19,31 +19,34 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& log10_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnLog10, acl_op::log10_out(self, result));
-  npu_preparation::check_tensor({self}, result, self.scalar_type(), self.sizes());
-  EXEC_NPU_CMD(aclnnLog10, self, result);
-  return result;
+    at::Tensor& log10_out(const at::Tensor& self, at::Tensor& result) {
+        DO_COMPATIBILITY(aclnnLog10, acl_op::log10_out(self, result));
+        npu_preparation::check_tensor({
+            self
+        }, result, self.scalar_type(), self.sizes());
+        EXEC_NPU_CMD(aclnnLog10, self, result);
+        return result;
+    }
+
+    at::Tensor log10(const at::Tensor& self) {
+        DO_COMPATIBILITY(aclnnLog10, acl_op::log10(self));
+        at::Tensor result;
+        if (isIntegralType(self.scalar_type(), true)) {
+            result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kFloat));
+        } else {
+            result = npu_preparation::apply_tensor_without_format(self);
+        }
+        EXEC_NPU_CMD(aclnnLog10, self, result);
+        return result;
+    }
+
+    at::Tensor& log10_(at::Tensor& self) {
+        DO_COMPATIBILITY(aclnnInplaceLog10, acl_op::log10_(self));
+        EXEC_NPU_CMD(aclnnInplaceLog10, self);
+        return self;
+    }
+
 }
-
-at::Tensor log10(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnLog10, acl_op::log10(self));
-  at::Tensor result;
-  if (isIntegralType(self.scalar_type(), true)) {
-    result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kFloat));
-  } else {
-    result = npu_preparation::apply_tensor_without_format(self);
-  }
-  EXEC_NPU_CMD(aclnnLog10, self, result);
-  return result;
-}
-
-at::Tensor& log10_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceLog10, acl_op::log10_(self));
-  EXEC_NPU_CMD(aclnnInplaceLog10, self);
-  return self;
-}
-
-} // namespace op_api
+// namespace op_api

@@ -19,15 +19,16 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor repeat(const at::Tensor &self, at::IntArrayRef repeats)
-{
-  DO_COMPATIBILITY(aclnnRepeat, acl_op::repeat(self, repeats));
-  auto outputSize = op_infer::repeat_npu_output_size(self, repeats);
-  at::Tensor result = npu_preparation::apply_tensor_with_sizes(outputSize, self.options());
-  EXEC_NPU_CMD(aclnnRepeat, self, repeats, result);
-  return result;
+    at::Tensor repeat(const at::Tensor & self, at::IntArrayRef repeats)
+    {
+        DO_COMPATIBILITY(aclnnRepeat, acl_op::repeat(self, repeats));
+        auto outputSize = op_infer::repeat_npu_output_size(self, repeats);
+        at::Tensor result = npu_preparation::apply_tensor_with_sizes(outputSize, self.options());
+        EXEC_NPU_CMD(aclnnRepeat, self, repeats, result);
+        return result;
+    }
 }
-}  // namespace op_api
+// namespace op_api
 

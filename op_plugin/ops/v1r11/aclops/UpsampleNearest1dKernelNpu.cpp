@@ -19,13 +19,13 @@
 
 namespace acl_op {
 
-at::Tensor upsample_nearest1d(
-    const at::Tensor& input,
-    c10::optional<at::IntArrayRef> output_size,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
-  auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
-  return acl_op::upsample_nearest1d(input, osize, scales_w);
-}
+    at::Tensor upsample_nearest1d(const at::Tensor& input,
+    c10::optional < at::IntArrayRef > output_size,
+    c10::optional < at::ArrayRef < double >> scale_factors) {
+        auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
+        auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
+        return acl_op::upsample_nearest1d(input, osize, scales_w);
+    }
 
-} // namespace acl_op
+}
+// namespace acl_op

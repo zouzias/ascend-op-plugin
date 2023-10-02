@@ -18,43 +18,46 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
-using npu_utils = at_npu::native::NpuUtils;
+    using npu_preparation = at_npu::native::OpPreparation;
+    using npu_utils = at_npu::native::NpuUtils;
 
-namespace {
-at::Tensor& trunc_nocheck(at::Tensor& result, const at::Tensor& self) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Trunc")
-      .Input(self)
-      .Output(result)
-      .Run();
-  return result;
+    namespace {
+        at::Tensor& trunc_nocheck(at::Tensor& result, const at::Tensor& self) {
+            at_npu::native::OpCommand cmd;
+            cmd.Name("Trunc")
+            .Input(self)
+            .Output(result)
+            .Run();
+            return result;
+        }
+    }
+    // namespace
+
+    at::Tensor& trunc_out(const at::Tensor& self, at::Tensor& result) {
+        npu_preparation::CheckOut({
+            self
+        },
+        result,
+        self);
+        if (!npu_utils::check_match(&result)) {
+            at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+            trunc_nocheck(contiguous_result, self);
+            npu_utils::format_fresh_view(result, contiguous_result);
+        } else {
+            trunc_nocheck(result, self);
+        }
+
+        return result;
+    }
+
+    at::Tensor& trunc_(at::Tensor& self) {
+        return acl_op::trunc_out(self, self);
+    }
+
+    at::Tensor trunc(const at::Tensor& self) {
+        at::Tensor result = npu_preparation::apply_tensor(self);
+        trunc_nocheck(result, self);
+        return result;
+    }
 }
-} // namespace
-
-at::Tensor& trunc_out(const at::Tensor& self, at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    trunc_nocheck(contiguous_result, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    trunc_nocheck(result, self);
-  }
-
-  return result;
-}
-
-at::Tensor& trunc_(at::Tensor& self) {
-  return acl_op::trunc_out(self, self);
-}
-
-at::Tensor trunc(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  trunc_nocheck(result, self);
-  return result;
-}
-} // namespace acl_op
+// namespace acl_op

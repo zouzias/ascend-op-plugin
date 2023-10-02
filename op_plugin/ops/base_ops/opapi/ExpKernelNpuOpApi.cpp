@@ -19,32 +19,35 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& exp_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnExp, acl_op::exp_out(self, result));
-  npu_preparation::check_tensor({self}, result, self.sizes());
-  EXEC_NPU_CMD(aclnnExp, self, result);
-  return result;
+    at::Tensor& exp_out(const at::Tensor& self, at::Tensor& result) {
+        DO_COMPATIBILITY(aclnnExp, acl_op::exp_out(self, result));
+        npu_preparation::check_tensor({
+            self
+        }, result, self.sizes());
+        EXEC_NPU_CMD(aclnnExp, self, result);
+        return result;
+    }
+
+    at::Tensor& exp_(at::Tensor& self) {
+        DO_COMPATIBILITY(aclnnInplaceExp, acl_op::exp_(self));
+        EXEC_NPU_CMD(aclnnInplaceExp, self);
+        return self;
+    }
+
+    at::Tensor exp(const at::Tensor& self) {
+        DO_COMPATIBILITY(aclnnExp, acl_op::exp(self));
+
+        at::Tensor result;
+        if (self.scalar_type() == at::ScalarType::Bool || self.scalar_type() == at::ScalarType::Long) {
+            result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kFloat));
+        } else {
+            result = npu_preparation::apply_tensor_without_format(self);
+        }
+
+        EXEC_NPU_CMD(aclnnExp, self, result);
+        return result;
+    }
 }
-
-at::Tensor& exp_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceExp, acl_op::exp_(self));
-  EXEC_NPU_CMD(aclnnInplaceExp, self);
-  return self;
-}
-
-at::Tensor exp(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnExp, acl_op::exp(self));
-
-  at::Tensor result;
-  if (self.scalar_type() == at::ScalarType::Bool || self.scalar_type() == at::ScalarType::Long) {
-    result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kFloat));
-  } else {
-    result = npu_preparation::apply_tensor_without_format(self);
-  }
-
-  EXEC_NPU_CMD(aclnnExp, self, result);
-  return result;
-}
-} // namespace op_api
+// namespace op_api

@@ -20,59 +20,59 @@
 #include "op_plugin/utils/AdvancedIndex.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor index_put(
-    const at::Tensor& self,
-    const c10::List<c10::optional<at::Tensor>>& indices,
+    at::Tensor index_put(const at::Tensor& self,
+    const c10::List < c10::optional < at::Tensor >>& indices,
     const at::Tensor& value,
     bool accumulate) {
-  DO_COMPATIBILITY(aclnnIndexPutImpl, acl_op::index_put(self, indices, value, accumulate));
-  return self.clone(at::MemoryFormat::Contiguous).index_put_(indices, value, accumulate);
-}
+        DO_COMPATIBILITY(aclnnIndexPutImpl, acl_op::index_put(self, indices, value, accumulate));
+        return self.clone(at::MemoryFormat::Contiguous).index_put_(indices, value, accumulate);
+    }
 
-at::Tensor& index_put_(
-    at::Tensor& self,
-    const c10::List<c10::optional<at::Tensor>>& indices,
+    at::Tensor& index_put_(at::Tensor& self,
+    const c10::List < c10::optional < at::Tensor >>& indices,
     const at::Tensor& value,
     const bool accumulate) {
-  DO_COMPATIBILITY(aclnnIndexPutImpl, acl_op::index_put_(self, indices, value, accumulate));
-  return at::_index_put_impl_(self, indices, value, accumulate, false);
-}
+        DO_COMPATIBILITY(aclnnIndexPutImpl, acl_op::index_put_(self, indices, value, accumulate));
+        return at::_index_put_impl_(self, indices, value, accumulate, false);
+    }
 
-at::Tensor& _index_put_impl_(
-    at::Tensor& self,
-    const c10::List<c10::optional<at::Tensor>>& indices,
+    at::Tensor& _index_put_impl_(at::Tensor& self,
+    const c10::List < c10::optional < at::Tensor >>& indices,
     const at::Tensor& value,
     const bool accumulate,
     const bool unsafe) {
-  DO_COMPATIBILITY(aclnnIndexPutImpl, acl_op::_index_put_impl_(self, indices, value, accumulate, unsafe));
-  if (self.device().type() == at::kCPU) {
-    return at::native::_index_put_impl_(self, indices, value, accumulate, unsafe);
-  }
-  auto indices_after = op_plugin::AdvanceIndex::npu_expand_tensors(self, indices, true);
-  std::vector<at::Tensor> all_defined_indices;
-  at::SmallVector<int64_t, op_infer::N> zeroSize = {0};
-  at::Tensor emptyTensor = npu_preparation::apply_tensor_without_format(self, zeroSize);
-  for (int i = 0; i < indices_after.size(); i++) {
-    if (indices_after[i].defined()) {
-      all_defined_indices.emplace_back(indices_after[i]);
-      continue;
-    }
-    all_defined_indices.emplace_back(emptyTensor);
-  }
+        DO_COMPATIBILITY(aclnnIndexPutImpl, acl_op::_index_put_impl_(self, indices, value, accumulate, unsafe));
+        if (self.device().type() == at::kCPU) {
+            return at::native::_index_put_impl_(self, indices, value, accumulate, unsafe);
+        }
+        auto indices_after = op_plugin::AdvanceIndex::npu_expand_tensors(self, indices, true);
+        std::vector < at::Tensor > all_defined_indices;
+        at::SmallVector < int64_t, op_infer::N > zeroSize = {
+            0
+        };
+        at::Tensor emptyTensor = npu_preparation::apply_tensor_without_format(self, zeroSize);
+        for (int i = 0; i < indices_after.size(); i++) {
+            if (indices_after[i].defined()) {
+                all_defined_indices.emplace_back(indices_after[i]);
+                continue;
+            }
+            all_defined_indices.emplace_back(emptyTensor);
+        }
 
-  for (auto &all_defined_indice : all_defined_indices) {
-    if (all_defined_indice.device() != self.device()) {
-      all_defined_indice = all_defined_indice.to(self.device());
+        for (auto & all_defined_indice : all_defined_indices) {
+            if (all_defined_indice.device() != self.device()) {
+                all_defined_indice = all_defined_indice.to(self.device());
+            }
+        }
+        at::TensorList indices_tensor_list = all_defined_indices;
+        if (self.numel() != 0 && value.numel() != 0) {
+            EXEC_NPU_CMD(aclnnIndexPutImpl, self, indices_tensor_list, value, accumulate, unsafe);
+        }
+        return self;
     }
-  }
-  at::TensorList indices_tensor_list = all_defined_indices;
-  if (self.numel() != 0 && value.numel() != 0) {
-    EXEC_NPU_CMD(aclnnIndexPutImpl, self, indices_tensor_list, value, accumulate, unsafe);
-  }
-  return self;
+
 }
-
-} // namespace op_api
+// namespace op_api
 

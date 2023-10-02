@@ -18,39 +18,40 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-namespace {
-at::Tensor& repeat_out_npu_nocheck(
-    at::Tensor& result,
-    const at::Tensor& self,
-    at::IntArrayRef repeats) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Tile")
-      .Input(self)
-      .Input(repeats)
-      .Output(result)
-      .Run();
+    namespace {
+        at::Tensor& repeat_out_npu_nocheck(at::Tensor& result,
+        const at::Tensor& self,
+        at::IntArrayRef repeats) {
+            at_npu::native::OpCommand cmd;
+            cmd.Name("Tile")
+            .Input(self)
+            .Input(repeats)
+            .Output(result)
+            .Run();
 
-  return result;
-}
-} // namespace
-
-at::Tensor repeat(const at::Tensor& self, at::IntArrayRef repeats) {
-  TORCH_CHECK(repeats.size() >= self.ndimension(),
-              "Number of dimensions of repeat dims can not be smaller than number of dimensions of tensor");
-  at::Tensor self_cp = self;
-  if (repeats.size() > self_cp.ndimension()) {
-    auto diff = repeats.size() - self_cp.ndimension();
-    for (int i = 0; i < diff; i++) {
-      self_cp = at::unsqueeze(self_cp, 0);
+            return result;
+        }
     }
-  }
+    // namespace
 
-  auto output_size = op_infer::repeat_npu_output_size(self_cp, repeats);
-  at::Tensor result = npu_preparation::apply_tensor(self_cp, output_size);
+    at::Tensor repeat(const at::Tensor& self, at::IntArrayRef repeats) {
+        TORCH_CHECK(repeats.size() >= self.ndimension(),
+        "Number of dimensions of repeat dims can not be smaller than number of dimensions of tensor");
+        at::Tensor self_cp = self;
+        if (repeats.size() > self_cp.ndimension()) {
+            auto diff = repeats.size() - self_cp.ndimension();
+            for (int i = 0; i < diff; i++) {
+                self_cp = at::unsqueeze(self_cp, 0);
+            }
+        }
 
-  repeat_out_npu_nocheck(result, self_cp, repeats);
-  return result;
+        auto output_size = op_infer::repeat_npu_output_size(self_cp, repeats);
+        at::Tensor result = npu_preparation::apply_tensor(self_cp, output_size);
+
+        repeat_out_npu_nocheck(result, self_cp, repeats);
+        return result;
+    }
 }
-} // namespace acl_op
+// namespace acl_op

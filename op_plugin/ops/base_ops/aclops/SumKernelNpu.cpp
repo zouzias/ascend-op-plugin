@@ -18,24 +18,24 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor& sum_out(
-    const at::Tensor& self,
+    at::Tensor& sum_out(const at::Tensor& self,
     at::DimnameList dim,
     bool keepdim,
-    c10::optional<c10::ScalarType> dtype,
+    c10::optional < c10::ScalarType > dtype,
     at::Tensor& result) {
-  return acl_op::sum_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
-}
+        return acl_op::sum_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
+    }
 
-at::Tensor sum(
-    const at::Tensor& self,
+    at::Tensor sum(const at::Tensor& self,
     at::DimnameList dim,
     bool keepdim,
-    c10::optional<c10::ScalarType> dtype) {
-  return acl_op::sum(self, dimnames_to_positions(self, dim), keepdim, dtype);
-}
+    c10::optional < c10::ScalarType > dtype) {
+        return acl_op::sum(self, dimnames_to_positions(self, dim), keepdim, dtype);
+    }
 
-at::Tensor sum(const at::Tensor& self, c10::optional<c10::ScalarType> dtype) {
-  return acl_op::sum(self, c10::SmallVector<int64_t, N>{}, false, dtype);
+    at::Tensor sum(const at::Tensor& self, c10::optional < c10::ScalarType > dtype) {
+        return acl_op::sum(self, c10::SmallVector < int64_t, N >{
+        }, false, dtype);
+    }
 }
-} // namespace acl_op
+// namespace acl_op

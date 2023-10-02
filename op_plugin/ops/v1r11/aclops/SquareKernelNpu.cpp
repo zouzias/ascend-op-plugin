@@ -18,8 +18,9 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor& square_out(const at::Tensor& self, at::Tensor& result) {
-  at::Scalar exp = 2;
-  return acl_op::pow_out(self, exp, result);
+    at::Tensor& square_out(const at::Tensor& self, at::Tensor& result) {
+        at::Scalar exp = 2;
+        return acl_op::pow_out(self, exp, result);
+    }
 }
-} // namespace acl_op
+// namespace acl_op

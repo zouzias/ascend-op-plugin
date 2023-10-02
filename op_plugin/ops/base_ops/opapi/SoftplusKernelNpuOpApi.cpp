@@ -19,27 +19,28 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& softplus_out(
-    const at::Tensor& self,
+    at::Tensor& softplus_out(const at::Tensor& self,
     const at::Scalar& beta,
     const at::Scalar& threshold,
     at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnSoftplus, acl_op::softplus_out(self, beta, threshold, result));
-  npu_preparation::check_tensor({self}, result, self);
-  EXEC_NPU_CMD(aclnnSoftplus, self, beta, threshold, result);
-  return result;
-}
+        DO_COMPATIBILITY(aclnnSoftplus, acl_op::softplus_out(self, beta, threshold, result));
+        npu_preparation::check_tensor({
+            self
+        }, result, self);
+        EXEC_NPU_CMD(aclnnSoftplus, self, beta, threshold, result);
+        return result;
+    }
 
-at::Tensor softplus(
-    const at::Tensor& self,
+    at::Tensor softplus(const at::Tensor& self,
     const at::Scalar& beta,
     const at::Scalar& threshold) {
-  DO_COMPATIBILITY(aclnnSoftplus, acl_op::softplus(self, beta, threshold));
-  auto output_size = op_infer::input_same_output_size(self);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
-  op_api::softplus_out(self, beta, threshold, result);
-  return result;
+        DO_COMPATIBILITY(aclnnSoftplus, acl_op::softplus(self, beta, threshold));
+        auto output_size = op_infer::input_same_output_size(self);
+        at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
+        op_api::softplus_out(self, beta, threshold, result);
+        return result;
+    }
 }
-} // namespace op_api
+// namespace op_api

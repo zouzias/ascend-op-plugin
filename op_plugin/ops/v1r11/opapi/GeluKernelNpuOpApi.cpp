@@ -19,20 +19,23 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& gelu_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnGelu, acl_op::gelu_out(self, result));
-  npu_preparation::check_tensor({self}, result, self);
+    at::Tensor& gelu_out(const at::Tensor& self, at::Tensor& result) {
+        DO_COMPATIBILITY(aclnnGelu, acl_op::gelu_out(self, result));
+        npu_preparation::check_tensor({
+            self
+        }, result, self);
 
-  EXEC_NPU_CMD(aclnnGelu, self, result);
-  return result;
+        EXEC_NPU_CMD(aclnnGelu, self, result);
+        return result;
+    }
+
+    at::Tensor gelu(const at::Tensor& self) {
+        DO_COMPATIBILITY(aclnnGelu, acl_op::gelu(self));
+        at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+        EXEC_NPU_CMD(aclnnGelu, self, result);
+        return result;
+    }
 }
-
-at::Tensor gelu(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnGelu, acl_op::gelu(self));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnGelu, self, result);
-  return result;
-}
-}  // namespace op_api
+// namespace op_api

@@ -19,26 +19,29 @@
 #include "op_plugin/AclOpsInterface.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor argmax(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim) {
-  DO_COMPATIBILITY(aclnnArgMax, acl_op::argmax(self, dim, keepdim));
-  if (self.numel() == 0) {
-    return self;
-  }
-  at::Tensor input = self.reshape({-1});
-  int64_t realDim = 0;
-  bool realKeepDim = false;
-  if (dim.has_value()) {
-    input = self;
-    realDim = dim.value();
-    realKeepDim = keepdim;
-  }
-  auto outputSize = op_infer::reduce_ops_npu_output_size(input, realDim, realKeepDim);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kLong));
+    at::Tensor argmax(const at::Tensor& self, at::optional < int64_t > dim, bool keepdim) {
+        DO_COMPATIBILITY(aclnnArgMax, acl_op::argmax(self, dim, keepdim));
+        if (self.numel() == 0) {
+            return self;
+        }
+        at::Tensor input = self.reshape({
+            -1
+        });
+        int64_t realDim = 0;
+        bool realKeepDim = false;
+        if (dim.has_value()) {
+            input = self;
+            realDim = dim.value();
+            realKeepDim = keepdim;
+        }
+        auto outputSize = op_infer::reduce_ops_npu_output_size(input, realDim, realKeepDim);
+        at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kLong));
 
-  EXEC_NPU_CMD(aclnnArgMax, input, realDim, realKeepDim, result);
-  return result;
+        EXEC_NPU_CMD(aclnnArgMax, input, realDim, realKeepDim, result);
+        return result;
+    }
+
 }
-
-} // namespace op_api
+// namespace op_api

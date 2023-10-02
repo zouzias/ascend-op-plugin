@@ -19,23 +19,27 @@
 
 namespace acl_op {
 
-at::Tensor& reflection_pad1d_out(
-    const at::Tensor& self,
+    at::Tensor& reflection_pad1d_out(const at::Tensor& self,
     at::IntArrayRef padding,
     at::Tensor& result) {
-  c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
-  at::Tensor self_cp = self.unsqueeze(0);
-  acl_op::reflection_pad2d_out(self_cp, paddings, result);
-  result.squeeze_(0);
-  return result;
-}
+        c10::SmallVector < int64_t, N > paddings = {
+            padding[0], padding[1], 0, 0
+        };
+        at::Tensor self_cp = self.unsqueeze(0);
+        acl_op::reflection_pad2d_out(self_cp, paddings, result);
+        result.squeeze_(0);
+        return result;
+    }
 
-at::Tensor reflection_pad1d(const at::Tensor& self, at::IntArrayRef padding) {
-  c10::SmallVector<int64_t, N> paddings = {padding[0], padding[1], 0, 0};
-  at::Tensor self_cp = self.unsqueeze(0);
-  at::Tensor result = acl_op::reflection_pad2d(self_cp, paddings);
-  result.squeeze_(0);
-  return result;
-}
+    at::Tensor reflection_pad1d(const at::Tensor& self, at::IntArrayRef padding) {
+        c10::SmallVector < int64_t, N > paddings = {
+            padding[0], padding[1], 0, 0
+        };
+        at::Tensor self_cp = self.unsqueeze(0);
+        at::Tensor result = acl_op::reflection_pad2d(self_cp, paddings);
+        result.squeeze_(0);
+        return result;
+    }
 
-} // namespace acl_op
+}
+// namespace acl_op

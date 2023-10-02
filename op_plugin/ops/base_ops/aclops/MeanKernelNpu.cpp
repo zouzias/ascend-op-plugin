@@ -18,24 +18,24 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor& mean_out(
-    const at::Tensor& self,
+    at::Tensor& mean_out(const at::Tensor& self,
     at::DimnameList dim,
     bool keepdim,
-    c10::optional<c10::ScalarType> dtype,
+    c10::optional < c10::ScalarType > dtype,
     at::Tensor& result) {
-  return acl_op::mean_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
-}
+        return acl_op::mean_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
+    }
 
-at::Tensor mean(
-    const at::Tensor& self,
+    at::Tensor mean(const at::Tensor& self,
     at::DimnameList dim,
     bool keepdim,
-    c10::optional<c10::ScalarType> dtype) {
-  return acl_op::mean(self, dimnames_to_positions(self, dim), keepdim, dtype);
-}
+    c10::optional < c10::ScalarType > dtype) {
+        return acl_op::mean(self, dimnames_to_positions(self, dim), keepdim, dtype);
+    }
 
-at::Tensor mean(const at::Tensor& self, c10::optional<c10::ScalarType> dtype) {
-  return acl_op::mean(self, c10::SmallVector<int64_t, N> {}, false, dtype);
+    at::Tensor mean(const at::Tensor& self, c10::optional < c10::ScalarType > dtype) {
+        return acl_op::mean(self, c10::SmallVector < int64_t, N > {
+        }, false, dtype);
+    }
 }
-} // namespace acl_op
+// namespace acl_op

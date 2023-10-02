@@ -17,57 +17,59 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
-using npu_utils = at_npu::native::NpuUtils;
+    using npu_preparation = at_npu::native::OpPreparation;
+    using npu_utils = at_npu::native::NpuUtils;
 
-namespace {
-void glu_grad_npu_check(const at::Tensor& self, int64_t dim) {
-  TORCH_CHECK(self.dim() > 0, "glu does not support 0-dimensional Tensors");
-  auto wrap_dim = at::maybe_wrap_dim(dim, self.dim());
-  const int64_t n_in = self.size(wrap_dim);
-  TORCH_CHECK(n_in % 2 == 0, "Halving dimension must be even, but dimension ",
-              wrap_dim, " is size ", n_in);
+    namespace {
+        void glu_grad_npu_check(const at::Tensor& self, int64_t dim) {
+            TORCH_CHECK(self.dim() > 0, "glu does not support 0-dimensional Tensors");
+            auto wrap_dim = at::maybe_wrap_dim(dim, self.dim());
+            const int64_t n_in = self.size(wrap_dim);
+            TORCH_CHECK(n_in % 2 == 0, "Halving dimension must be even, but dimension ",
+            wrap_dim, " is size ", n_in);
+        }
+
+        at::Tensor& glu_grad_npu_out_nocheck(at::Tensor& result,
+        const at::Tensor& grad_output,
+        const at::Tensor& self,
+        int64_t dim) {
+            at_npu::native::OpCommand cmd;
+            cmd.Name("GLUGrad")
+            .Input(grad_output)
+            .Input(self)
+            .Output(result)
+            .Attr("dim", dim)
+            .Run();
+            return result;
+        }
+    }
+    // namespace
+
+    at::Tensor& glu_backward_out(const at::Tensor& grad_output, const at::Tensor& self, int64_t dim, at::Tensor& result) {
+        glu_grad_npu_check(self, dim);
+        auto output_size = op_infer::input_same_output_size(self);
+        npu_preparation::CheckOut({
+            grad_output, self
+        },
+        result,
+        grad_output,
+        output_size);
+
+        if (!npu_utils::check_match(&result)) {
+            at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+            glu_grad_npu_out_nocheck(contiguous_result, grad_output, self, dim);
+            npu_utils::format_fresh_view(result, contiguous_result);
+        } else {
+            glu_grad_npu_out_nocheck(result, grad_output, self, dim);
+        }
+        return result;
+    }
+
+    at::Tensor glu_backward(const at::Tensor& grad_output, const at::Tensor& self, int64_t dim) {
+        glu_grad_npu_check(self, dim);
+        at::Tensor result = npu_preparation::apply_tensor(self);
+        glu_grad_npu_out_nocheck(result, grad_output, self, dim);
+        return result;
+    }
 }
-
-at::Tensor& glu_grad_npu_out_nocheck(
-    at::Tensor& result,
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    int64_t dim) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("GLUGrad")
-      .Input(grad_output)
-      .Input(self)
-      .Output(result)
-      .Attr("dim", dim)
-      .Run();
-  return result;
-}
-} // namespace
-
-at::Tensor& glu_backward_out(const at::Tensor& grad_output, const at::Tensor& self, int64_t dim, at::Tensor& result) {
-  glu_grad_npu_check(self, dim);
-  auto output_size = op_infer::input_same_output_size(self);
-  npu_preparation::CheckOut(
-      {grad_output, self},
-      result,
-      grad_output,
-      output_size);
-
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    glu_grad_npu_out_nocheck(contiguous_result, grad_output, self, dim);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    glu_grad_npu_out_nocheck(result, grad_output, self, dim);
-  }
-  return result;
-}
-
-at::Tensor glu_backward(const at::Tensor& grad_output, const at::Tensor& self, int64_t dim) {
-  glu_grad_npu_check(self, dim);
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  glu_grad_npu_out_nocheck(result, grad_output, self, dim);
-  return result;
-}
-} // namespace acl_op
+// namespace acl_op

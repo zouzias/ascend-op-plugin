@@ -18,23 +18,22 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor& scatter_out(
-    const at::Tensor& self,
+    at::Tensor& scatter_out(const at::Tensor& self,
     int64_t dim,
     const at::Tensor& index,
     const at::Tensor& src,
     c10::string_view reduce,
     at::Tensor& result) {
-  TORCH_CHECK(false, "scatter.reduce_out is not supported.");
-}
+        TORCH_CHECK(false, "scatter.reduce_out is not supported.");
+    }
 
-at::Tensor& scatter_out(
-    const at::Tensor& self,
+    at::Tensor& scatter_out(const at::Tensor& self,
     int64_t dim,
     const at::Tensor& index,
     const at::Scalar& value,
     c10::string_view reduce,
     at::Tensor& result) {
-  TORCH_CHECK(false, "scatter.value_reduce_out is not supported.");
+        TORCH_CHECK(false, "scatter.value_reduce_out is not supported.");
+    }
 }
-} // namespace acl_op
+// namespace acl_op

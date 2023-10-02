@@ -19,10 +19,9 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor _ctc_loss_backward(
-    const at::Tensor& grad_out,
+    at::Tensor _ctc_loss_backward(const at::Tensor& grad_out,
     const at::Tensor& log_probs,
     const at::Tensor& targets,
     at::IntArrayRef input_lengths,
@@ -31,19 +30,20 @@ at::Tensor _ctc_loss_backward(
     const at::Tensor& log_alpha,
     int64_t blank,
     bool zeroInfinity) {
-  DO_COMPATIBILITY(aclnnCtcLossBackward, acl_op::_ctc_loss_backward(grad_out, log_probs, targets, input_lengths,
-                                                                    target_lengths, neg_log_likelihood, log_alpha,
-                                                                    blank, zeroInfinity));
+        DO_COMPATIBILITY(aclnnCtcLossBackward, acl_op::_ctc_loss_backward(grad_out, log_probs, targets, input_lengths,
+        target_lengths, neg_log_likelihood, log_alpha,
+        blank, zeroInfinity));
 
-  auto output_size = op_infer::input_same_output_size(log_probs);
+        auto output_size = op_infer::input_same_output_size(log_probs);
 
-  // construct the output tensor of the NPU
-  at::Tensor grad = npu_preparation::apply_tensor_without_format(grad_out, output_size);
+        // construct the output tensor of the NPU
+        at::Tensor grad = npu_preparation::apply_tensor_without_format(grad_out, output_size);
 
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnCtcLossBackward, grad_out, log_probs, targets, input_lengths, target_lengths,
-      neg_log_likelihood, log_alpha, blank, zeroInfinity, grad);
+        // calculate the output result of the NPU
+        EXEC_NPU_CMD(aclnnCtcLossBackward, grad_out, log_probs, targets, input_lengths, target_lengths,
+        neg_log_likelihood, log_alpha, blank, zeroInfinity, grad);
 
-  return grad;
+        return grad;
+    }
 }
-} // namespace op_api
+// namespace op_api

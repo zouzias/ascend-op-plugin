@@ -19,12 +19,13 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor gelu(const at::Tensor& self, c10::string_view approximate) {
-  DO_COMPATIBILITY(aclnnGelu, acl_op::gelu(self));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnGelu, self, result);
-  return result;
+    at::Tensor gelu(const at::Tensor& self, c10::string_view approximate) {
+        DO_COMPATIBILITY(aclnnGelu, acl_op::gelu(self));
+        at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+        EXEC_NPU_CMD(aclnnGelu, self, result);
+        return result;
+    }
 }
-}  // namespace op_api
+// namespace op_api

@@ -19,22 +19,23 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor selu(const at::Tensor& self)
-{
-  DO_COMPATIBILITY(aclnnSelu, acl_op::selu(self));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnSelu, self, result);
-  return result;
+    at::Tensor selu(const at::Tensor& self)
+    {
+        DO_COMPATIBILITY(aclnnSelu, acl_op::selu(self));
+        at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+        EXEC_NPU_CMD(aclnnSelu, self, result);
+        return result;
+    }
+
+    at::Tensor& selu_(at::Tensor& self)
+    {
+        DO_COMPATIBILITY(aclnnInplaceSelu, acl_op::selu_(self));
+        EXEC_NPU_CMD(aclnnInplaceSelu, self);
+        return self;
+    }
+
 }
-
-at::Tensor& selu_(at::Tensor& self)
-{
-  DO_COMPATIBILITY(aclnnInplaceSelu, acl_op::selu_(self));
-  EXEC_NPU_CMD(aclnnInplaceSelu, self);
-  return self;
-}
-
-}  // namespace op_api
+// namespace op_api
 

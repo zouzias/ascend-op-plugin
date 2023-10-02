@@ -20,22 +20,25 @@
 
 namespace op_api {
 
-at::Tensor& max_unpool2d_backward_out(const at::Tensor& gradOutput, const at::Tensor& self,
-                                                               const at::Tensor& indices, at::IntArrayRef outputSize,
-                                                               at::Tensor& gradInput) {
-  DO_COMPATIBILITY(aclnnMaxUnpool2dBackward,
-                   acl_op::max_unpool2d_backward_out(gradOutput, self, indices, outputSize, gradInput));
-  at_npu::native::OpPreparation::check_tensor({self, gradOutput}, gradInput, self);
-  EXEC_NPU_CMD(aclnnMaxUnpool2dBackward, gradOutput, self, indices, outputSize, gradInput);
-  return gradInput;
-}
+    at::Tensor& max_unpool2d_backward_out(const at::Tensor& gradOutput, const at::Tensor& self,
+    const at::Tensor& indices, at::IntArrayRef outputSize,
+    at::Tensor& gradInput) {
+        DO_COMPATIBILITY(aclnnMaxUnpool2dBackward,
+        acl_op::max_unpool2d_backward_out(gradOutput, self, indices, outputSize, gradInput));
+        at_npu::native::OpPreparation::check_tensor({
+            self, gradOutput
+        }, gradInput, self);
+        EXEC_NPU_CMD(aclnnMaxUnpool2dBackward, gradOutput, self, indices, outputSize, gradInput);
+        return gradInput;
+    }
 
-at::Tensor max_unpool2d_backward(const at::Tensor& gradOutput, const at::Tensor& self,
-                                                          const at::Tensor& indices, at::IntArrayRef outputSize) {
-  DO_COMPATIBILITY(aclnnMaxUnpool2dBackward,
-                   acl_op::max_unpool2d_backward(gradOutput, self, indices, outputSize));
-  at::Tensor gradInput = at_npu::native::OpPreparation::apply_tensor_without_format(self);
-  max_unpool2d_backward_out(gradOutput, self, indices, outputSize, gradInput);
-  return gradInput;
+    at::Tensor max_unpool2d_backward(const at::Tensor& gradOutput, const at::Tensor& self,
+    const at::Tensor& indices, at::IntArrayRef outputSize) {
+        DO_COMPATIBILITY(aclnnMaxUnpool2dBackward,
+        acl_op::max_unpool2d_backward(gradOutput, self, indices, outputSize));
+        at::Tensor gradInput = at_npu::native::OpPreparation::apply_tensor_without_format(self);
+        max_unpool2d_backward_out(gradOutput, self, indices, outputSize, gradInput);
+        return gradInput;
+    }
 }
-}  // namespace op_api
+// namespace op_api

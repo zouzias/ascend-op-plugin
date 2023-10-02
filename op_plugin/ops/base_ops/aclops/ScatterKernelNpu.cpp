@@ -19,47 +19,47 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
-using npu_utils = at_npu::native::NpuUtils;
+    using npu_preparation = at_npu::native::OpPreparation;
+    using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor& scatter_out(
-    const at::Tensor& self,
+    at::Tensor& scatter_out(const at::Tensor& self,
     int64_t dim,
     const at::Tensor& index,
     const at::Tensor& src,
     at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self, src, index},
-      result,
-      self);
-  result = at_npu::native::NPUNativeFunctions::copy_(result, self, false);
-  scatter_npu_src_impl(result, dim, index, src);
-  return result;
-}
+        npu_preparation::CheckOut({
+            self, src, index
+        },
+        result,
+        self);
+        result = at_npu::native::NPUNativeFunctions::copy_(result, self, false);
+        scatter_npu_src_impl(result, dim, index, src);
+        return result;
+    }
 
-at::Tensor& scatter_out(
-    const at::Tensor& self,
+    at::Tensor& scatter_out(const at::Tensor& self,
     int64_t dim,
     const at::Tensor& index,
     const at::Scalar& value,
     at::Tensor& result) {
-  at::Tensor src_tensor = scalar_to_tensor(value).to(at::ScalarType::Float);
-  src_tensor = npu_preparation::copy_tensor_host_to_device(src_tensor);
-  at::Tensor src_tensor_broadcast = acl_op::npu_broadcast(
-      src_tensor, op_infer::array_to_small_vector(index.sizes()));
-  npu_preparation::CheckOut(
-      {self, index, src_tensor_broadcast},
-      result,
-      self);
-  result = at_npu::native::NPUNativeFunctions::copy_(result, self, false);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    scatter_npu_src_impl(contiguous_result, dim, index, src_tensor_broadcast);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    scatter_npu_src_impl(result, dim, index, src_tensor_broadcast);
-  }
-  scatter_npu_src_impl(result, dim, index, src_tensor_broadcast);
-  return result;
+        at::Tensor src_tensor = scalar_to_tensor(value).to(at::ScalarType::Float);
+        src_tensor = npu_preparation::copy_tensor_host_to_device(src_tensor);
+        at::Tensor src_tensor_broadcast = acl_op::npu_broadcast(src_tensor, op_infer::array_to_small_vector(index.sizes()));
+        npu_preparation::CheckOut({
+            self, index, src_tensor_broadcast
+        },
+        result,
+        self);
+        result = at_npu::native::NPUNativeFunctions::copy_(result, self, false);
+        if (!npu_utils::check_match(&result)) {
+            at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+            scatter_npu_src_impl(contiguous_result, dim, index, src_tensor_broadcast);
+            npu_utils::format_fresh_view(result, contiguous_result);
+        } else {
+            scatter_npu_src_impl(result, dim, index, src_tensor_broadcast);
+        }
+        scatter_npu_src_impl(result, dim, index, src_tensor_broadcast);
+        return result;
+    }
 }
-} // namespace acl_op
+// namespace acl_op

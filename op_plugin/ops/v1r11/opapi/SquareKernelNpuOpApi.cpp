@@ -19,10 +19,11 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor &square_out(const at::Tensor &self, at::Tensor &out) {
-    return op_api::mul_out(self, self, out);
+    at::Tensor & square_out(const at::Tensor & self, at::Tensor & out) {
+        return op_api::mul_out(self, self, out);
+    }
+
 }
-
-} // namespace op_api
+// namespace op_api

@@ -18,12 +18,12 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor& index_add_(
-    at::Tensor& self,
+    at::Tensor& index_add_(at::Tensor& self,
     int64_t dim,
     const at::Tensor& index,
     const at::Tensor& source,
     const at::Scalar& alpha) {
-  return acl_op::index_add_out(self, dim, index, source, alpha, self);
+        return acl_op::index_add_out(self, dim, index, source, alpha, self);
+    }
 }
-} // namespace acl_op
+// namespace acl_op

@@ -19,28 +19,31 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& reflection_pad2d_backward_out(const at::Tensor& grad_output,
-                                          const at::Tensor& self,
-                                          at::IntArrayRef padding,
-                                          at::Tensor& grad_input) {
-  DO_COMPATIBILITY(aclnnReflectionPad2dBackward,
-                   acl_op::reflection_pad2d_backward_out(grad_output, self, padding, grad_input));
-  npu_preparation::check_tensor({self, grad_output}, grad_input, self);
-  EXEC_NPU_CMD(aclnnReflectionPad2dBackward, grad_output, self, padding, grad_input);
-  return grad_input;
+    at::Tensor& reflection_pad2d_backward_out(const at::Tensor& grad_output,
+    const at::Tensor& self,
+    at::IntArrayRef padding,
+    at::Tensor& grad_input) {
+        DO_COMPATIBILITY(aclnnReflectionPad2dBackward,
+        acl_op::reflection_pad2d_backward_out(grad_output, self, padding, grad_input));
+        npu_preparation::check_tensor({
+            self, grad_output
+        }, grad_input, self);
+        EXEC_NPU_CMD(aclnnReflectionPad2dBackward, grad_output, self, padding, grad_input);
+        return grad_input;
+    }
+
+    at::Tensor reflection_pad2d_backward(const at::Tensor& grad_output,
+    const at::Tensor& self,
+    at::IntArrayRef padding) {
+        DO_COMPATIBILITY(aclnnReflectionPad2dBackward,
+        acl_op::reflection_pad2d_backward(grad_output, self, padding));
+        at::Tensor grad_input = npu_preparation::apply_tensor_without_format(self);
+        EXEC_NPU_CMD(aclnnReflectionPad2dBackward, grad_output, self, padding, grad_input);
+        return grad_input;
+    }
+
 }
-
-at::Tensor reflection_pad2d_backward(const at::Tensor& grad_output,
-                                     const at::Tensor& self,
-                                     at::IntArrayRef padding) {
-DO_COMPATIBILITY(aclnnReflectionPad2dBackward,
-                 acl_op::reflection_pad2d_backward(grad_output, self, padding));
-  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnReflectionPad2dBackward, grad_output, self, padding, grad_input);
-  return grad_input;
-}
-
-}  // namespace op_api
+// namespace op_api
 

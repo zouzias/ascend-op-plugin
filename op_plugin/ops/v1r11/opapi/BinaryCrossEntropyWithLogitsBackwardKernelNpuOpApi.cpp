@@ -19,20 +19,21 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor binary_cross_entropy_with_logits_backward(const at::Tensor& grad_output, const at::Tensor& self,
-                                                     const at::Tensor& target,
-                                                     const c10::optional<at::Tensor>& weight_opt,
-                                                     const c10::optional<at::Tensor>& pos_weight_opt,
-                                                     int64_t reduction) {
-  DO_COMPATIBILITY(aclnnBinaryCrossEntropyWithLogitsBackward,
-                   acl_op::binary_cross_entropy_with_logits_backward(grad_output, self, target, weight_opt,
-                                                                     pos_weight_opt, reduction));
-  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(target);
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnBinaryCrossEntropyWithLogitsBackward, grad_output, self, target, weight_opt, pos_weight_opt,
-               reduction, grad_input);
-  return grad_input;
+    at::Tensor binary_cross_entropy_with_logits_backward(const at::Tensor& grad_output, const at::Tensor& self,
+    const at::Tensor& target,
+    const c10::optional < at::Tensor >& weight_opt,
+    const c10::optional < at::Tensor >& pos_weight_opt,
+    int64_t reduction) {
+        DO_COMPATIBILITY(aclnnBinaryCrossEntropyWithLogitsBackward,
+        acl_op::binary_cross_entropy_with_logits_backward(grad_output, self, target, weight_opt,
+        pos_weight_opt, reduction));
+        at::Tensor grad_input = npu_preparation::apply_tensor_without_format(target);
+        // calculate the output result of the NPU
+        EXEC_NPU_CMD(aclnnBinaryCrossEntropyWithLogitsBackward, grad_output, self, target, weight_opt, pos_weight_opt,
+        reduction, grad_input);
+        return grad_input;
+    }
 }
-}  // namespace op_api
+// namespace op_api

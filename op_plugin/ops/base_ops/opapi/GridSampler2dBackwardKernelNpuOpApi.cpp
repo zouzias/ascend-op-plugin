@@ -19,19 +19,20 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> grid_sampler_2d_backward(const at::Tensor& grad, const at::Tensor& input,
-                                                            const at::Tensor& grid, int64_t interpolation_mode,
-                                                            int64_t padding_mode, bool align_corners,
-                                                            std::array<bool, 2> output_mask) {
-  DO_COMPATIBILITY(aclnnGridSampler2DBackward, acl_op::grid_sampler_2d_backward(grad, input, grid, interpolation_mode,
-                                                                                padding_mode, align_corners,
-                                                                                output_mask));
-  at::Tensor dinput = npu_preparation::apply_tensor_without_format(input);
-  at::Tensor dgrid = npu_preparation::apply_tensor_without_format(grid);
-  EXEC_NPU_CMD(aclnnGridSampler2DBackward, grad, input, grid, interpolation_mode, padding_mode, align_corners,
-               output_mask, dinput, dgrid);
-  return std::tuple<at::Tensor, at::Tensor>(dinput, dgrid);
+    std::tuple < at::Tensor, at::Tensor > grid_sampler_2d_backward(const at::Tensor& grad, const at::Tensor& input,
+    const at::Tensor& grid, int64_t interpolation_mode,
+    int64_t padding_mode, bool align_corners,
+    std::array < bool, 2 > output_mask) {
+        DO_COMPATIBILITY(aclnnGridSampler2DBackward, acl_op::grid_sampler_2d_backward(grad, input, grid, interpolation_mode,
+        padding_mode, align_corners,
+        output_mask));
+        at::Tensor dinput = npu_preparation::apply_tensor_without_format(input);
+        at::Tensor dgrid = npu_preparation::apply_tensor_without_format(grid);
+        EXEC_NPU_CMD(aclnnGridSampler2DBackward, grad, input, grid, interpolation_mode, padding_mode, align_corners,
+        output_mask, dinput, dgrid);
+        return std::tuple < at::Tensor, at::Tensor >(dinput, dgrid);
+    }
 }
-} // namespace op_api
+// namespace op_api

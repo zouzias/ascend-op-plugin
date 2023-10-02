@@ -19,20 +19,21 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& leaky_relu_backward_out(
-    const at::Tensor& grad_output,
+    at::Tensor& leaky_relu_backward_out(const at::Tensor& grad_output,
     const at::Tensor& self,
     const at::Scalar& negval,
     bool is_result,
     at::Tensor& grad_input) {
-  npu_preparation::CheckOut(
-      {self, grad_output},
-      grad_input,
-      grad_input,
-      self.sizes());
-  leaky_relu_backward_out_nocheck(grad_input, grad_output, self, negval, is_result);
-  return grad_input;
+        npu_preparation::CheckOut({
+            self, grad_output
+        },
+        grad_input,
+        grad_input,
+        self.sizes());
+        leaky_relu_backward_out_nocheck(grad_input, grad_output, self, negval, is_result);
+        return grad_input;
+    }
 }
-} // namespace acl_op
+// namespace acl_op

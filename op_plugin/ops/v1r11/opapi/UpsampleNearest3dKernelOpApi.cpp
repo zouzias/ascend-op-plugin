@@ -19,29 +19,29 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor upsample_nearest3d(
-    const at::Tensor& input,
-    c10::optional<at::IntArrayRef> output_size,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
-  DO_COMPATIBILITY(aclnnUpsampleNearest3d,
-                   acl_op::upsample_nearest3d(input, output_size, scale_factors));
-  auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
+    at::Tensor upsample_nearest3d(const at::Tensor& input,
+    c10::optional < at::IntArrayRef > output_size,
+    c10::optional < at::ArrayRef < double >> scale_factors) {
+        DO_COMPATIBILITY(aclnnUpsampleNearest3d,
+        acl_op::upsample_nearest3d(input, output_size, scale_factors));
+        auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
 
-  auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
-  auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
-  double scales_d_attr = scales_d.value_or(0);
-  double scales_h_attr = scales_h.value_or(0);
-  double scales_w_attr = scales_w.value_or(0);
+        auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
+        auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
+        auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
+        double scales_d_attr = scales_d.value_or(0);
+        double scales_h_attr = scales_h.value_or(0);
+        double scales_w_attr = scales_w.value_or(0);
 
-  auto output_size_vec = op_infer::upsample_nearest3d_npu_output_size(input, osize, scales_d, scales_h, scales_w);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(input, output_size_vec);
-  auto output_osize = at::IntArrayRef(osize);
+        auto output_size_vec = op_infer::upsample_nearest3d_npu_output_size(input, osize, scales_d, scales_h, scales_w);
+        at::Tensor result = npu_preparation::apply_tensor_without_format(input, output_size_vec);
+        auto output_osize = at::IntArrayRef(osize);
 
-  EXEC_NPU_CMD(aclnnUpsampleNearest3d, input, output_osize, scales_d_attr, scales_h_attr, scales_w_attr, result);
-  return result;
+        EXEC_NPU_CMD(aclnnUpsampleNearest3d, input, output_osize, scales_d_attr, scales_h_attr, scales_w_attr, result);
+        return result;
+    }
+
 }
-
-} // namespace op_api
+// namespace op_api

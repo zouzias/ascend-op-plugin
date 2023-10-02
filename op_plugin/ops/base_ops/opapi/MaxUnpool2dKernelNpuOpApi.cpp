@@ -19,29 +19,31 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& max_unpool2d_out(
-    const at::Tensor& self,
+    at::Tensor& max_unpool2d_out(const at::Tensor& self,
     const at::Tensor& indices,
     at::IntArrayRef outputSize,
     at::Tensor& output) {
-  DO_COMPATIBILITY(aclnnMaxUnpool2d, acl_op::max_unpool2d_out(self, indices, outputSize, output));
-  auto output_size = op_infer::max_pool2d_out_size(self, outputSize);
-  npu_preparation::check_tensor({self, indices}, output, self.scalar_type(), output_size);
+        DO_COMPATIBILITY(aclnnMaxUnpool2d, acl_op::max_unpool2d_out(self, indices, outputSize, output));
+        auto output_size = op_infer::max_pool2d_out_size(self, outputSize);
+        npu_preparation::check_tensor({
+            self, indices
+        }, output, self.scalar_type(), output_size);
 
-  EXEC_NPU_CMD(aclnnMaxUnpool2d, self, indices, outputSize, output);
-  return output;
-};
+        EXEC_NPU_CMD(aclnnMaxUnpool2d, self, indices, outputSize, output);
+        return output;
+    }
+    ;
 
-at::Tensor max_unpool2d(
-    const at::Tensor& self,
+    at::Tensor max_unpool2d(const at::Tensor& self,
     const at::Tensor& indices,
     at::IntArrayRef output_size) {
-  DO_COMPATIBILITY(aclnnMaxUnpool2d, acl_op::max_unpool2d(self, indices, output_size));
-  auto outputSize = op_infer::max_pool2d_out_size(self, output_size);
-  at::Tensor output = npu_preparation::apply_tensor_without_format(self, outputSize);
-  op_api::max_unpool2d_out(self, indices, output_size, output);
-  return output;
+        DO_COMPATIBILITY(aclnnMaxUnpool2d, acl_op::max_unpool2d(self, indices, output_size));
+        auto outputSize = op_infer::max_pool2d_out_size(self, output_size);
+        at::Tensor output = npu_preparation::apply_tensor_without_format(self, outputSize);
+        op_api::max_unpool2d_out(self, indices, output_size, output);
+        return output;
+    }
 }
-} // namespace op_api
+// namespace op_api

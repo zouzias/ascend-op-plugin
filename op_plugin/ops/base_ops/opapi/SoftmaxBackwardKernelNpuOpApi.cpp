@@ -21,27 +21,30 @@
 
 namespace op_api {
 
-at::Tensor& _softmax_backward_data_out(const at::Tensor& grad_output,
-                                       const at::Tensor& output, int64_t dim,
-                                       c10::ScalarType input_dtype, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnSoftmaxBackward,
-                   acl_op::_softmax_backward_data_out(grad_output, output, dim, input_dtype, result));
-  at_npu::native::OpPreparation::check_tensor({grad_output, output}, result, grad_output.scalar_type(), 
-                                              grad_output.sizes());
-  
-  EXEC_NPU_CMD(aclnnSoftmaxBackward, grad_output, output, dim, result);
-  return result;
+    at::Tensor& _softmax_backward_data_out(const at::Tensor& grad_output,
+    const at::Tensor& output, int64_t dim,
+    c10::ScalarType input_dtype, at::Tensor& result) {
+        DO_COMPATIBILITY(aclnnSoftmaxBackward,
+        acl_op::_softmax_backward_data_out(grad_output, output, dim, input_dtype, result));
+        at_npu::native::OpPreparation::check_tensor({
+            grad_output, output
+        }, result, grad_output.scalar_type(),
+        grad_output.sizes());
+
+        EXEC_NPU_CMD(aclnnSoftmaxBackward, grad_output, output, dim, result);
+        return result;
+    }
+
+    at::Tensor _softmax_backward_data(const at::Tensor& grad_output, const at::Tensor& output,
+    int64_t dim, c10::ScalarType input_dtype) {
+        DO_COMPATIBILITY(aclnnSoftmaxBackward,
+        acl_op::_softmax_backward_data(grad_output, output, dim, input_dtype));
+
+        // construct the output tensor of the NPU
+        at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(output);
+        EXEC_NPU_CMD(aclnnSoftmaxBackward, grad_output, output, dim, result);
+
+        return result;
+    }
 }
-
-at::Tensor _softmax_backward_data(const at::Tensor& grad_output, const at::Tensor& output,
-                                  int64_t dim, c10::ScalarType input_dtype) {
-  DO_COMPATIBILITY(aclnnSoftmaxBackward,
-                   acl_op::_softmax_backward_data(grad_output, output, dim, input_dtype));
-
-  // construct the output tensor of the NPU
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(output);
-  EXEC_NPU_CMD(aclnnSoftmaxBackward, grad_output, output, dim, result);
-
-  return result;
-}
-}  // namespace op_api
+// namespace op_api

@@ -20,20 +20,19 @@
 
 namespace op_api {
 
-at::Tensor upsample_trilinear3d(
-    const at::Tensor& input,
-    c10::optional<at::IntArrayRef> output_size,
+    at::Tensor upsample_trilinear3d(const at::Tensor& input,
+    c10::optional < at::IntArrayRef > output_size,
     bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
-  DO_COMPATIBILITY(aclnnUpsampleTrilinear3d,
-                   acl_op::upsample_trilinear3d(input, output_size, align_corners, scale_factors));
-  auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
-  auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
-  auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
-  at::Tensor result = op_api::upsample_trilinear3d(
-      input, osize, align_corners, scales_d, scales_h, scales_w);
-  return result;
-}
+    c10::optional < at::ArrayRef < double >> scale_factors) {
+        DO_COMPATIBILITY(aclnnUpsampleTrilinear3d,
+        acl_op::upsample_trilinear3d(input, output_size, align_corners, scale_factors));
+        auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
+        auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
+        auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
+        auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
+        at::Tensor result = op_api::upsample_trilinear3d(input, osize, align_corners, scales_d, scales_h, scales_w);
+        return result;
+    }
 
-} // namespace op_api
+}
+// namespace op_api

@@ -19,26 +19,26 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
+    using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor upsample_nearest2d_backward(
-    const at::Tensor& grad_output,
-    c10::optional<at::IntArrayRef> output_size,
+    at::Tensor upsample_nearest2d_backward(const at::Tensor& grad_output,
+    c10::optional < at::IntArrayRef > output_size,
     at::IntArrayRef input_size,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
-  DO_COMPATIBILITY(aclnnUpsampleNearest2dBackward,
-                   acl_op::upsample_nearest2d_backward(grad_output, output_size, input_size, scale_factors));
-  auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
-  auto output_osize = at::IntArrayRef(osize);
-  auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
-  double scales_h_attr = scales_h.value_or(-1);
-  double scales_w_attr = scales_w.value_or(-1);
-  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output, input_size);
+    c10::optional < at::ArrayRef < double >> scale_factors) {
+        DO_COMPATIBILITY(aclnnUpsampleNearest2dBackward,
+        acl_op::upsample_nearest2d_backward(grad_output, output_size, input_size, scale_factors));
+        auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
+        auto output_osize = at::IntArrayRef(osize);
+        auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
+        auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
+        double scales_h_attr = scales_h.value_or(-1);
+        double scales_w_attr = scales_w.value_or(-1);
+        at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output, input_size);
 
-  EXEC_NPU_CMD(aclnnUpsampleNearest2dBackward, grad_output, output_osize, input_size,
-               scales_h_attr, scales_w_attr, grad_input);
-  return grad_input;
+        EXEC_NPU_CMD(aclnnUpsampleNearest2dBackward, grad_output, output_osize, input_size,
+        scales_h_attr, scales_w_attr, grad_input);
+        return grad_input;
+    }
 }
-} // namespace op_api
+// namespace op_api
 

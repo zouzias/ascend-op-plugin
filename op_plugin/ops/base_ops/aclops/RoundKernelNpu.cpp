@@ -18,46 +18,50 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
-using npu_utils = at_npu::native::NpuUtils;
+    using npu_preparation = at_npu::native::OpPreparation;
+    using npu_utils = at_npu::native::NpuUtils;
 
-namespace {
+    namespace {
 
-at::Tensor& round_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Round")
-      .Input(self)
-      .Output(result)
-      .Run();
+        at::Tensor& round_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
+            at_npu::native::OpCommand cmd;
+            cmd.Name("Round")
+            .Input(self)
+            .Output(result)
+            .Run();
 
-  return result;
+            return result;
+        }
+    }
+    // namespace
+
+    at::Tensor& round_out(const at::Tensor& self, at::Tensor& result) {
+        npu_preparation::CheckOut({
+            self
+        }, result, self);
+
+        if (!npu_utils::check_match(&result)) {
+            at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+            round_out_npu_nocheck(contiguous_result, self);
+            npu_utils::format_fresh_view(result, contiguous_result);
+        } else {
+            round_out_npu_nocheck(result, self);
+        }
+        return result;
+    }
+
+    at::Tensor round(const at::Tensor& self) {
+        at::Tensor result = npu_preparation::apply_tensor(self);
+        round_out_npu_nocheck(result, self);
+
+        return result;
+    }
+
+    at::Tensor& round_(at::Tensor& self) {
+        acl_op::round_out(self, self);
+
+        return self;
+    }
+
 }
-} // namespace
-
-at::Tensor& round_out(const at::Tensor& self, at::Tensor& result) {
-  npu_preparation::CheckOut({self}, result, self);
-
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    round_out_npu_nocheck(contiguous_result, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    round_out_npu_nocheck(result, self);
-  }
-  return result;
-}
-
-at::Tensor round(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  round_out_npu_nocheck(result, self);
-
-  return result;
-}
-
-at::Tensor& round_(at::Tensor& self) {
-  acl_op::round_out(self, self);
-
-  return self;
-}
-
-} // namespace acl_op
+// namespace acl_op

@@ -18,41 +18,43 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-using npu_preparation = at_npu::native::OpPreparation;
-using npu_op_command = at_npu::native::OpCommand;
+    using npu_preparation = at_npu::native::OpPreparation;
+    using npu_op_command = at_npu::native::OpCommand;
 
-namespace {
-at::Tensor& ps_roi_pooling_npu_nocheck(
-    at::Tensor& result,
-    const at::Tensor& self,
+    namespace {
+        at::Tensor& ps_roi_pooling_npu_nocheck(at::Tensor& result,
+        const at::Tensor& self,
+        const at::Tensor& rois,
+        double spatial_scale,
+        int64_t group_size,
+        int64_t output_dim) {
+            npu_op_command cmd;
+            cmd.Name("PSROIPoolingV2")
+            .Input(self, "x")
+            .Input(rois)
+            .Output(result, "y")
+            .Attr("spatial_scale", (float)spatial_scale)
+            .Attr("output_dim", output_dim)
+            .Attr("group_size", group_size)
+            .Run();
+
+            return result;
+        }
+    }
+    // namespace
+
+
+    at::Tensor npu_ps_roi_pooling(const at::Tensor& self,
     const at::Tensor& rois,
     double spatial_scale,
     int64_t group_size,
     int64_t output_dim) {
-  npu_op_command cmd;
-  cmd.Name("PSROIPoolingV2")
-      .Input(self, "x")
-      .Input(rois)
-      .Output(result, "y")
-      .Attr("spatial_scale", (float)spatial_scale)
-      .Attr("output_dim", output_dim)
-      .Attr("group_size", group_size)
-      .Run();
-
-  return result;
+        auto output_size = {
+            rois.size(0) * rois.size(2), output_dim, group_size, group_size
+        };
+        at::Tensor result = npu_preparation::apply_tensor(self, output_size);
+        ps_roi_pooling_npu_nocheck(result, self, rois, spatial_scale, group_size, output_dim);
+        return result;
+    }
 }
-} // namespace
-
-
-at::Tensor npu_ps_roi_pooling(
-    const at::Tensor& self,
-    const at::Tensor& rois,
-    double spatial_scale,
-    int64_t group_size,
-    int64_t output_dim) {
-  auto output_size = {rois.size(0) * rois.size(2), output_dim, group_size, group_size};
-  at::Tensor result = npu_preparation::apply_tensor(self, output_size);
-  ps_roi_pooling_npu_nocheck(result, self, rois, spatial_scale, group_size, output_dim);
-  return result;
-}
-} // namespace acl_op
+// namespace acl_op
