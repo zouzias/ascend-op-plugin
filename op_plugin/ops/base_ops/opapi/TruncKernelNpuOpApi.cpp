@@ -21,30 +21,29 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& trunc_out(const at::Tensor& self, at::Tensor& result)
+at::Tensor &trunc_out(const at::Tensor &self, at::Tensor &result)
 {
-  DO_COMPATIBILITY(aclnnTrunc, acl_op::trunc_out(self, result));
-  auto outputSize = self.sizes();
-  npu_preparation::check_tensor({self}, result, self.scalar_type(), outputSize);
-  EXEC_NPU_CMD(aclnnTrunc, self, result);
-  return result;
+    DO_COMPATIBILITY(aclnnTrunc, acl_op::trunc_out(self, result));
+    auto outputSize = self.sizes();
+    npu_preparation::check_tensor({self}, result, self.scalar_type(), outputSize);
+    EXEC_NPU_CMD(aclnnTrunc, self, result);
+    return result;
 }
 
-at::Tensor& trunc_(at::Tensor& self)
+at::Tensor &trunc_(at::Tensor &self)
 {
-  DO_COMPATIBILITY(aclnnInplaceTrunc, acl_op::trunc_(self));
-  EXEC_NPU_CMD(aclnnInplaceTrunc, self);
-  return self;
+    DO_COMPATIBILITY(aclnnInplaceTrunc, acl_op::trunc_(self));
+    EXEC_NPU_CMD(aclnnInplaceTrunc, self);
+    return self;
 }
 
-at::Tensor trunc(const at::Tensor& self)
+at::Tensor trunc(const at::Tensor &self)
 {
-  auto outputSize = self.sizes();
-  DO_COMPATIBILITY(aclnnTrunc, acl_op::trunc(self));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
-  EXEC_NPU_CMD(aclnnTrunc, self, result);
-  return result;
+    auto outputSize = self.sizes();
+    DO_COMPATIBILITY(aclnnTrunc, acl_op::trunc(self));
+    at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
+    EXEC_NPU_CMD(aclnnTrunc, self, result);
+    return result;
 }
 
-} // namespace at_npu
-
+} // namespace op_api

@@ -31,8 +31,7 @@ const float BFLOAT16_MAX_VALUE = 3.3895314e+38;
 const float BFLOAT16_MIN_VALUE = -3.3895314e+38;
 const float DEFAULT_NAN = 0.0;
 
-std::tuple<float, float> get_posinf_and_neginf(at::ScalarType self_dtype,
-                                               c10::optional<double> posinf,
+std::tuple<float, float> get_posinf_and_neginf(at::ScalarType self_dtype, c10::optional<double> posinf,
                                                c10::optional<double> neginf)
 {
     float new_posinf;
@@ -68,10 +67,10 @@ std::tuple<float, float> get_posinf_and_neginf(at::ScalarType self_dtype,
     }
     return std::tie(new_posinf, new_neginf);
 }
-}
+} // namespace
 
-at::Tensor& nan_to_num_out(const at::Tensor& self, c10::optional<double> nan, c10::optional<double> pos_inf,
-                           c10::optional<double> neg_inf, at::Tensor& result)
+at::Tensor &nan_to_num_out(const at::Tensor &self, c10::optional<double> nan, c10::optional<double> pos_inf,
+                           c10::optional<double> neg_inf, at::Tensor &result)
 {
     DO_COMPATIBILITY(aclnnNanToNum, acl_op::nan_to_num_out(self, nan, pos_inf, neg_inf, result));
 
@@ -84,7 +83,7 @@ at::Tensor& nan_to_num_out(const at::Tensor& self, c10::optional<double> nan, c1
     return result;
 }
 
-at::Tensor nan_to_num(const at::Tensor& self, c10::optional<double> nan, c10::optional<double> pos_inf,
+at::Tensor nan_to_num(const at::Tensor &self, c10::optional<double> nan, c10::optional<double> pos_inf,
                       c10::optional<double> neg_inf)
 {
     DO_COMPATIBILITY(aclnnNanToNum, acl_op::nan_to_num(self, nan, pos_inf, neg_inf));
@@ -99,7 +98,7 @@ at::Tensor nan_to_num(const at::Tensor& self, c10::optional<double> nan, c10::op
     return result;
 }
 
-at::Tensor& nan_to_num_(at::Tensor& self, c10::optional<double> nan, c10::optional<double> pos_inf,
+at::Tensor &nan_to_num_(at::Tensor &self, c10::optional<double> nan, c10::optional<double> pos_inf,
                         c10::optional<double> neg_inf)
 {
     DO_COMPATIBILITY(aclnnInplaceNanToNum, acl_op::nan_to_num_(self, nan, pos_inf, neg_inf));

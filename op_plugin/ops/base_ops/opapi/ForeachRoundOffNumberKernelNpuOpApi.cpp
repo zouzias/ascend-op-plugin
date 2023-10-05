@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include <ATen/native/ForeachUtils.h>
+
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
@@ -25,11 +26,9 @@ const char ROUND_MODE_FRAC = char(7);
 bool is_integral_tensor_list(at::TensorList self)
 {
     auto scalarType = self[0].scalar_type();
-    return (scalarType == at::ScalarType::Byte
-    || scalarType == at::ScalarType::Char
-    || scalarType == at::ScalarType::Short
-    || scalarType == at::ScalarType::Int
-    || scalarType == at::ScalarType::Long);
+    return (scalarType == at::ScalarType::Byte || scalarType == at::ScalarType::Char ||
+            scalarType == at::ScalarType::Short || scalarType == at::ScalarType::Int ||
+            scalarType == at::ScalarType::Long);
 }
 
 void exec_npu_cmd_(at::TensorList self, const char roundMode)
@@ -37,8 +36,8 @@ void exec_npu_cmd_(at::TensorList self, const char roundMode)
     if (is_integral_tensor_list(self)) {
         return;
     }
-    at::Tensor round_mode_scalar_tensor = at_npu::native::OpPreparation::copy_scalar_to_device(
-        roundMode, at::ScalarType::Char);
+    at::Tensor round_mode_scalar_tensor =
+        at_npu::native::OpPreparation::copy_scalar_to_device(roundMode, at::ScalarType::Char);
     // dispatch hostAPI
     EXEC_NPU_CMD(aclnnForeachRoundOffNumber, self, round_mode_scalar_tensor, self);
 }
@@ -52,9 +51,8 @@ std::vector<at::Tensor> exec_npu_cmd(at::TensorList self, const char roundMode)
     for (int i = 0; i < self.size(); i++) {
         at::Tensor tensor = self[i];
         auto output_size = op_infer::input_same_output_size(tensor);
-        result.push_back(
-            at_npu::native::OpPreparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalarType))
-        );
+        result.push_back(at_npu::native::OpPreparation::apply_tensor_without_format(
+            output_size, tensor.options().dtype(scalarType)));
         if (is_integral) {
             result[i] = tensor.clone();
         }
@@ -66,8 +64,8 @@ std::vector<at::Tensor> exec_npu_cmd(at::TensorList self, const char roundMode)
 
     at::TensorList result_ = at::TensorList(result);
 
-    at::Tensor round_mode_scalar_tensor = at_npu::native::OpPreparation::copy_scalar_to_device(
-        roundMode, at::ScalarType::Char);
+    at::Tensor round_mode_scalar_tensor =
+        at_npu::native::OpPreparation::copy_scalar_to_device(roundMode, at::ScalarType::Char);
     // dispatch hostAPI
     EXEC_NPU_CMD(aclnnForeachRoundOffNumber, self, round_mode_scalar_tensor, result_);
     return result;
@@ -76,8 +74,7 @@ std::vector<at::Tensor> exec_npu_cmd(at::TensorList self, const char roundMode)
 bool if_use_slow_route(at::TensorList tensors, const bool isFrac)
 {
     at::native::check_foreach_api_restrictions(tensors);
-    return !at::native::can_use_fast_route(tensors)
-    || (isFrac && at::native::has_integral_tensor(tensors, true));
+    return !at::native::can_use_fast_route(tensors) || (isFrac && at::native::has_integral_tensor(tensors, true));
 }
 
 bool if_use_slow_route(at::TensorList tensors)

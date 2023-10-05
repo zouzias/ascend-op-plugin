@@ -17,16 +17,12 @@
 #include "op_plugin/AclOpsInterface.h"
 
 namespace acl_op {
-std::tuple<at::Tensor, at::Tensor, at::Tensor> _native_batch_norm_legit(
-    const at::Tensor& self,
-    const c10::optional<at::Tensor>& weight_opt,
-    const c10::optional<at::Tensor>& bias_opt,
-    at::Tensor& running_mean_opt,
-    at::Tensor& running_var_opt,
-    bool train,
-    double momentum,
-    double eps) {
-  return acl_op::native_batch_norm(
-      self, weight_opt, bias_opt, running_mean_opt, running_var_opt, train, momentum, eps);
+std::tuple<at::Tensor, at::Tensor, at::Tensor>
+_native_batch_norm_legit(const at::Tensor &self, const c10::optional<at::Tensor> &weight_opt,
+                         const c10::optional<at::Tensor> &bias_opt, at::Tensor &running_mean_opt,
+                         at::Tensor &running_var_opt, bool train, double momentum, double eps)
+{
+    return acl_op::native_batch_norm(self, weight_opt, bias_opt, running_mean_opt, running_var_opt, train, momentum,
+                                     eps);
 }
 } // namespace acl_op

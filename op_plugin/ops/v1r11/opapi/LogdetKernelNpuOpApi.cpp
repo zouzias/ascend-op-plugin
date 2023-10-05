@@ -20,15 +20,15 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor logdet(const at::Tensor &self)
 {
-  DO_COMPATIBILITY(aclnnLogdet, acl_op::logdet(self));
-  // calculate the output size
-  auto output_size = op_infer::array_to_small_vector(self.sizes());
-  output_size.erase(output_size.end() - 2, output_size.end());
-  // construct the output tensor of the NPU
-  at::Tensor log = npu_preparation::apply_tensor(self, output_size);
-  EXEC_NPU_CMD(aclnnLogdet, self, log);
+    DO_COMPATIBILITY(aclnnLogdet, acl_op::logdet(self));
+    // calculate the output size
+    auto output_size = op_infer::array_to_small_vector(self.sizes());
+    output_size.erase(output_size.end() - 2, output_size.end());
+    // construct the output tensor of the NPU
+    at::Tensor log = npu_preparation::apply_tensor(self, output_size);
+    EXEC_NPU_CMD(aclnnLogdet, self, log);
 
-  return log;
+    return log;
 }
 
-}
+} // namespace op_api

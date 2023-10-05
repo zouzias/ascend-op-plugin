@@ -21,32 +21,25 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> sort(const at::Tensor &self,
-                                        c10::optional<bool> stable,
-                                        int64_t dim,
+std::tuple<at::Tensor, at::Tensor> sort(const at::Tensor &self, c10::optional<bool> stable, int64_t dim,
                                         bool descending)
 {
-  DO_COMPATIBILITY(aclnnSort, acl_op::sort(self, stable, dim, descending));
-  at::Tensor values = npu_preparation::apply_tensor_without_format(self);
-  at::Tensor indices = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kLong));
-  bool argStable = c10::value_or_else(stable, [] { return false; });
-  EXEC_NPU_CMD(aclnnSort, self, argStable, dim, descending, values, indices);
-  return std::tie(values, indices);
+    DO_COMPATIBILITY(aclnnSort, acl_op::sort(self, stable, dim, descending));
+    at::Tensor values = npu_preparation::apply_tensor_without_format(self);
+    at::Tensor indices = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kLong));
+    bool argStable = c10::value_or_else(stable, [] { return false; });
+    EXEC_NPU_CMD(aclnnSort, self, argStable, dim, descending, values, indices);
+    return std::tie(values, indices);
 }
 
-std::tuple<at::Tensor &, at::Tensor &> sort_out(const at::Tensor &self,
-                                                c10::optional<bool> stable,
-                                                int64_t dim,
-                                                bool descending,
-                                                at::Tensor &values,
-                                                at::Tensor &indices)
+std::tuple<at::Tensor &, at::Tensor &> sort_out(const at::Tensor &self, c10::optional<bool> stable, int64_t dim,
+                                                bool descending, at::Tensor &values, at::Tensor &indices)
 {
-  DO_COMPATIBILITY(aclnnSort, acl_op::sort_out(self, stable, dim, descending, values, indices));
-  npu_preparation::check_tensor({self}, values, values.scalar_type(), self.sizes());
-  npu_preparation::check_tensor({self}, indices, indices.scalar_type(), self.sizes());
-  bool argStable = c10::value_or_else(stable, [] { return false; });
-  EXEC_NPU_CMD(aclnnSort, self, argStable, dim, descending, values, indices);
-  return std::tie(values, indices);
+    DO_COMPATIBILITY(aclnnSort, acl_op::sort_out(self, stable, dim, descending, values, indices));
+    npu_preparation::check_tensor({self}, values, values.scalar_type(), self.sizes());
+    npu_preparation::check_tensor({self}, indices, indices.scalar_type(), self.sizes());
+    bool argStable = c10::value_or_else(stable, [] { return false; });
+    EXEC_NPU_CMD(aclnnSort, self, argStable, dim, descending, values, indices);
+    return std::tie(values, indices);
 }
-}  // namespace op_api
-
+} // namespace op_api

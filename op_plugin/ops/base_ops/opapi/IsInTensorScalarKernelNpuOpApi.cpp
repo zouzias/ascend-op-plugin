@@ -19,29 +19,24 @@
 
 namespace op_api {
 
-at::Tensor& isin_out(const at::Tensor& elements,
-                     const at::Scalar& test_elements,
-                     bool assume_unique,
-                     bool invert,
-                     at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnIsInTensorScalar, acl_op::isin_out(elements, test_elements, assume_unique, invert,
-      result));
-  at_npu::native::OpPreparation::check_tensor({elements}, result, at::ScalarType::Bool, elements.sizes());
-  EXEC_NPU_CMD(aclnnIsInTensorScalar, elements, test_elements, assume_unique, invert, result);
-  return result;
+at::Tensor &isin_out(const at::Tensor &elements, const at::Scalar &test_elements, bool assume_unique, bool invert,
+                     at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnIsInTensorScalar, acl_op::isin_out(elements, test_elements, assume_unique, invert, result));
+    at_npu::native::OpPreparation::check_tensor({elements}, result, at::ScalarType::Bool, elements.sizes());
+    EXEC_NPU_CMD(aclnnIsInTensorScalar, elements, test_elements, assume_unique, invert, result);
+    return result;
 }
 
-at::Tensor isin(const at::Tensor& elements,
-                const at::Scalar& test_elements,
-                bool assume_unique,
-                bool invert) {
-  DO_COMPATIBILITY(aclnnIsInTensorScalar, acl_op::isin(elements, test_elements, assume_unique, invert));
+at::Tensor isin(const at::Tensor &elements, const at::Scalar &test_elements, bool assume_unique, bool invert)
+{
+    DO_COMPATIBILITY(aclnnIsInTensorScalar, acl_op::isin(elements, test_elements, assume_unique, invert));
 
-  at::Tensor result =
-      at_npu::native::OpPreparation::apply_tensor_without_format(elements.sizes(), elements.options().dtype(at::kBool));
+    at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(elements.sizes(),
+                                                                                   elements.options().dtype(at::kBool));
 
-  EXEC_NPU_CMD(aclnnIsInTensorScalar, elements, test_elements, assume_unique, invert, result);
-  return result;
+    EXEC_NPU_CMD(aclnnIsInTensorScalar, elements, test_elements, assume_unique, invert, result);
+    return result;
 }
 
-}  // namespace op_api
+} // namespace op_api

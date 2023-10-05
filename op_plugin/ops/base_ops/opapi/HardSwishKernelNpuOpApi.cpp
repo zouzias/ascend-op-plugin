@@ -21,24 +21,27 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& hardswish_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnHardswish, acl_op::hardswish_out(self, result));
-  npu_preparation::check_tensor({self}, result, self);
-  EXEC_NPU_CMD(aclnnHardswish, self, result);
-  return result;
+at::Tensor &hardswish_out(const at::Tensor &self, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnHardswish, acl_op::hardswish_out(self, result));
+    npu_preparation::check_tensor({self}, result, self);
+    EXEC_NPU_CMD(aclnnHardswish, self, result);
+    return result;
 }
 
-at::Tensor hardswish(const at::Tensor &self) {
-  DO_COMPATIBILITY(aclnnHardswish, acl_op::hardswish(self));
-  auto out_size = op_infer::input_same_output_size(self);
-  auto result = npu_preparation::apply_tensor_without_format(out_size, self.options());
-  EXEC_NPU_CMD(aclnnHardswish, self, result);
-  return result;
+at::Tensor hardswish(const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnHardswish, acl_op::hardswish(self));
+    auto out_size = op_infer::input_same_output_size(self);
+    auto result = npu_preparation::apply_tensor_without_format(out_size, self.options());
+    EXEC_NPU_CMD(aclnnHardswish, self, result);
+    return result;
 }
 
-at::Tensor& hardswish_(at::Tensor &self) {
-  DO_COMPATIBILITY(aclnnInplaceHardswish, acl_op::hardswish_(self));
-  EXEC_NPU_CMD(aclnnInplaceHardswish, self);
-  return self;
+at::Tensor &hardswish_(at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnInplaceHardswish, acl_op::hardswish_(self));
+    EXEC_NPU_CMD(aclnnInplaceHardswish, self);
+    return self;
 }
 } // namespace op_api

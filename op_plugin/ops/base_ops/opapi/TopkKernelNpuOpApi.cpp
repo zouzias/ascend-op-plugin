@@ -21,36 +21,27 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor&, at::Tensor&> topk_out(
-    const at::Tensor& self,
-    int64_t k,
-    int64_t dim,
-    bool largest,
-    bool sorted,
-    at::Tensor& values,
-    at::Tensor& indices) {
-  DO_COMPATIBILITY(aclnnTopk, acl_op::topk_out(self, k, dim, largest, sorted, values, indices));
-  auto output_size = op_infer::topk_npu_output_size(self, k, dim, largest, sorted);
-  npu_preparation::check_tensor({self}, values, self.scalar_type(), output_size);
-  npu_preparation::check_tensor({self}, indices, at::ScalarType::Long, output_size);
+std::tuple<at::Tensor &, at::Tensor &> topk_out(const at::Tensor &self, int64_t k, int64_t dim, bool largest,
+                                                bool sorted, at::Tensor &values, at::Tensor &indices)
+{
+    DO_COMPATIBILITY(aclnnTopk, acl_op::topk_out(self, k, dim, largest, sorted, values, indices));
+    auto output_size = op_infer::topk_npu_output_size(self, k, dim, largest, sorted);
+    npu_preparation::check_tensor({self}, values, self.scalar_type(), output_size);
+    npu_preparation::check_tensor({self}, indices, at::ScalarType::Long, output_size);
 
-  EXEC_NPU_CMD(aclnnTopk, self, k, dim, largest, sorted, values, indices);
-  return std::tuple<at::Tensor&, at::Tensor&>(values, indices);
+    EXEC_NPU_CMD(aclnnTopk, self, k, dim, largest, sorted, values, indices);
+    return std::tuple<at::Tensor &, at::Tensor &>(values, indices);
 }
 
-std::tuple<at::Tensor, at::Tensor> topk(
-    const at::Tensor& self,
-    int64_t k,
-    int64_t dim,
-    bool largest,
-    bool sorted) {
-  DO_COMPATIBILITY(aclnnTopk, acl_op::topk(self, k, dim, largest, sorted));
-  auto output_size = op_infer::topk_npu_output_size(self, k, dim, largest, sorted);
-  at::Tensor values = npu_preparation::apply_tensor_without_format(output_size, self.options());
-  at::Tensor indices = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kLong));
+std::tuple<at::Tensor, at::Tensor> topk(const at::Tensor &self, int64_t k, int64_t dim, bool largest, bool sorted)
+{
+    DO_COMPATIBILITY(aclnnTopk, acl_op::topk(self, k, dim, largest, sorted));
+    auto output_size = op_infer::topk_npu_output_size(self, k, dim, largest, sorted);
+    at::Tensor values = npu_preparation::apply_tensor_without_format(output_size, self.options());
+    at::Tensor indices = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kLong));
 
-  EXEC_NPU_CMD(aclnnTopk, self, k, dim, largest, sorted, values, indices);
-  return std::tuple<at::Tensor, at::Tensor>(values, indices);
+    EXEC_NPU_CMD(aclnnTopk, self, k, dim, largest, sorted, values, indices);
+    return std::tuple<at::Tensor, at::Tensor>(values, indices);
 }
 
 } // namespace op_api

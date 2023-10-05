@@ -21,17 +21,10 @@ const int DIM = 3;
 const int LAST_AXIS = 2;
 } // namespace
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm_backward(
-    const at::Tensor& dY,
-    const at::Tensor& X,
-    const at::Tensor& mean,
-    const at::Tensor& rstd,
-    const c10::optional<at::Tensor>& gamma_opt,
-    int64_t N,
-    int64_t C,
-    int64_t HxW,
-    int64_t group,
-    std::array<bool, DIM> grad_input_mask)
+std::tuple<at::Tensor, at::Tensor, at::Tensor>
+native_group_norm_backward(const at::Tensor &dY, const at::Tensor &X, const at::Tensor &mean, const at::Tensor &rstd,
+                           const c10::optional<at::Tensor> &gamma_opt, int64_t N, int64_t C, int64_t HxW, int64_t group,
+                           std::array<bool, DIM> grad_input_mask)
 {
     TORCH_CHECK(group != 0, "group = 0 for group_norm_backward, please check!")
     at::Tensor dY_reshaped_3;
@@ -44,7 +37,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm_backward(
         X_reshaped_3 = X;
     }
 
-    const at::Tensor& gamma = c10::value_or_else(gamma_opt, [] {return at::Tensor();});
+    const at::Tensor &gamma = c10::value_or_else(gamma_opt, [] { return at::Tensor(); });
     at::Tensor dY_b = gamma.defined() ? dY_reshaped_3.mul(gamma.view({1, C, 1})) : dY_reshaped_3;
 
     at::Tensor X_reshaped = X_reshaped_3.view({1, N * group, N ? -1 : 1});

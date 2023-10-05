@@ -20,10 +20,11 @@
 
 namespace op_api {
 
-at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zeros_out(size, result));
-  result.resize_(size);
-  return result.zero_();
+at::Tensor &zeros_out(at::IntArrayRef size, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zeros_out(size, result));
+    result.resize_(size);
+    return result.zero_();
 }
 
 } // namespace op_api

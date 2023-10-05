@@ -18,8 +18,8 @@
 
 namespace op_api {
 
-at::Tensor& nansum_out(const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
-                       c10::optional<c10::ScalarType> dtype, at::Tensor& result)
+at::Tensor &nansum_out(const at::Tensor &self, at::IntArrayRef dim, bool keepdim, c10::optional<c10::ScalarType> dtype,
+                       at::Tensor &result)
 {
     c10::ScalarType dstType;
     if (dtype.has_value()) {
@@ -36,7 +36,7 @@ at::Tensor& nansum_out(const at::Tensor& self, at::IntArrayRef dim, bool keepdim
     return result;
 }
 
-at::Tensor nansum(const at::Tensor& self, at::IntArrayRef dim, bool keepdim, c10::optional<c10::ScalarType> dtype)
+at::Tensor nansum(const at::Tensor &self, at::IntArrayRef dim, bool keepdim, c10::optional<c10::ScalarType> dtype)
 {
     // create result tensor with int64 if dtype has no value and self is intergal
     c10::ScalarType promoteInteSelf = isIntegralType(self.scalar_type(), true) ? at::kLong : self.scalar_type();
@@ -49,9 +49,9 @@ at::Tensor nansum(const at::Tensor& self, at::IntArrayRef dim, bool keepdim, c10
     return result;
 }
 
-at::Tensor nansum(const at::Tensor& self, c10::optional<c10::ScalarType> dtype)
+at::Tensor nansum(const at::Tensor &self, c10::optional<c10::ScalarType> dtype)
 {
     return op_api::nansum(self, c10::SmallVector<int64_t, N>{}, false, dtype);
 }
 
-}  // namespace op_api
+} // namespace op_api

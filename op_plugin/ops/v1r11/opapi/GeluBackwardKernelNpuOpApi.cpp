@@ -21,18 +21,19 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor gelu_backward(const at::Tensor& grad, const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnGeluBackward, acl_op::gelu_backward(grad, self));
-  // calculate the output size
-  auto output_size = op_infer::broadcast_ops_npu_output_size(grad, self);
-  // dtype promotion
-  auto output_dtype = at::native::result_type(grad, self);
-  // construct the output tensor of the NPU
-  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(output_size,
-                                                                       self.options().dtype(output_dtype));
-  // dispatch hostAPI
-  EXEC_NPU_CMD(aclnnGeluBackward, grad, self, grad_input);
-  return grad_input;
+at::Tensor gelu_backward(const at::Tensor &grad, const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnGeluBackward, acl_op::gelu_backward(grad, self));
+    // calculate the output size
+    auto output_size = op_infer::broadcast_ops_npu_output_size(grad, self);
+    // dtype promotion
+    auto output_dtype = at::native::result_type(grad, self);
+    // construct the output tensor of the NPU
+    at::Tensor grad_input =
+        npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(output_dtype));
+    // dispatch hostAPI
+    EXEC_NPU_CMD(aclnnGeluBackward, grad, self, grad_input);
+    return grad_input;
 }
 
 } // namespace op_api

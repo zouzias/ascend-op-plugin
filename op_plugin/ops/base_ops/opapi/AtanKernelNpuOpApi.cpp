@@ -21,31 +21,35 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& atan_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnAtan, acl_op::atan_out(self, result));
-  TORCH_CHECK(!isIntegralType(result.scalar_type(), true), "result dtype can't be cast to the desired output type.\n");
-  auto outputSize = self.sizes();
-  npu_preparation::check_tensor({self}, result, result.scalar_type(), outputSize);
-  EXEC_NPU_CMD(aclnnAtan, self, result);
-  return result;
+at::Tensor &atan_out(const at::Tensor &self, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnAtan, acl_op::atan_out(self, result));
+    TORCH_CHECK(!isIntegralType(result.scalar_type(), true),
+                "result dtype can't be cast to the desired output type.\n");
+    auto outputSize = self.sizes();
+    npu_preparation::check_tensor({self}, result, result.scalar_type(), outputSize);
+    EXEC_NPU_CMD(aclnnAtan, self, result);
+    return result;
 }
 
-at::Tensor atan(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnAtan, acl_op::atan(self));
-  auto outputSize = self.sizes();
-  auto outDtype = self.dtype();
-  if (isIntegralType(self.scalar_type(), true)) {
-    outDtype = at::kFloat;
-  }
-  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(outDtype));
-  EXEC_NPU_CMD(aclnnAtan, self, result);
-  return result;
+at::Tensor atan(const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnAtan, acl_op::atan(self));
+    auto outputSize = self.sizes();
+    auto outDtype = self.dtype();
+    if (isIntegralType(self.scalar_type(), true)) {
+        outDtype = at::kFloat;
+    }
+    at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(outDtype));
+    EXEC_NPU_CMD(aclnnAtan, self, result);
+    return result;
 }
 
-at::Tensor& atan_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceAtan, acl_op::atan_(self));
-  TORCH_CHECK(!isIntegralType(self.scalar_type(), true), "result dtype can't be cast to the desired output type.\n");
-  EXEC_NPU_CMD(aclnnInplaceAtan, self);
-  return self;
+at::Tensor &atan_(at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnInplaceAtan, acl_op::atan_(self));
+    TORCH_CHECK(!isIntegralType(self.scalar_type(), true), "result dtype can't be cast to the desired output type.\n");
+    EXEC_NPU_CMD(aclnnInplaceAtan, self);
+    return self;
 }
-}  // namespace op_api
+} // namespace op_api

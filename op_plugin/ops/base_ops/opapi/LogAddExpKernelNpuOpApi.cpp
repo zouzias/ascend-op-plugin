@@ -14,33 +14,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/OpApiInterface.h"
 #include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/KernelNpuOutputSize.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-at::Tensor& logaddexp_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out)
+at::Tensor &logaddexp_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out)
 {
-  DO_COMPATIBILITY(aclnnLogAddExp, acl_op::logaddexp_out(self, other, out));
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at_npu::native::OpPreparation::check_tensor({self}, out, out, output_size);
-  EXEC_NPU_CMD(aclnnLogAddExp, self, other, out);
+    DO_COMPATIBILITY(aclnnLogAddExp, acl_op::logaddexp_out(self, other, out));
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    at_npu::native::OpPreparation::check_tensor({self}, out, out, output_size);
+    EXEC_NPU_CMD(aclnnLogAddExp, self, other, out);
 
-  return out;
+    return out;
 }
 
 at::Tensor logaddexp(const at::Tensor &self, const at::Tensor &other)
 {
-  DO_COMPATIBILITY(aclnnLogAddExp, acl_op::logaddexp(self, other));
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::ScalarType output_type = at::native::result_type(self, other);
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(output_size,
-      self.options().dtype(output_type));
-  EXEC_NPU_CMD(aclnnLogAddExp, self, other, result);
+    DO_COMPATIBILITY(aclnnLogAddExp, acl_op::logaddexp(self, other));
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    at::ScalarType output_type = at::native::result_type(self, other);
+    at::Tensor result =
+        at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options().dtype(output_type));
+    EXEC_NPU_CMD(aclnnLogAddExp, self, other, result);
 
-  return result;
+    return result;
 }
 
 } // namespace op_api
-

@@ -14,28 +14,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-#include "op_plugin/AclOpsInterface.h"
 
 namespace op_api {
 
-at::Tensor upsample_trilinear3d_backward(
-    const at::Tensor& grad_output,
-    c10::optional<at::IntArrayRef> output_size,
-    at::IntArrayRef input_size,
-    bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
-  DO_COMPATIBILITY(aclnnUpsampleTrilinear3dBackward,
-                   acl_op::upsample_trilinear3d_backward(grad_output, output_size, input_size,
-                                                         align_corners, scale_factors));
-  auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
-  auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
-  auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
-  return op_api::upsample_trilinear3d_backward(grad_output, osize, input_size, align_corners, scales_d,
-                                               scales_h, scales_w);
+at::Tensor upsample_trilinear3d_backward(const at::Tensor &grad_output, c10::optional<at::IntArrayRef> output_size,
+                                         at::IntArrayRef input_size, bool align_corners,
+                                         c10::optional<at::ArrayRef<double>> scale_factors)
+{
+    DO_COMPATIBILITY(
+        aclnnUpsampleTrilinear3dBackward,
+        acl_op::upsample_trilinear3d_backward(grad_output, output_size, input_size, align_corners, scale_factors));
+    auto osize = op_infer::upsample_infershape_with_scale(input_size, output_size, scale_factors);
+    auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
+    auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
+    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
+    return op_api::upsample_trilinear3d_backward(grad_output, osize, input_size, align_corners, scales_d, scales_h,
+                                                 scales_w);
 }
 
 } // namespace op_api

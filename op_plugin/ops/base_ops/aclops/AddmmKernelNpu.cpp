@@ -21,48 +21,38 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor& addmm_out(
-    const at::Tensor& self,
-    const at::Tensor& mat1,
-    const at::Tensor& mat2,
-    const at::Scalar& beta,
-    const at::Scalar& alpha,
-    at::Tensor& result) {
-  at::Tensor mul_result = at::mul(mat1, alpha);
-  at::Tensor mm_result = at::mm(mul_result, mat2);
+at::Tensor &addmm_out(const at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2, const at::Scalar &beta,
+                      const at::Scalar &alpha, at::Tensor &result)
+{
+    at::Tensor mul_result = at::mul(mat1, alpha);
+    at::Tensor mm_result = at::mm(mul_result, mat2);
 
-  // matmul*alpha+self*beta
-  at::add_out(result, mm_result, self, beta);
-  return result;
+    // matmul*alpha+self*beta
+    at::add_out(result, mm_result, self, beta);
+    return result;
 }
 
-at::Tensor addmm(
-    const at::Tensor& self,
-    const at::Tensor& mat1,
-    const at::Tensor& mat2,
-    const at::Scalar& beta,
-    const at::Scalar& alpha) {
-  auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
-  at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
+at::Tensor addmm(const at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2, const at::Scalar &beta,
+                 const at::Scalar &alpha)
+{
+    auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2, beta, alpha);
+    at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
 
-  acl_op::addmm_out(self, mat1, mat2, beta, alpha, result);
-  return result;
+    acl_op::addmm_out(self, mat1, mat2, beta, alpha, result);
+    return result;
 }
 
-at::Tensor& addmm_(
-    at::Tensor& self,
-    const at::Tensor& mat1,
-    const at::Tensor& mat2,
-    const at::Scalar& beta,
-    const at::Scalar& alpha) {
-  npu_preparation::CheckMemory({self, mat1, mat2}, {self});
-  if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
-    acl_op::addmm_out(contiguous_self, mat1, mat2, beta, alpha, contiguous_self);
-    npu_utils::format_fresh_view(self, contiguous_self);
-  } else {
-    acl_op::addmm_out(self, mat1, mat2, beta, alpha, self);
-  }
-  return self;
+at::Tensor &addmm_(at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2, const at::Scalar &beta,
+                   const at::Scalar &alpha)
+{
+    npu_preparation::CheckMemory({self, mat1, mat2}, {self});
+    if (!npu_utils::check_match(&self)) {
+        at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+        acl_op::addmm_out(contiguous_self, mat1, mat2, beta, alpha, contiguous_self);
+        npu_utils::format_fresh_view(self, contiguous_self);
+    } else {
+        acl_op::addmm_out(self, mat1, mat2, beta, alpha, self);
+    }
+    return self;
 }
 } // namespace acl_op

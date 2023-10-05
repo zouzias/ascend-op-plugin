@@ -21,23 +21,26 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& floor_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnFloor, acl_op::floor_out(self, result));
-  npu_preparation::check_tensor({self}, result, self.sizes());
-  EXEC_NPU_CMD(aclnnFloor, self, result);
-  return result;
+at::Tensor &floor_out(const at::Tensor &self, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnFloor, acl_op::floor_out(self, result));
+    npu_preparation::check_tensor({self}, result, self.sizes());
+    EXEC_NPU_CMD(aclnnFloor, self, result);
+    return result;
 }
 
-at::Tensor& floor_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceFloor, acl_op::floor_(self));
-  EXEC_NPU_CMD(aclnnInplaceFloor, self);
-  return self;
+at::Tensor &floor_(at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnInplaceFloor, acl_op::floor_(self));
+    EXEC_NPU_CMD(aclnnInplaceFloor, self);
+    return self;
 }
 
-at::Tensor floor(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnFloor, acl_op::floor(self));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnFloor, self, result);
-  return result;
+at::Tensor floor(const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnFloor, acl_op::floor(self));
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+    EXEC_NPU_CMD(aclnnFloor, self, result);
+    return result;
 }
 } // namespace op_api

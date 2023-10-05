@@ -21,32 +21,28 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool2d_out(
-    const at::Tensor& self,
-    at::IntArrayRef output_size,
-    at::Tensor& output,
-    at::Tensor& indices) {
-  DO_COMPATIBILITY(aclnnAdaptiveMaxPool2d,
-                   acl_op::adaptive_max_pool2d_out(self, output_size, output, indices));
-  npu_preparation::check_memory({self}, {output, indices});
-  
-  auto outputSize = op_infer::max_pool2d_out_size(self, output_size);
-  npu_preparation::check_tensor({self}, output, self.scalar_type(), outputSize);
-  npu_preparation::check_tensor({self}, indices, at::ScalarType::Long, outputSize);
-  
-  EXEC_NPU_CMD(aclnnAdaptiveMaxPool2d, self, output_size, output, indices);
-  return std::tuple<at::Tensor&, at::Tensor&>(output, indices);
+std::tuple<at::Tensor &, at::Tensor &> adaptive_max_pool2d_out(const at::Tensor &self, at::IntArrayRef output_size,
+                                                               at::Tensor &output, at::Tensor &indices)
+{
+    DO_COMPATIBILITY(aclnnAdaptiveMaxPool2d, acl_op::adaptive_max_pool2d_out(self, output_size, output, indices));
+    npu_preparation::check_memory({self}, {output, indices});
+
+    auto outputSize = op_infer::max_pool2d_out_size(self, output_size);
+    npu_preparation::check_tensor({self}, output, self.scalar_type(), outputSize);
+    npu_preparation::check_tensor({self}, indices, at::ScalarType::Long, outputSize);
+
+    EXEC_NPU_CMD(aclnnAdaptiveMaxPool2d, self, output_size, output, indices);
+    return std::tuple<at::Tensor &, at::Tensor &>(output, indices);
 }
 
-std::tuple<at::Tensor, at::Tensor> adaptive_max_pool2d(
-    const at::Tensor& self,
-    at::IntArrayRef output_size) {
-  DO_COMPATIBILITY(aclnnAdaptiveMaxPool2d, acl_op::adaptive_max_pool2d(self, output_size));
-  auto outputSize = op_infer::max_pool2d_out_size(self, output_size);
-  at::Tensor output = npu_preparation::apply_tensor_without_format(self, outputSize);
-  at::Tensor indices = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kLong));
+std::tuple<at::Tensor, at::Tensor> adaptive_max_pool2d(const at::Tensor &self, at::IntArrayRef output_size)
+{
+    DO_COMPATIBILITY(aclnnAdaptiveMaxPool2d, acl_op::adaptive_max_pool2d(self, output_size));
+    auto outputSize = op_infer::max_pool2d_out_size(self, output_size);
+    at::Tensor output = npu_preparation::apply_tensor_without_format(self, outputSize);
+    at::Tensor indices = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kLong));
 
-  op_api::adaptive_max_pool2d_out(self, output_size, output, indices);
-  return std::tuple<at::Tensor, at::Tensor>(output, indices);
+    op_api::adaptive_max_pool2d_out(self, output_size, output, indices);
+    return std::tuple<at::Tensor, at::Tensor>(output, indices);
 }
 } // namespace op_api

@@ -21,26 +21,24 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& upsample_nearest1d_out(const at::Tensor& self,
-                                   at::IntArrayRef output_size,
-                                   c10::optional<double> scales,
-                                   at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnUpsampleNearest1d, acl_op::upsample_nearest1d_out(self, output_size, scales, result));
-  c10::SmallVector<int64_t, SIZE> out_size = op_infer::upsample_linear1d_npu_output_size(self, output_size, false,
-                                                                                         scales);
-  npu_preparation::check_tensor({self}, result, self, out_size);
-  EXEC_NPU_CMD(aclnnUpsampleNearest1d, self, output_size, result);
-  return result;
+at::Tensor &upsample_nearest1d_out(const at::Tensor &self, at::IntArrayRef output_size, c10::optional<double> scales,
+                                   at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnUpsampleNearest1d, acl_op::upsample_nearest1d_out(self, output_size, scales, result));
+    c10::SmallVector<int64_t, SIZE> out_size =
+        op_infer::upsample_linear1d_npu_output_size(self, output_size, false, scales);
+    npu_preparation::check_tensor({self}, result, self, out_size);
+    EXEC_NPU_CMD(aclnnUpsampleNearest1d, self, output_size, result);
+    return result;
 }
 
-at::Tensor upsample_nearest1d(const at::Tensor& self,
-                              at::IntArrayRef output_size,
-                              c10::optional<double> scales) {
-  DO_COMPATIBILITY(aclnnUpsampleNearest1d, acl_op::upsample_nearest1d(self, output_size, scales));
-  c10::SmallVector<int64_t, SIZE> out_size = op_infer::upsample_linear1d_npu_output_size(self, output_size, false,
-                                                                                         scales);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self, out_size);
-  EXEC_NPU_CMD(aclnnUpsampleNearest1d, self, output_size, result);
-  return result;
+at::Tensor upsample_nearest1d(const at::Tensor &self, at::IntArrayRef output_size, c10::optional<double> scales)
+{
+    DO_COMPATIBILITY(aclnnUpsampleNearest1d, acl_op::upsample_nearest1d(self, output_size, scales));
+    c10::SmallVector<int64_t, SIZE> out_size =
+        op_infer::upsample_linear1d_npu_output_size(self, output_size, false, scales);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self, out_size);
+    EXEC_NPU_CMD(aclnnUpsampleNearest1d, self, output_size, result);
+    return result;
 }
 } // namespace op_api

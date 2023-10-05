@@ -18,7 +18,8 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor prelu(const at::Tensor& self, const at::Tensor& weight) {
-  return prelu_common_nocheck(self, weight);
+at::Tensor prelu(const at::Tensor &self, const at::Tensor &weight)
+{
+    return prelu_common_nocheck(self, weight);
 }
 } // namespace acl_op

@@ -21,8 +21,9 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& result) {
-  result.resize_(size);
-  return result.zero_();
+at::Tensor &zeros_out(at::IntArrayRef size, at::Tensor &result)
+{
+    result.resize_(size);
+    return result.zero_();
 }
 } // namespace acl_op

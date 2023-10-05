@@ -21,30 +21,27 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> linalg_slogdet(const at::Tensor& self)
+std::tuple<at::Tensor, at::Tensor> linalg_slogdet(const at::Tensor &self)
 {
-  DO_COMPATIBILITY(aclnnSlogdet, acl_op::linalg_slogdet(self));
-  // calculate the output size
-  auto output_size = op_infer::array_to_small_vector(self.sizes());
-  output_size.erase(output_size.end() - 2, output_size.end());
-  // construct the output tensor of the NPU
-  at::Tensor sign = npu_preparation::apply_tensor(self, output_size);
-  at::Tensor log = npu_preparation::apply_tensor(self, output_size);
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnSlogdet, self, sign, log);
+    DO_COMPATIBILITY(aclnnSlogdet, acl_op::linalg_slogdet(self));
+    // calculate the output size
+    auto output_size = op_infer::array_to_small_vector(self.sizes());
+    output_size.erase(output_size.end() - 2, output_size.end());
+    // construct the output tensor of the NPU
+    at::Tensor sign = npu_preparation::apply_tensor(self, output_size);
+    at::Tensor log = npu_preparation::apply_tensor(self, output_size);
+    // calculate the output result of the NPU
+    EXEC_NPU_CMD(aclnnSlogdet, self, sign, log);
 
-  return std::tie(sign, log);
+    return std::tie(sign, log);
 }
 
-std::tuple<at::Tensor &, at::Tensor &> linalg_slogdet_out(const at::Tensor& self,
-                                                          at::Tensor& sign,
-                                                          at::Tensor& log)
+std::tuple<at::Tensor &, at::Tensor &> linalg_slogdet_out(const at::Tensor &self, at::Tensor &sign, at::Tensor &log)
 {
-  DO_COMPATIBILITY(aclnnSlogdet, acl_op::linalg_slogdet_out(self, sign, log));
-  EXEC_NPU_CMD(aclnnSlogdet, self, sign, log);
+    DO_COMPATIBILITY(aclnnSlogdet, acl_op::linalg_slogdet_out(self, sign, log));
+    EXEC_NPU_CMD(aclnnSlogdet, self, sign, log);
 
-  return std::tie(sign, log);
+    return std::tie(sign, log);
 }
 
-}  // namespace op_api
-
+} // namespace op_api

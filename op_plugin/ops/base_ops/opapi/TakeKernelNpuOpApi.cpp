@@ -21,19 +21,20 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& take_out(const at::Tensor& self, const at::Tensor& index, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnTake, acl_op::take_out(self, index, result));
-  npu_preparation::check_tensor({self, index}, result, self.scalar_type(), index.sizes());
-  EXEC_NPU_CMD(aclnnTake, self, index, result);
-  return result;
+at::Tensor &take_out(const at::Tensor &self, const at::Tensor &index, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnTake, acl_op::take_out(self, index, result));
+    npu_preparation::check_tensor({self, index}, result, self.scalar_type(), index.sizes());
+    EXEC_NPU_CMD(aclnnTake, self, index, result);
+    return result;
 }
 
-at::Tensor take(const at::Tensor& self, const at::Tensor& index) {
-  DO_COMPATIBILITY(aclnnTake, acl_op::take(self, index));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self, index.sizes());
-  EXEC_NPU_CMD(aclnnTake, self, index, result);
-  return result;
+at::Tensor take(const at::Tensor &self, const at::Tensor &index)
+{
+    DO_COMPATIBILITY(aclnnTake, acl_op::take(self, index));
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self, index.sizes());
+    EXEC_NPU_CMD(aclnnTake, self, index, result);
+    return result;
 }
 
 } // namespace op_api
-

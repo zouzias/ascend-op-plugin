@@ -19,24 +19,26 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-at::Tensor rsub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) {
-  DO_COMPATIBILITY(aclnnRsub, acl_op::rsub(self, other, alpha));
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::ScalarType result_type = at::native::result_type(self, other);
-  auto result = at_npu::native::OpPreparation::apply_tensor_without_format(output_size,
-                                                                           self.options().dtype(result_type));
-  EXEC_NPU_CMD(aclnnRsub, self, other, alpha, result);
-  return result;
+at::Tensor rsub(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha)
+{
+    DO_COMPATIBILITY(aclnnRsub, acl_op::rsub(self, other, alpha));
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    at::ScalarType result_type = at::native::result_type(self, other);
+    auto result =
+        at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options().dtype(result_type));
+    EXEC_NPU_CMD(aclnnRsub, self, other, alpha, result);
+    return result;
 }
 
-at::Tensor rsub(const at::Tensor& self, const at::Scalar& other, const at::Scalar& alpha) {
-  DO_COMPATIBILITY(aclnnRsubs, acl_op::rsub(self, other, alpha));
-  auto output_size = op_infer::input_same_output_size(self);
-  at::ScalarType result_type = at::native::result_type(self, other);
-  auto result = at_npu::native::OpPreparation::apply_tensor_without_format(output_size,
-                                                                           self.options().dtype(result_type));
-  EXEC_NPU_CMD(aclnnRsubs, self, other, alpha, result);
-  return result;
+at::Tensor rsub(const at::Tensor &self, const at::Scalar &other, const at::Scalar &alpha)
+{
+    DO_COMPATIBILITY(aclnnRsubs, acl_op::rsub(self, other, alpha));
+    auto output_size = op_infer::input_same_output_size(self);
+    at::ScalarType result_type = at::native::result_type(self, other);
+    auto result =
+        at_npu::native::OpPreparation::apply_tensor_without_format(output_size, self.options().dtype(result_type));
+    EXEC_NPU_CMD(aclnnRsubs, self, other, alpha, result);
+    return result;
 }
 
 } // namespace op_api

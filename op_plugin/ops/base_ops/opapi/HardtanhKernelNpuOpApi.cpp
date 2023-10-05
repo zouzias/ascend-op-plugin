@@ -21,16 +21,18 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor hardtanh(const at::Tensor& self, const at::Scalar& min, const at::Scalar& max) {
-  DO_COMPATIBILITY(aclnnHardtanh, acl_op::hardtanh(self, min, max));
-  at::Tensor out = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnHardtanh, self, min, max, out);
-  return out;
+at::Tensor hardtanh(const at::Tensor &self, const at::Scalar &min, const at::Scalar &max)
+{
+    DO_COMPATIBILITY(aclnnHardtanh, acl_op::hardtanh(self, min, max));
+    at::Tensor out = npu_preparation::apply_tensor_without_format(self);
+    EXEC_NPU_CMD(aclnnHardtanh, self, min, max, out);
+    return out;
 }
 
-at::Tensor& hardtanh_(at::Tensor& self, const at::Scalar& min, const at::Scalar& max) {
-  DO_COMPATIBILITY(aclnnInplaceHardtanh, acl_op::hardtanh_(self, min, max));
-  EXEC_NPU_CMD(aclnnInplaceHardtanh, self, min, max);
-  return self;
+at::Tensor &hardtanh_(at::Tensor &self, const at::Scalar &min, const at::Scalar &max)
+{
+    DO_COMPATIBILITY(aclnnInplaceHardtanh, acl_op::hardtanh_(self, min, max));
+    EXEC_NPU_CMD(aclnnInplaceHardtanh, self, min, max);
+    return self;
 }
 } // namespace op_api

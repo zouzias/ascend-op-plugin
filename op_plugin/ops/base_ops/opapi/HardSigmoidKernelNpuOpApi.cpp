@@ -16,30 +16,33 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
-#include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/KernelNpuOutputSize.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& hardsigmoid_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnHardsigmoid, acl_op::hardsigmoid_out(self, result));
-  npu_preparation::check_tensor({self}, result, self);
-  EXEC_NPU_CMD(aclnnHardsigmoid, self, result);
-  return result;
+at::Tensor &hardsigmoid_out(const at::Tensor &self, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnHardsigmoid, acl_op::hardsigmoid_out(self, result));
+    npu_preparation::check_tensor({self}, result, self);
+    EXEC_NPU_CMD(aclnnHardsigmoid, self, result);
+    return result;
 }
 
-at::Tensor hardsigmoid(const at::Tensor &self) {
-  DO_COMPATIBILITY(aclnnHardsigmoid, acl_op::hardsigmoid(self));
-  auto out_size = op_infer::input_same_output_size(self);
-  auto result = npu_preparation::apply_tensor_without_format(out_size, self.options());
-  EXEC_NPU_CMD(aclnnHardsigmoid, self, result);
-  return result;
+at::Tensor hardsigmoid(const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnHardsigmoid, acl_op::hardsigmoid(self));
+    auto out_size = op_infer::input_same_output_size(self);
+    auto result = npu_preparation::apply_tensor_without_format(out_size, self.options());
+    EXEC_NPU_CMD(aclnnHardsigmoid, self, result);
+    return result;
 }
 
-at::Tensor& hardsigmoid_(at::Tensor &self) {
-  DO_COMPATIBILITY(aclnnInplaceHardsigmoid, acl_op::hardsigmoid_(self));
-  EXEC_NPU_CMD(aclnnInplaceHardsigmoid, self);
-  return self;
+at::Tensor &hardsigmoid_(at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnInplaceHardsigmoid, acl_op::hardsigmoid_(self));
+    EXEC_NPU_CMD(aclnnInplaceHardsigmoid, self);
+    return self;
 }
 } // namespace op_api

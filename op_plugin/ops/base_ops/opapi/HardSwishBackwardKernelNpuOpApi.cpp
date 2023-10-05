@@ -21,10 +21,11 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor hardswish_backward(const at::Tensor& gradOutput, const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnHardswishBackward, acl_op::hardswish_backward(gradOutput, self));
-  auto result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options());
-  EXEC_NPU_CMD(aclnnHardswishBackward, gradOutput, self, result);
-  return result;
+at::Tensor hardswish_backward(const at::Tensor &gradOutput, const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnHardswishBackward, acl_op::hardswish_backward(gradOutput, self));
+    auto result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options());
+    EXEC_NPU_CMD(aclnnHardswishBackward, gradOutput, self, result);
+    return result;
 }
 } // namespace op_api

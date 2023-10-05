@@ -21,7 +21,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor &square_out(const at::Tensor &self, at::Tensor &out) {
+at::Tensor &square_out(const at::Tensor &self, at::Tensor &out)
+{
     return op_api::mul_out(self, self, out);
 }
 

@@ -18,20 +18,14 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor& mean_out(
-    const at::Tensor& self,
-    at::IntArrayRef dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype,
-    at::Tensor& result) {
-  return mean_out_common_nocheck(self, dim, keepdim, dtype, result);
+at::Tensor &mean_out(const at::Tensor &self, at::IntArrayRef dim, bool keepdim, c10::optional<c10::ScalarType> dtype,
+                     at::Tensor &result)
+{
+    return mean_out_common_nocheck(self, dim, keepdim, dtype, result);
 }
 
-at::Tensor mean(
-    const at::Tensor& self,
-    at::IntArrayRef dim,
-    bool keepdim,
-    c10::optional<c10::ScalarType> dtype) {
-  return mean_common_nocheck(self, dim, keepdim, dtype);
+at::Tensor mean(const at::Tensor &self, at::IntArrayRef dim, bool keepdim, c10::optional<c10::ScalarType> dtype)
+{
+    return mean_common_nocheck(self, dim, keepdim, dtype);
 }
 } // namespace acl_op

@@ -21,23 +21,26 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& tril_out(const at::Tensor& self, int64_t diagonal, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnTril, acl_op::tril_out(self, diagonal, result));
-  npu_preparation::check_tensor({self}, result, self);
-  EXEC_NPU_CMD(aclnnTril, self, diagonal, result);
-  return result;
+at::Tensor &tril_out(const at::Tensor &self, int64_t diagonal, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnTril, acl_op::tril_out(self, diagonal, result));
+    npu_preparation::check_tensor({self}, result, self);
+    EXEC_NPU_CMD(aclnnTril, self, diagonal, result);
+    return result;
 }
 
-at::Tensor tril(const at::Tensor& self, int64_t diagonal) {
-  DO_COMPATIBILITY(aclnnTril, acl_op::tril(self, diagonal));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnTril, self, diagonal, result);
-  return result;
+at::Tensor tril(const at::Tensor &self, int64_t diagonal)
+{
+    DO_COMPATIBILITY(aclnnTril, acl_op::tril(self, diagonal));
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+    EXEC_NPU_CMD(aclnnTril, self, diagonal, result);
+    return result;
 }
 
-at::Tensor& tril_(at::Tensor& self, int64_t diagonal) {
-  DO_COMPATIBILITY(aclnnInplaceTril, acl_op::tril_(self, diagonal));
-  EXEC_NPU_CMD(aclnnInplaceTril, self, diagonal);
-  return self;
+at::Tensor &tril_(at::Tensor &self, int64_t diagonal)
+{
+    DO_COMPATIBILITY(aclnnInplaceTril, acl_op::tril_(self, diagonal));
+    EXEC_NPU_CMD(aclnnInplaceTril, self, diagonal);
+    return self;
 }
-}  // namespace op_api
+} // namespace op_api

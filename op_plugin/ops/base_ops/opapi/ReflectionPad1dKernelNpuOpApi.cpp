@@ -21,22 +21,22 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& reflection_pad1d_out(const at::Tensor& self, at::IntArrayRef padding,
-                                                          at::Tensor& out) {
-  DO_COMPATIBILITY(aclnnReflectionPad1d, acl_op::reflection_pad1d_out(self, padding, out));
-  auto output_size = op_infer::reflection_pad1d_npu_out_size(self, padding);
-  npu_preparation::check_tensor({self}, out, self, output_size);
-  EXEC_NPU_CMD(aclnnReflectionPad1d, self, padding, out);
-  return out;
+at::Tensor &reflection_pad1d_out(const at::Tensor &self, at::IntArrayRef padding, at::Tensor &out)
+{
+    DO_COMPATIBILITY(aclnnReflectionPad1d, acl_op::reflection_pad1d_out(self, padding, out));
+    auto output_size = op_infer::reflection_pad1d_npu_out_size(self, padding);
+    npu_preparation::check_tensor({self}, out, self, output_size);
+    EXEC_NPU_CMD(aclnnReflectionPad1d, self, padding, out);
+    return out;
 }
 
-at::Tensor reflection_pad1d(const at::Tensor& self, at::IntArrayRef padding) {
-  DO_COMPATIBILITY(aclnnReflectionPad1d, acl_op::reflection_pad1d(self, padding));
-  auto output_size = op_infer::reflection_pad1d_npu_out_size(self, padding);
-  at::Tensor out = npu_preparation::apply_tensor_without_format(self, output_size);
-  EXEC_NPU_CMD(aclnnReflectionPad1d, self, padding, out);
-  return out;
+at::Tensor reflection_pad1d(const at::Tensor &self, at::IntArrayRef padding)
+{
+    DO_COMPATIBILITY(aclnnReflectionPad1d, acl_op::reflection_pad1d(self, padding));
+    auto output_size = op_infer::reflection_pad1d_npu_out_size(self, padding);
+    at::Tensor out = npu_preparation::apply_tensor_without_format(self, output_size);
+    EXEC_NPU_CMD(aclnnReflectionPad1d, self, padding, out);
+    return out;
 }
 
-}  // namespace op_api
-
+} // namespace op_api

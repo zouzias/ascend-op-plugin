@@ -21,25 +21,27 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& soft_margin_loss_backward_out(const at::Tensor& grad_output, const at::Tensor& self,
-                                          const at::Tensor& target, int64_t reduction, at::Tensor& grad_input) {
-  DO_COMPATIBILITY(aclnnSoftMarginLossBackward,
-                   acl_op::soft_margin_loss_backward_out(grad_output, self, target, reduction, grad_input));
-  auto output_size_pre = op_infer::broadcast_ops_npu_output_size(grad_output.sizes(), self.sizes());
-  auto output_size = op_infer::broadcast_ops_npu_output_size(output_size_pre, target.sizes());
-  npu_preparation::check_tensor({grad_output, self, target}, grad_input, grad_input.scalar_type(), output_size);
-  EXEC_NPU_CMD(aclnnSoftMarginLossBackward, grad_output, self, target, reduction, grad_input);
-  return grad_input;
+at::Tensor &soft_margin_loss_backward_out(const at::Tensor &grad_output, const at::Tensor &self,
+                                          const at::Tensor &target, int64_t reduction, at::Tensor &grad_input)
+{
+    DO_COMPATIBILITY(aclnnSoftMarginLossBackward,
+                     acl_op::soft_margin_loss_backward_out(grad_output, self, target, reduction, grad_input));
+    auto output_size_pre = op_infer::broadcast_ops_npu_output_size(grad_output.sizes(), self.sizes());
+    auto output_size = op_infer::broadcast_ops_npu_output_size(output_size_pre, target.sizes());
+    npu_preparation::check_tensor({grad_output, self, target}, grad_input, grad_input.scalar_type(), output_size);
+    EXEC_NPU_CMD(aclnnSoftMarginLossBackward, grad_output, self, target, reduction, grad_input);
+    return grad_input;
 }
 
-at::Tensor soft_margin_loss_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Tensor& target,
-                                     int64_t reduction) {
-  DO_COMPATIBILITY(aclnnSoftMarginLossBackward,
-                   acl_op::soft_margin_loss_backward(grad_output, self, target, reduction));
-  auto output_size_pre = op_infer::broadcast_ops_npu_output_size(grad_output.sizes(), self.sizes());
-  auto output_size = op_infer::broadcast_ops_npu_output_size(output_size_pre, target.sizes());
-  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(self, output_size);
-  EXEC_NPU_CMD(aclnnSoftMarginLossBackward, grad_output, self, target, reduction, grad_input);
-  return grad_input;
+at::Tensor soft_margin_loss_backward(const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &target,
+                                     int64_t reduction)
+{
+    DO_COMPATIBILITY(aclnnSoftMarginLossBackward,
+                     acl_op::soft_margin_loss_backward(grad_output, self, target, reduction));
+    auto output_size_pre = op_infer::broadcast_ops_npu_output_size(grad_output.sizes(), self.sizes());
+    auto output_size = op_infer::broadcast_ops_npu_output_size(output_size_pre, target.sizes());
+    at::Tensor grad_input = npu_preparation::apply_tensor_without_format(self, output_size);
+    EXEC_NPU_CMD(aclnnSoftMarginLossBackward, grad_output, self, target, reduction, grad_input);
+    return grad_input;
 }
 } // namespace op_api

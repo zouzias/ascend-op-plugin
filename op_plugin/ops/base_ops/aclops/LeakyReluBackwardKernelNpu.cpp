@@ -21,13 +21,11 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor leaky_relu_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Scalar& negval,
-    bool is_result) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  leaky_relu_backward_out_nocheck(result, grad_output, self, negval, is_result);
-  return result;
+at::Tensor leaky_relu_backward(const at::Tensor &grad_output, const at::Tensor &self, const at::Scalar &negval,
+                               bool is_result)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    leaky_relu_backward_out_nocheck(result, grad_output, self, negval, is_result);
+    return result;
 }
 } // namespace acl_op

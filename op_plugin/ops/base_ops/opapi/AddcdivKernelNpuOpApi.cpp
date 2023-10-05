@@ -21,27 +21,30 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& addcdiv_out(const at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2,
-                        const at::Scalar& value, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnAddcdiv, acl_op::addcdiv_out(self, tensor1, tensor2, value, result));
-  EXEC_NPU_CMD(aclnnAddcdiv, self, tensor1, tensor2, value, result);
-  return result;
+at::Tensor &addcdiv_out(const at::Tensor &self, const at::Tensor &tensor1, const at::Tensor &tensor2,
+                        const at::Scalar &value, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnAddcdiv, acl_op::addcdiv_out(self, tensor1, tensor2, value, result));
+    EXEC_NPU_CMD(aclnnAddcdiv, self, tensor1, tensor2, value, result);
+    return result;
 }
 
-at::Tensor addcdiv(const at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2,
-                   const at::Scalar& value) {
-  DO_COMPATIBILITY(aclnnAddcdiv, acl_op::addcdiv(self, tensor1, tensor2, value));
-  auto div_output_size = op_infer::broadcast_ops_npu_output_size(tensor1, tensor2);
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self.sizes(), div_output_size);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
+at::Tensor addcdiv(const at::Tensor &self, const at::Tensor &tensor1, const at::Tensor &tensor2,
+                   const at::Scalar &value)
+{
+    DO_COMPATIBILITY(aclnnAddcdiv, acl_op::addcdiv(self, tensor1, tensor2, value));
+    auto div_output_size = op_infer::broadcast_ops_npu_output_size(tensor1, tensor2);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self.sizes(), div_output_size);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
 
-  EXEC_NPU_CMD(aclnnAddcdiv, self, tensor1, tensor2, value, result);
-  return result;
+    EXEC_NPU_CMD(aclnnAddcdiv, self, tensor1, tensor2, value, result);
+    return result;
 }
 
-at::Tensor& addcdiv_(at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2, const at::Scalar& value) {
-  DO_COMPATIBILITY(aclnnInplaceAddcdiv, acl_op::addcdiv_(self, tensor1, tensor2, value));
-  EXEC_NPU_CMD(aclnnInplaceAddcdiv, self, tensor1, tensor2, value);
-  return self;
+at::Tensor &addcdiv_(at::Tensor &self, const at::Tensor &tensor1, const at::Tensor &tensor2, const at::Scalar &value)
+{
+    DO_COMPATIBILITY(aclnnInplaceAddcdiv, acl_op::addcdiv_(self, tensor1, tensor2, value));
+    EXEC_NPU_CMD(aclnnInplaceAddcdiv, self, tensor1, tensor2, value);
+    return self;
 }
 } // namespace op_api

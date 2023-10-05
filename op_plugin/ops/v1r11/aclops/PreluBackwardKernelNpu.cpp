@@ -21,13 +21,12 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> prelu_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Tensor& weight) {
-  at::Tensor grad_input = npu_preparation::apply_tensor(self);
-  at::Tensor grad_weight = npu_preparation::apply_tensor(weight);
-  prelu_backward_commom_nocheck(grad_input, grad_weight, grad_output, self, weight);
-  return std::tie<at::Tensor, at::Tensor>(grad_input, grad_weight);
+std::tuple<at::Tensor, at::Tensor> prelu_backward(const at::Tensor &grad_output, const at::Tensor &self,
+                                                  const at::Tensor &weight)
+{
+    at::Tensor grad_input = npu_preparation::apply_tensor(self);
+    at::Tensor grad_weight = npu_preparation::apply_tensor(weight);
+    prelu_backward_commom_nocheck(grad_input, grad_weight, grad_output, self, weight);
+    return std::tie<at::Tensor, at::Tensor>(grad_input, grad_weight);
 }
 } // namespace acl_op

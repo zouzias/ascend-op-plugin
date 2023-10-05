@@ -21,16 +21,17 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor isfinite(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnIsFinite, acl_op::isfinite(self));
+at::Tensor isfinite(const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnIsFinite, acl_op::isfinite(self));
 
-  // calculate the output size
-  auto output_size = self.sizes();
+    // calculate the output size
+    auto output_size = self.sizes();
 
-  auto out = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kBool));
+    auto out = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kBool));
 
-  // construct the output tensor of the NPU
-  EXEC_NPU_CMD(aclnnIsFinite, self, out);
-  return out;
+    // construct the output tensor of the NPU
+    EXEC_NPU_CMD(aclnnIsFinite, self, out);
+    return out;
 }
 } // namespace op_api

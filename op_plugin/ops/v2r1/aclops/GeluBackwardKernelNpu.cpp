@@ -18,7 +18,8 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor gelu_backward(const at::Tensor& grad, const at::Tensor& self, c10::string_view approximate) {
-  return gelu_backward_common_nocheck(grad, self);
+at::Tensor gelu_backward(const at::Tensor &grad, const at::Tensor &self, c10::string_view approximate)
+{
+    return gelu_backward_common_nocheck(grad, self);
 }
-}  // namespace acl_op
+} // namespace acl_op

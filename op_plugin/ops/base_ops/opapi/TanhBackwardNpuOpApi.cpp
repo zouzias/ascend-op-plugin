@@ -21,19 +21,20 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& tanh_backward_out(const at::Tensor& grad_output, const at::Tensor& output, at::Tensor& grad_input) {
-  DO_COMPATIBILITY(aclnnTanhBackward, acl_op::tanh_backward_out(grad_output, output, grad_input));
-  npu_preparation::check_tensor({grad_output, output}, grad_input, grad_output);
-  EXEC_NPU_CMD(aclnnTanhBackward, grad_output, output, grad_input);
-  return grad_input;
+at::Tensor &tanh_backward_out(const at::Tensor &grad_output, const at::Tensor &output, at::Tensor &grad_input)
+{
+    DO_COMPATIBILITY(aclnnTanhBackward, acl_op::tanh_backward_out(grad_output, output, grad_input));
+    npu_preparation::check_tensor({grad_output, output}, grad_input, grad_output);
+    EXEC_NPU_CMD(aclnnTanhBackward, grad_output, output, grad_input);
+    return grad_input;
 }
 
-at::Tensor tanh_backward(const at::Tensor& grad_output, const at::Tensor& output) {
-  DO_COMPATIBILITY(aclnnTanhBackward, acl_op::tanh_backward(grad_output, output));
-  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output);
-  EXEC_NPU_CMD(aclnnTanhBackward, grad_output, output, grad_input);
-  return grad_input;
+at::Tensor tanh_backward(const at::Tensor &grad_output, const at::Tensor &output)
+{
+    DO_COMPATIBILITY(aclnnTanhBackward, acl_op::tanh_backward(grad_output, output));
+    at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output);
+    EXEC_NPU_CMD(aclnnTanhBackward, grad_output, output, grad_input);
+    return grad_input;
 }
 
-}  // namespace op_api
-
+} // namespace op_api

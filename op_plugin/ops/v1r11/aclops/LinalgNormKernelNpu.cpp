@@ -34,13 +34,8 @@ float calculate_p(at::Scalar p)
     }
 }
 
-at::Tensor& linalg_norm_out_npu_nocheck(
-    at::Tensor& out,
-    const at::Tensor& self,
-    const at::Scalar& ord,
-    at::IntArrayRef dim,
-    bool keepdim,
-    at::ScalarType dtype)
+at::Tensor &linalg_norm_out_npu_nocheck(at::Tensor &out, const at::Tensor &self, const at::Scalar &ord,
+                                        at::IntArrayRef dim, bool keepdim, at::ScalarType dtype)
 {
     at::Tensor fp32_self(self);
     if (self.scalar_type() != at::ScalarType::Float) {
@@ -81,12 +76,9 @@ at::Tensor& linalg_norm_out_npu_nocheck(
 }
 } // namespace
 
-at::Tensor linalg_vector_norm(
-    const at::Tensor& self,
-    const at::Scalar& scalar_ord,
-    c10::optional<at::IntArrayRef> opt_dim,
-    bool keepdim,
-    at::optional<at::ScalarType> opt_dtype)
+at::Tensor linalg_vector_norm(const at::Tensor &self, const at::Scalar &scalar_ord,
+                              c10::optional<at::IntArrayRef> opt_dim, bool keepdim,
+                              at::optional<at::ScalarType> opt_dtype)
 {
     auto dim = opt_dim.value_or(at::IntArrayRef{});
     auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
@@ -96,23 +88,14 @@ at::Tensor linalg_vector_norm(
     return out;
 }
 
-at::Tensor& linalg_vector_norm_out(
-    const at::Tensor& self,
-    const at::Scalar& scalar_ord,
-    c10::optional<at::IntArrayRef> opt_dim,
-    bool keepdim,
-    at::optional<at::ScalarType> opt_dtype,
-    at::Tensor& result)
+at::Tensor &linalg_vector_norm_out(const at::Tensor &self, const at::Scalar &scalar_ord,
+                                   c10::optional<at::IntArrayRef> opt_dim, bool keepdim,
+                                   at::optional<at::ScalarType> opt_dtype, at::Tensor &result)
 {
     auto dim = opt_dim.value_or(at::IntArrayRef{});
     auto dtype = opt_dtype.has_value() ? opt_dtype.value() : self.scalar_type();
     auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-    npu_preparation::CheckOut(
-        {self},
-        result,
-        ACL_FORMAT_ND,
-        dtype,
-        output_size);
+    npu_preparation::CheckOut({self}, result, ACL_FORMAT_ND, dtype, output_size);
 
     linalg_norm_out_npu_nocheck(result, self, scalar_ord, dim, keepdim, dtype);
     return result;

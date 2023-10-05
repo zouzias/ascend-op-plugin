@@ -19,15 +19,13 @@
 
 namespace acl_op {
 
-at::Tensor upsample_linear1d(
-    const at::Tensor& self,
-    c10::optional<at::IntArrayRef> output_size,
-    bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
-  auto osize = op_infer::upsample_infershape_with_scale(self.sizes(), output_size, scale_factors);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
+at::Tensor upsample_linear1d(const at::Tensor &self, c10::optional<at::IntArrayRef> output_size, bool align_corners,
+                             c10::optional<at::ArrayRef<double>> scale_factors)
+{
+    auto osize = op_infer::upsample_infershape_with_scale(self.sizes(), output_size, scale_factors);
+    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 0);
 
-  return acl_op::upsample_linear1d(self, osize, align_corners, scales_w);
+    return acl_op::upsample_linear1d(self, osize, align_corners, scales_w);
 }
 
 } // namespace acl_op

@@ -26,11 +26,10 @@ at::Tensor mish_backward(const at::Tensor &grad_output, const at::Tensor &self)
     DO_COMPATIBILITY(aclnnMishBackward, acl_op::mish_backward(grad_output, self));
     auto output_size = op_infer::broadcast_ops_npu_output_size(grad_output.sizes(), self.sizes());
     at::ScalarType output_type = at::native::result_type(grad_output, self);
-    at::Tensor grad_input = npu_preparation::apply_tensor_without_format(output_size,
-                                                                         self.options().dtype(output_type));
+    at::Tensor grad_input =
+        npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(output_type));
     EXEC_NPU_CMD(aclnnMishBackward, grad_output, self, grad_input);
     return grad_input;
 }
 
-}  // namespace op_api
-
+} // namespace op_api

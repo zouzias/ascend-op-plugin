@@ -20,11 +20,11 @@
 
 namespace op_api {
 
-at::Tensor& fill_diagonal_(at::Tensor& self, const at::Scalar& value, bool wrap) {
-  DO_COMPATIBILITY(aclnnInplaceFillDiagonal, acl_op::fill_diagonal_(self, value, wrap));
-  EXEC_NPU_CMD(aclnnInplaceFillDiagonal, self, value, wrap);
-  return self;
+at::Tensor &fill_diagonal_(at::Tensor &self, const at::Scalar &value, bool wrap)
+{
+    DO_COMPATIBILITY(aclnnInplaceFillDiagonal, acl_op::fill_diagonal_(self, value, wrap));
+    EXEC_NPU_CMD(aclnnInplaceFillDiagonal, self, value, wrap);
+    return self;
 }
 
-}  // namespace op_api
-
+} // namespace op_api

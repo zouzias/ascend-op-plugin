@@ -20,27 +20,30 @@
 
 namespace op_api {
 
-at::Tensor& neg_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnNeg, acl_op::neg_out(self, result));
-  at_npu::native::OpPreparation::check_tensor({self}, result, self.scalar_type(), self.sizes());
-  EXEC_NPU_CMD(aclnnNeg, self, result);
-  return result;
+at::Tensor &neg_out(const at::Tensor &self, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnNeg, acl_op::neg_out(self, result));
+    at_npu::native::OpPreparation::check_tensor({self}, result, self.scalar_type(), self.sizes());
+    EXEC_NPU_CMD(aclnnNeg, self, result);
+    return result;
 }
 
-at::Tensor neg(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnNeg, acl_op::neg(self));
-  // construct the output tensor of the NPU
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(), self.options());
+at::Tensor neg(const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnNeg, acl_op::neg(self));
+    // construct the output tensor of the NPU
+    at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(), self.options());
 
-  EXEC_NPU_CMD(aclnnNeg, self, result);
-  return result;
+    EXEC_NPU_CMD(aclnnNeg, self, result);
+    return result;
 }
 
-at::Tensor& neg_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceNeg, acl_op::neg_(self));
-  at_npu::native::OpPreparation::check_memory({self}, {self});
+at::Tensor &neg_(at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnInplaceNeg, acl_op::neg_(self));
+    at_npu::native::OpPreparation::check_memory({self}, {self});
 
-  EXEC_NPU_CMD(aclnnInplaceNeg, self);
-  return self;
+    EXEC_NPU_CMD(aclnnInplaceNeg, self);
+    return self;
 }
-}  // namespace op_api
+} // namespace op_api

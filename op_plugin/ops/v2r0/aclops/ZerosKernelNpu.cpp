@@ -18,22 +18,16 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor zeros(
-    at::IntArrayRef size,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  return zeros_common_nocheck(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+at::Tensor zeros(at::IntArrayRef size, c10::optional<at::ScalarType> dtype_opt, c10::optional<at::Layout> layout_opt,
+                 c10::optional<at::Device> device_opt, c10::optional<bool> pin_memory_opt)
+{
+    return zeros_common_nocheck(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
 }
 
-at::Tensor zeros(
-    at::IntArrayRef size,
-    c10::optional<at::DimnameList> names,
-    c10::optional<at::ScalarType> dtype_opt,
-    c10::optional<at::Layout> layout_opt,
-    c10::optional<at::Device> device_opt,
-    c10::optional<bool> pin_memory_opt) {
-  return acl_op::zeros(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
+at::Tensor zeros(at::IntArrayRef size, c10::optional<at::DimnameList> names, c10::optional<at::ScalarType> dtype_opt,
+                 c10::optional<at::Layout> layout_opt, c10::optional<at::Device> device_opt,
+                 c10::optional<bool> pin_memory_opt)
+{
+    return acl_op::zeros(size, dtype_opt, layout_opt, device_opt, pin_memory_opt);
 }
 } // namespace acl_op

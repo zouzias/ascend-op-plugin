@@ -21,26 +21,27 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor binary_cross_entropy_with_logits(const at::Tensor& self, const at::Tensor& target,
-                                            const c10::optional<at::Tensor>& weight_opt,
-                                            const c10::optional<at::Tensor>& pos_weight_opt, int64_t reduction) {
-  DO_COMPATIBILITY(aclnnBinaryCrossEntropyWithLogits,
-                   acl_op::binary_cross_entropy_with_logits(self, target, weight_opt, pos_weight_opt, reduction));
+at::Tensor binary_cross_entropy_with_logits(const at::Tensor &self, const at::Tensor &target,
+                                            const c10::optional<at::Tensor> &weight_opt,
+                                            const c10::optional<at::Tensor> &pos_weight_opt, int64_t reduction)
+{
+    DO_COMPATIBILITY(aclnnBinaryCrossEntropyWithLogits,
+                     acl_op::binary_cross_entropy_with_logits(self, target, weight_opt, pos_weight_opt, reduction));
 
-  // calculate the output size
-  at::IntArrayRef outputSize;
-  if (reduction == at::Reduction::None) {
-    outputSize = op_infer::input_same_output_size(target);
-  } else {
-    outputSize = at::ArrayRef<int64_t>();
-  }
+    // calculate the output size
+    at::IntArrayRef outputSize;
+    if (reduction == at::Reduction::None) {
+        outputSize = op_infer::input_same_output_size(target);
+    } else {
+        outputSize = at::ArrayRef<int64_t>();
+    }
 
-  // construct the output tensor of the NPU
-  at::Tensor result = npu_preparation::apply_tensor_without_format(target, outputSize);
+    // construct the output tensor of the NPU
+    at::Tensor result = npu_preparation::apply_tensor_without_format(target, outputSize);
 
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnBinaryCrossEntropyWithLogits, self, target, weight_opt, pos_weight_opt, reduction, result);
-  return result;
+    // calculate the output result of the NPU
+    EXEC_NPU_CMD(aclnnBinaryCrossEntropyWithLogits, self, target, weight_opt, pos_weight_opt, reduction, result);
+    return result;
 }
 
-}  // namespace op_api
+} // namespace op_api

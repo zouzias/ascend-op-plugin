@@ -16,22 +16,18 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
-#include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/custom_functions/opapi/inner_compute_op_api.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-at::Tensor& sum_out(const at::Tensor &self,
-                    at::IntArrayRef dim,
-                    bool keepdim,
-                    c10::optional<c10::ScalarType> dtype,
-                    at::Tensor &result) {
-  return op_api::sum_out_common_nocheck(self, dim, keepdim, dtype, result);
+at::Tensor &sum_out(const at::Tensor &self, at::IntArrayRef dim, bool keepdim, c10::optional<c10::ScalarType> dtype,
+                    at::Tensor &result)
+{
+    return op_api::sum_out_common_nocheck(self, dim, keepdim, dtype, result);
 }
 
-at::Tensor sum(const at::Tensor &self,
-               at::IntArrayRef dim,
-               bool keepdim,
-               c10::optional<c10::ScalarType> dtype) {
-  return op_api::sum_common_nocheck(self, dim, keepdim, dtype);
+at::Tensor sum(const at::Tensor &self, at::IntArrayRef dim, bool keepdim, c10::optional<c10::ScalarType> dtype)
+{
+    return op_api::sum_common_nocheck(self, dim, keepdim, dtype);
 }
 } // namespace op_api
