@@ -18,24 +18,16 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor& im2col_backward_out(
-    const at::Tensor& grad_output,
-    at::IntArrayRef input_size,
-    at::IntArrayRef kernel_size,
-    at::IntArrayRef dilation,
-    at::IntArrayRef padding,
-    at::IntArrayRef stride,
-    at::Tensor& grad_input) {
-  return acl_op::col2im_out(grad_output, input_size, kernel_size, dilation, padding, stride, grad_input);
+at::Tensor &im2col_backward_out(const at::Tensor &grad_output, at::IntArrayRef input_size, at::IntArrayRef kernel_size,
+                                at::IntArrayRef dilation, at::IntArrayRef padding, at::IntArrayRef stride,
+                                at::Tensor &grad_input)
+{
+    return acl_op::col2im_out(grad_output, input_size, kernel_size, dilation, padding, stride, grad_input);
 }
 
-at::Tensor im2col_backward(
-    const at::Tensor& grad_output,
-    at::IntArrayRef input_size,
-    at::IntArrayRef kernel_size,
-    at::IntArrayRef dilation,
-    at::IntArrayRef padding,
-    at::IntArrayRef stride) {
-  return acl_op::col2im(grad_output, input_size, kernel_size, dilation, padding, stride);
+at::Tensor im2col_backward(const at::Tensor &grad_output, at::IntArrayRef input_size, at::IntArrayRef kernel_size,
+                           at::IntArrayRef dilation, at::IntArrayRef padding, at::IntArrayRef stride)
+{
+    return acl_op::col2im(grad_output, input_size, kernel_size, dilation, padding, stride);
 }
 } // namespace acl_op

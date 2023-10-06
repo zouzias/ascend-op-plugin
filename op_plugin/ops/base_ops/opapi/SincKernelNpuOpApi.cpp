@@ -21,29 +21,31 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& sinc_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnSinc, acl_op::sinc_out(self, result));
-  npu_preparation::check_tensor({self}, result, result.scalar_type(), self.sizes());
-  EXEC_NPU_CMD(aclnnSinc, self, result);
-  return result;
+at::Tensor &sinc_out(const at::Tensor &self, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnSinc, acl_op::sinc_out(self, result));
+    npu_preparation::check_tensor({self}, result, result.scalar_type(), self.sizes());
+    EXEC_NPU_CMD(aclnnSinc, self, result);
+    return result;
 }
 
-at::Tensor& sinc_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceSinc, acl_op::sinc_(self));
-  EXEC_NPU_CMD(aclnnInplaceSinc, self);
-  return self;
+at::Tensor &sinc_(at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnInplaceSinc, acl_op::sinc_(self));
+    EXEC_NPU_CMD(aclnnInplaceSinc, self);
+    return self;
 }
 
-at::Tensor sinc(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnSinc, acl_op::sinc(self));
-  auto out_dtype = self.dtype();
-  if (isIntegralType(self.scalar_type(), true)) {
-    out_dtype = at::kFloat;
-  }
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(out_dtype));
-  EXEC_NPU_CMD(aclnnSinc, self, result);
-  return result;
+at::Tensor sinc(const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnSinc, acl_op::sinc(self));
+    auto out_dtype = self.dtype();
+    if (isIntegralType(self.scalar_type(), true)) {
+        out_dtype = at::kFloat;
+    }
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(out_dtype));
+    EXEC_NPU_CMD(aclnnSinc, self, result);
+    return result;
 }
 
-} // namespace at_npu
-
+} // namespace op_api

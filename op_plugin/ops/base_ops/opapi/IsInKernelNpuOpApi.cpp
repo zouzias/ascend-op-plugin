@@ -18,12 +18,13 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-at::Tensor& isin_out(const at::Scalar& element, const at::Tensor &test_element,
-                     bool assume_unique, bool invert, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnIsInScalarTensor, acl_op::isin_out(element, test_element, assume_unique, invert, result));
-  c10::SmallVector<int64_t, SIZE> shape_small_vec;
-  at_npu::native::OpPreparation::check_tensor({test_element}, result, at::ScalarType::Bool, shape_small_vec);
-  EXEC_NPU_CMD(aclnnIsInScalarTensor, element, test_element, assume_unique, invert, result);
-  return result;
+at::Tensor &isin_out(const at::Scalar &element, const at::Tensor &test_element, bool assume_unique, bool invert,
+                     at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnIsInScalarTensor, acl_op::isin_out(element, test_element, assume_unique, invert, result));
+    c10::SmallVector<int64_t, SIZE> shape_small_vec;
+    at_npu::native::OpPreparation::check_tensor({test_element}, result, at::ScalarType::Bool, shape_small_vec);
+    EXEC_NPU_CMD(aclnnIsInScalarTensor, element, test_element, assume_unique, invert, result);
+    return result;
 }
 } // namespace op_api

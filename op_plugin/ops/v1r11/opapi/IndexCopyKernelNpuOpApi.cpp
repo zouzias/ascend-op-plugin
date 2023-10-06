@@ -20,11 +20,11 @@
 
 namespace op_api {
 
-at::Tensor& _index_copy_(at::Tensor& self, const int64_t dim, const at::Tensor& index,
-                         const at::Tensor& source) {
-  DO_COMPATIBILITY(aclnnInplaceIndexCopy, acl_op::_index_copy_(self, dim, index, source));
-  EXEC_NPU_CMD(aclnnInplaceIndexCopy, self, dim, index, source);
-  return self;
+at::Tensor &_index_copy_(at::Tensor &self, const int64_t dim, const at::Tensor &index, const at::Tensor &source)
+{
+    DO_COMPATIBILITY(aclnnInplaceIndexCopy, acl_op::_index_copy_(self, dim, index, source));
+    EXEC_NPU_CMD(aclnnInplaceIndexCopy, self, dim, index, source);
+    return self;
 }
 
-}  // namespace op_api
+} // namespace op_api

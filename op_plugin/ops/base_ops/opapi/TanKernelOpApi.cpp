@@ -14,36 +14,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-#include "op_plugin/AclOpsInterface.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& tan_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnTan, acl_op::tan_out(self, result));
-  npu_preparation::check_tensor(
-      {self},
-      result,
-      result.scalar_type(),
-      self.sizes());
-  EXEC_NPU_CMD(aclnnTan, self, result);
-  return result;
+at::Tensor &tan_out(const at::Tensor &self, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnTan, acl_op::tan_out(self, result));
+    npu_preparation::check_tensor({self}, result, result.scalar_type(), self.sizes());
+    EXEC_NPU_CMD(aclnnTan, self, result);
+    return result;
 }
 
-at::Tensor tan(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnTan, acl_op::tan(self));
-  auto output_options = (isIntegralType(self.scalar_type(), true)) ?
-                        self.options().dtype(at::kFloat) : self.options();
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), output_options);
-  EXEC_NPU_CMD(aclnnTan, self, result);
-  return result;
+at::Tensor tan(const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnTan, acl_op::tan(self));
+    auto output_options =
+        (isIntegralType(self.scalar_type(), true)) ? self.options().dtype(at::kFloat) : self.options();
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), output_options);
+    EXEC_NPU_CMD(aclnnTan, self, result);
+    return result;
 }
 
-at::Tensor& tan_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceTan, acl_op::tan_(self));
-  EXEC_NPU_CMD(aclnnInplaceTan, self);
-  return self;
+at::Tensor &tan_(at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnInplaceTan, acl_op::tan_(self));
+    EXEC_NPU_CMD(aclnnInplaceTan, self);
+    return self;
 }
 } // namespace op_api

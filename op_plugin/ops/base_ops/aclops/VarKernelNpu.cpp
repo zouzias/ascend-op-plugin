@@ -18,19 +18,13 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-at::Tensor var(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    bool unbiased,
-    bool keepdim) {
-  return at::var(self, dimnames_to_positions(self, dim), unbiased, keepdim);
+at::Tensor var(const at::Tensor &self, at::DimnameList dim, bool unbiased, bool keepdim)
+{
+    return at::var(self, dimnames_to_positions(self, dim), unbiased, keepdim);
 }
 
-std::tuple<at::Tensor, at::Tensor> var_mean(
-    const at::Tensor& self,
-    at::DimnameList dim,
-    bool unbiased,
-    bool keepdim) {
-  return at::var_mean(self, dimnames_to_positions(self, dim), unbiased, keepdim);
+std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, at::DimnameList dim, bool unbiased, bool keepdim)
+{
+    return at::var_mean(self, dimnames_to_positions(self, dim), unbiased, keepdim);
 }
 } // namespace acl_op

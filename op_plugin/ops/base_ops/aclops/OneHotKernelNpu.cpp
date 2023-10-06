@@ -21,38 +21,39 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
 
-at::Tensor one_hot(const at::Tensor& self, int64_t num_classes) {
-  at::Scalar on_value = 1;
-  at::Scalar off_value = 0;
-  int64_t axis = -1;
-  int64_t depth;
-  auto self_temp = at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
+at::Tensor one_hot(const at::Tensor &self, int64_t num_classes)
+{
+    at::Scalar on_value = 1;
+    at::Scalar off_value = 0;
+    int64_t axis = -1;
+    int64_t depth;
+    auto self_temp = at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
 
-  TORCH_CHECK(self_temp.dim() < 8, "NPU error,can not support the input tensor's dim bigger than 7.");
-  if (self.numel() == 0) {
-      TORCH_CHECK(num_classes > 0, "Can not infer total number of classes from empty tensor.");
-      depth = num_classes;
-  }
+    TORCH_CHECK(self_temp.dim() < 8, "NPU error,can not support the input tensor's dim bigger than 7.");
+    if (self.numel() == 0) {
+        TORCH_CHECK(num_classes > 0, "Can not infer total number of classes from empty tensor.");
+        depth = num_classes;
+    }
 
-  if (num_classes == -1) {
-    depth = self_temp.max().item().toLong() + 1;
-  } else {
-    depth = num_classes;
-  }
+    if (num_classes == -1) {
+        depth = self_temp.max().item().toLong() + 1;
+    } else {
+        depth = num_classes;
+    }
 
-  auto output_size = op_infer::array_to_small_vector(self.sizes());
-  output_size.emplace_back(depth);
-  at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
-  at::Scalar depth_copy = depth;
-  at_npu::native::OpCommand cmd;
-  cmd.Name("OneHot")
-      .Input(self)
-      .Input(depth_copy, at::kInt, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
-      .Input(on_value, self.scalar_type())
-      .Input(off_value, self.scalar_type())
-      .Output(result)
-      .Attr("axis", axis)
-      .Run();
-  return result;
+    auto output_size = op_infer::array_to_small_vector(self.sizes());
+    output_size.emplace_back(depth);
+    at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
+    at::Scalar depth_copy = depth;
+    at_npu::native::OpCommand cmd;
+    cmd.Name("OneHot")
+        .Input(self)
+        .Input(depth_copy, at::kInt, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
+        .Input(on_value, self.scalar_type())
+        .Input(off_value, self.scalar_type())
+        .Output(result)
+        .Attr("axis", axis)
+        .Run();
+    return result;
 }
 } // namespace acl_op

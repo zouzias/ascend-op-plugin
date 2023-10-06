@@ -18,7 +18,8 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor gelu(const at::Tensor& self, c10::string_view approximate) {
-  return gelu_common_nocheck(self);
+at::Tensor gelu(const at::Tensor &self, c10::string_view approximate)
+{
+    return gelu_common_nocheck(self);
 }
 } // namespace acl_op

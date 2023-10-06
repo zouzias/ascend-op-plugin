@@ -21,24 +21,25 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& glu_backward_out(const at::Tensor &grad_output, const at::Tensor &self,
-                             int64_t dim, at::Tensor &result) {
-  DO_COMPATIBILITY(aclnnGluBackward, acl_op::glu_backward_out(grad_output, self, dim, result));
-  auto output_size = op_infer::input_same_output_size(self);
-  npu_preparation::check_tensor({grad_output, self}, result, grad_output, output_size);
+at::Tensor &glu_backward_out(const at::Tensor &grad_output, const at::Tensor &self, int64_t dim, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnGluBackward, acl_op::glu_backward_out(grad_output, self, dim, result));
+    auto output_size = op_infer::input_same_output_size(self);
+    npu_preparation::check_tensor({grad_output, self}, result, grad_output, output_size);
 
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnGluBackward, grad_output, self, dim, result);
-  return result;
+    // calculate the output result of the NPU
+    EXEC_NPU_CMD(aclnnGluBackward, grad_output, self, dim, result);
+    return result;
 }
 
-at::Tensor glu_backward(const at::Tensor &grad_output, const at::Tensor &self, int64_t dim) {
-  DO_COMPATIBILITY(aclnnGluBackward, acl_op::glu_backward(grad_output, self, dim));
-  auto output_size = op_infer::input_same_output_size(self);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
+at::Tensor glu_backward(const at::Tensor &grad_output, const at::Tensor &self, int64_t dim)
+{
+    DO_COMPATIBILITY(aclnnGluBackward, acl_op::glu_backward(grad_output, self, dim));
+    auto output_size = op_infer::input_same_output_size(self);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
 
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnGluBackward, grad_output, self, dim, result);
-  return result;
+    // calculate the output result of the NPU
+    EXEC_NPU_CMD(aclnnGluBackward, grad_output, self, dim, result);
+    return result;
 }
 } // namespace op_api

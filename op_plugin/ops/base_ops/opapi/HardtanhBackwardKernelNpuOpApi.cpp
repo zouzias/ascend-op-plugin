@@ -21,11 +21,12 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor hardtanh_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Scalar& min_val,
-                             const at::Scalar& max_val) {
-  DO_COMPATIBILITY(aclnnHardtanhBackward, acl_op::hardtanh_backward(grad_output, self, min_val, max_val));
-  at::Tensor out = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnHardtanhBackward, grad_output, self, min_val, max_val, out);
-  return out;
+at::Tensor hardtanh_backward(const at::Tensor &grad_output, const at::Tensor &self, const at::Scalar &min_val,
+                             const at::Scalar &max_val)
+{
+    DO_COMPATIBILITY(aclnnHardtanhBackward, acl_op::hardtanh_backward(grad_output, self, min_val, max_val));
+    at::Tensor out = npu_preparation::apply_tensor_without_format(self);
+    EXEC_NPU_CMD(aclnnHardtanhBackward, grad_output, self, min_val, max_val, out);
+    return out;
 }
 } // namespace op_api

@@ -19,16 +19,14 @@
 
 namespace acl_op {
 
-at::Tensor upsample_bilinear2d(
-    const at::Tensor& self_ex,
-    c10::optional<at::IntArrayRef> output_size,
-    bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
-  auto osize = op_infer::upsample_infershape_with_scale(self_ex.sizes(), output_size, scale_factors);
-  auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
+at::Tensor upsample_bilinear2d(const at::Tensor &self_ex, c10::optional<at::IntArrayRef> output_size,
+                               bool align_corners, c10::optional<at::ArrayRef<double>> scale_factors)
+{
+    auto osize = op_infer::upsample_infershape_with_scale(self_ex.sizes(), output_size, scale_factors);
+    auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 0);
+    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 1);
 
-  return acl_op::upsample_bilinear2d(self_ex, osize, align_corners, scales_h, scales_w);
+    return acl_op::upsample_bilinear2d(self_ex, osize, align_corners, scales_h, scales_w);
 }
 
 } // namespace acl_op

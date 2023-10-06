@@ -21,26 +21,28 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor sqrt(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnSqrt, acl_op::sqrt(self));
-  auto out_dtype = (isIntegralType(self.scalar_type(), true)) ? at::kFloat : self.scalar_type();
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(out_dtype));
-  EXEC_NPU_CMD(aclnnSqrt, self, result);
-  return result;
+at::Tensor sqrt(const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnSqrt, acl_op::sqrt(self));
+    auto out_dtype = (isIntegralType(self.scalar_type(), true)) ? at::kFloat : self.scalar_type();
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(out_dtype));
+    EXEC_NPU_CMD(aclnnSqrt, self, result);
+    return result;
 }
 
-at::Tensor& sqrt_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnSqrt, acl_op::sqrt_out(self, result));
-  npu_preparation::check_tensor({self}, result, result, self.sizes());
-  EXEC_NPU_CMD(aclnnSqrt, self, result);
-  return result;
+at::Tensor &sqrt_out(const at::Tensor &self, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnSqrt, acl_op::sqrt_out(self, result));
+    npu_preparation::check_tensor({self}, result, result, self.sizes());
+    EXEC_NPU_CMD(aclnnSqrt, self, result);
+    return result;
 }
 
-at::Tensor& sqrt_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceSqrt, acl_op::sqrt_(self));
-  EXEC_NPU_CMD(aclnnInplaceSqrt, self);
-  return self;
+at::Tensor &sqrt_(at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnInplaceSqrt, acl_op::sqrt_(self));
+    EXEC_NPU_CMD(aclnnInplaceSqrt, self);
+    return self;
 }
 
 } // namespace op_api
-

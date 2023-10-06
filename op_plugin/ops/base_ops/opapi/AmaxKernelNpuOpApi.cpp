@@ -20,26 +20,28 @@
 
 namespace op_api {
 
-at::Tensor& amax_out(const at::Tensor& self, at::IntArrayRef dim, bool keepdim, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnAmax, acl_op::amax_out(self, dim, keepdim, result));
+at::Tensor &amax_out(const at::Tensor &self, at::IntArrayRef dim, bool keepdim, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnAmax, acl_op::amax_out(self, dim, keepdim, result));
 
-  auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-  // check result for return
-  at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), outputSize);
-  EXEC_NPU_CMD(aclnnAmax, self, dim, keepdim, result);
-  return result;
+    auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
+    // check result for return
+    at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), outputSize);
+    EXEC_NPU_CMD(aclnnAmax, self, dim, keepdim, result);
+    return result;
 }
 
-at::Tensor amax(const at::Tensor& self, at::IntArrayRef dim, bool keepdim) {
-  DO_COMPATIBILITY(aclnnAmax, acl_op::amax(self, dim, keepdim));
+at::Tensor amax(const at::Tensor &self, at::IntArrayRef dim, bool keepdim)
+{
+    DO_COMPATIBILITY(aclnnAmax, acl_op::amax(self, dim, keepdim));
 
-  // calculate the output size
-  auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
+    // calculate the output size
+    auto outputSize = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
 
-  // construct the output tensor of the NPU
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self, outputSize);
-  EXEC_NPU_CMD(aclnnAmax, self, dim, keepdim, result);
-  return result;
+    // construct the output tensor of the NPU
+    at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self, outputSize);
+    EXEC_NPU_CMD(aclnnAmax, self, dim, keepdim, result);
+    return result;
 }
 
 } // namespace op_api

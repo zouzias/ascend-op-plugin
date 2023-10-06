@@ -21,24 +21,27 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& frac_out(const at::Tensor& self, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnFrac, acl_op::frac_out(self, result));
-  npu_preparation::check_tensor({self}, result, self);
-  EXEC_NPU_CMD(aclnnFrac, self, result);
-  return result;
+at::Tensor &frac_out(const at::Tensor &self, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnFrac, acl_op::frac_out(self, result));
+    npu_preparation::check_tensor({self}, result, self);
+    EXEC_NPU_CMD(aclnnFrac, self, result);
+    return result;
 }
 
-at::Tensor frac(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnFrac, acl_op::frac(self));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnFrac, self, result);
-  return result;
+at::Tensor frac(const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnFrac, acl_op::frac(self));
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+    EXEC_NPU_CMD(aclnnFrac, self, result);
+    return result;
 }
 
-at::Tensor& frac_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceFrac, acl_op::frac_(self));
-  EXEC_NPU_CMD(aclnnInplaceFrac, self);
-  return self;
+at::Tensor &frac_(at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnInplaceFrac, acl_op::frac_(self));
+    EXEC_NPU_CMD(aclnnInplaceFrac, self);
+    return self;
 }
 
-}  // namespace op_api
+} // namespace op_api

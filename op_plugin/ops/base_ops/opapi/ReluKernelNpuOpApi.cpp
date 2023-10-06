@@ -21,17 +21,19 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor relu(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnRelu, acl_op::relu(self));
-  auto outputSize = op_infer::input_same_output_size(self);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
-  EXEC_NPU_CMD(aclnnRelu, self, result);
-  return result;
+at::Tensor relu(const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnRelu, acl_op::relu(self));
+    auto outputSize = op_infer::input_same_output_size(self);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
+    EXEC_NPU_CMD(aclnnRelu, self, result);
+    return result;
 }
 
-at::Tensor& relu_(at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnInplaceRelu, acl_op::relu_(self));
-  EXEC_NPU_CMD(aclnnInplaceRelu, self);
-  return self;
+at::Tensor &relu_(at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnInplaceRelu, acl_op::relu_(self));
+    EXEC_NPU_CMD(aclnnInplaceRelu, self);
+    return self;
 }
 } // namespace op_api

@@ -20,35 +20,25 @@
 
 namespace op_api {
 
-at::Tensor& index_add_out(
-    const at::Tensor& self,
-    int64_t dim,
-    const at::Tensor& index,
-    const at::Tensor& source,
-    const at::Scalar& alpha,
-    at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnIndexAdd, acl_op::index_add_out(self, dim, index, source, alpha, result));
-  at_npu::native::OpPreparation::check_tensor({self, index, source},
-                                              result,
-                                              result.scalar_type(),
-                                              self.sizes());
-  if (!result.is_same(self)) {
-    result.copy_(self);
-  }
-  EXEC_NPU_CMD(aclnnIndexAdd, self, dim, index, source, alpha, result);
-  return result;
+at::Tensor &index_add_out(const at::Tensor &self, int64_t dim, const at::Tensor &index, const at::Tensor &source,
+                          const at::Scalar &alpha, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnIndexAdd, acl_op::index_add_out(self, dim, index, source, alpha, result));
+    at_npu::native::OpPreparation::check_tensor({self, index, source}, result, result.scalar_type(), self.sizes());
+    if (!result.is_same(self)) {
+        result.copy_(self);
+    }
+    EXEC_NPU_CMD(aclnnIndexAdd, self, dim, index, source, alpha, result);
+    return result;
 }
 
-at::Tensor index_add(
-    const at::Tensor& self,
-    int64_t dim,
-    const at::Tensor& index,
-    const at::Tensor& source,
-    const at::Scalar& alpha) {
-  DO_COMPATIBILITY(aclnnIndexAdd, acl_op::index_add(self, dim, index, source, alpha));
-  at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(), self.options());
-  EXEC_NPU_CMD(aclnnIndexAdd, self, dim, index, source, alpha, result.copy_(self));
-  return result;
+at::Tensor index_add(const at::Tensor &self, int64_t dim, const at::Tensor &index, const at::Tensor &source,
+                     const at::Scalar &alpha)
+{
+    DO_COMPATIBILITY(aclnnIndexAdd, acl_op::index_add(self, dim, index, source, alpha));
+    at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(), self.options());
+    EXEC_NPU_CMD(aclnnIndexAdd, self, dim, index, source, alpha, result.copy_(self));
+    return result;
 }
 
-}  // namespace op_api
+} // namespace op_api

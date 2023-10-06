@@ -14,26 +14,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-#include "op_plugin/AclOpsInterface.h"
 
 namespace op_api {
 
-at::Tensor upsample_trilinear3d(
-    const at::Tensor& input,
-    c10::optional<at::IntArrayRef> output_size,
-    bool align_corners,
-    c10::optional<at::ArrayRef<double>> scale_factors) {
-  DO_COMPATIBILITY(aclnnUpsampleTrilinear3d,
-                   acl_op::upsample_trilinear3d(input, output_size, align_corners, scale_factors));
-  auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
-  auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
-  auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
-  auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
-  at::Tensor result = op_api::upsample_trilinear3d(
-      input, osize, align_corners, scales_d, scales_h, scales_w);
-  return result;
+at::Tensor upsample_trilinear3d(const at::Tensor &input, c10::optional<at::IntArrayRef> output_size, bool align_corners,
+                                c10::optional<at::ArrayRef<double>> scale_factors)
+{
+    DO_COMPATIBILITY(aclnnUpsampleTrilinear3d,
+                     acl_op::upsample_trilinear3d(input, output_size, align_corners, scale_factors));
+    auto osize = op_infer::upsample_infershape_with_scale(input.sizes(), output_size, scale_factors);
+    auto scales_d = op_plugin::utils::get_scale_value(scale_factors, 0);
+    auto scales_h = op_plugin::utils::get_scale_value(scale_factors, 1);
+    auto scales_w = op_plugin::utils::get_scale_value(scale_factors, 2);
+    at::Tensor result = op_api::upsample_trilinear3d(input, osize, align_corners, scales_d, scales_h, scales_w);
+    return result;
 }
 
 } // namespace op_api

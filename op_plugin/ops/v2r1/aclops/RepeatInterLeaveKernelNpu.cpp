@@ -18,20 +18,16 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor repeat_interleave_symint(
-    const at::Tensor& self,
-    c10::SymInt repeats,
-    c10::optional<int64_t> dim,
-    c10::optional<int64_t> output_size) {
-  int64_t repeats_val = repeats.guard_int(__FILE__, __LINE__);
-  return repeat_interleave_common_nocheck(self, repeats_val, dim, output_size);
+at::Tensor repeat_interleave_symint(const at::Tensor &self, c10::SymInt repeats, c10::optional<int64_t> dim,
+                                    c10::optional<int64_t> output_size)
+{
+    int64_t repeats_val = repeats.guard_int(__FILE__, __LINE__);
+    return repeat_interleave_common_nocheck(self, repeats_val, dim, output_size);
 }
 
-at::Tensor repeat_interleave(
-    const at::Tensor& self,
-    const at::Tensor& repeats,
-    c10::optional<int64_t> dim,
-    c10::optional<int64_t> output_size) {
-  return repeat_interleave_common_nocheck(self, repeats, dim, output_size);
+at::Tensor repeat_interleave(const at::Tensor &self, const at::Tensor &repeats, c10::optional<int64_t> dim,
+                             c10::optional<int64_t> output_size)
+{
+    return repeat_interleave_common_nocheck(self, repeats, dim, output_size);
 }
 } // namespace acl_op

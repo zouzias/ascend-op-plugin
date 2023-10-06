@@ -17,15 +17,11 @@
 #include "op_plugin/AclOpsInterface.h"
 
 namespace acl_op {
-at::Tensor embedding_backward(
-    const at::Tensor& grad,
-    const at::Tensor& indices,
-    int64_t num_weights,
-    int64_t padding_idx,
-    bool scale_grad_by_freq,
-    bool sparse) {
-  TORCH_CHECK(sparse == false, "the current NPU does not yet support sparse tensor, when sparse is set to True");
-  // run dense tensor backward
-  return at::embedding_dense_backward(grad, indices, num_weights, padding_idx, scale_grad_by_freq);
+at::Tensor embedding_backward(const at::Tensor &grad, const at::Tensor &indices, int64_t num_weights,
+                              int64_t padding_idx, bool scale_grad_by_freq, bool sparse)
+{
+    TORCH_CHECK(sparse == false, "the current NPU does not yet support sparse tensor, when sparse is set to True");
+    // run dense tensor backward
+    return at::embedding_dense_backward(grad, indices, num_weights, padding_idx, scale_grad_by_freq);
 }
 } // namespace acl_op

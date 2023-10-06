@@ -3,6 +3,7 @@
 // All rights reserved.
 
 #include <ATen/native/ForeachUtils.h>
+
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
@@ -15,13 +16,13 @@ std::vector<at::Tensor> _foreach_maximum(at::TensorList tensors1, at::TensorList
     if (!at::native::can_use_fast_route(tensors1, tensors2, false)) {
         return at::native::foreach_tensor_maximum_slow(tensors1, tensors2);
     }
-  // construct the output tensorlist of the NPU
+    // construct the output tensorlist of the NPU
     auto scalar_type = tensors1[0].scalar_type();
     std::vector<at::Tensor> result;
     for (const at::Tensor &tensor : tensors1) {
-    auto output_size = op_infer::input_same_output_size(tensor);
-    result.push_back(npu_preparation::apply_tensor_without_format(output_size,
-                                                                  tensor.options().dtype(scalar_type)));
+        auto output_size = op_infer::input_same_output_size(tensor);
+        result.push_back(
+            npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
 
@@ -29,4 +30,4 @@ std::vector<at::Tensor> _foreach_maximum(at::TensorList tensors1, at::TensorList
     return result;
 }
 
-}  // namespace op_api
+} // namespace op_api

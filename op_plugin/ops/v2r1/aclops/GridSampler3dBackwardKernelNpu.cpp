@@ -18,14 +18,11 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(
-    const at::Tensor& grad,
-    const at::Tensor& input,
-    const at::Tensor& grid,
-    int64_t interpolation_mode,
-    int64_t padding_mode,
-    bool align_corners,
-    std::array<bool,2> output_mask) {
-  return grid_sampler3d_backward_common_nocheck(grad, input, grid, interpolation_mode, padding_mode, align_corners);
+std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(const at::Tensor &grad, const at::Tensor &input,
+                                                            const at::Tensor &grid, int64_t interpolation_mode,
+                                                            int64_t padding_mode, bool align_corners,
+                                                            std::array<bool, 2> output_mask)
+{
+    return grid_sampler3d_backward_common_nocheck(grad, input, grid, interpolation_mode, padding_mode, align_corners);
 }
 } // namespace acl_op

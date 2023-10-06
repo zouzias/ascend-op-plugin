@@ -18,12 +18,9 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor embedding_symint(
-    const at::Tensor& weight,
-    const at::Tensor& indices,
-    c10::SymInt padding_idx,
-    bool scale_grad_by_freq,
-    bool sparse) {
-  return embedding_common_nocheck(weight, indices);
+at::Tensor embedding_symint(const at::Tensor &weight, const at::Tensor &indices, c10::SymInt padding_idx,
+                            bool scale_grad_by_freq, bool sparse)
+{
+    return embedding_common_nocheck(weight, indices);
 }
 } // namespace acl_op

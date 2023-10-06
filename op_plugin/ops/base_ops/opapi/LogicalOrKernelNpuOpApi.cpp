@@ -21,27 +21,30 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& logical_or_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnLogicalOr, acl_op::logical_or_out(self, other, result));
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  npu_preparation::check_tensor({self, other}, result, output_size);
-  EXEC_NPU_CMD(aclnnLogicalOr, self, other, result);
-  return result;
+at::Tensor &logical_or_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnLogicalOr, acl_op::logical_or_out(self, other, result));
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    npu_preparation::check_tensor({self, other}, result, output_size);
+    EXEC_NPU_CMD(aclnnLogicalOr, self, other, result);
+    return result;
 }
 
-at::Tensor logical_or(const at::Tensor& self, const at::Tensor& other) {
-  DO_COMPATIBILITY(aclnnLogicalOr, acl_op::logical_or(self, other));
-  auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kBool));
-  EXEC_NPU_CMD(aclnnLogicalOr, self, other, result);
-  return result;
+at::Tensor logical_or(const at::Tensor &self, const at::Tensor &other)
+{
+    DO_COMPATIBILITY(aclnnLogicalOr, acl_op::logical_or(self, other));
+    auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kBool));
+    EXEC_NPU_CMD(aclnnLogicalOr, self, other, result);
+    return result;
 }
 
-at::Tensor& logical_or_(at::Tensor& self, const at::Tensor& other) {
-  DO_COMPATIBILITY(aclnnInplaceLogicalOr, acl_op::logical_or_(self, other));
-  npu_preparation::check_memory({self, other},{self});
-  EXEC_NPU_CMD(aclnnInplaceLogicalOr, self, other);
-  return self;
+at::Tensor &logical_or_(at::Tensor &self, const at::Tensor &other)
+{
+    DO_COMPATIBILITY(aclnnInplaceLogicalOr, acl_op::logical_or_(self, other));
+    npu_preparation::check_memory({self, other}, {self});
+    EXEC_NPU_CMD(aclnnInplaceLogicalOr, self, other);
+    return self;
 }
 
-}  // namespace op_api
+} // namespace op_api

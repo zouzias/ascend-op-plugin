@@ -22,28 +22,22 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& dot_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& tensor) {
+at::Tensor &dot_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &tensor)
+{
     at_npu::native::OpCommand cmd;
-    cmd.Name("Dot")
-        .Input(self)
-        .Input(tensor)
-        .Output(result)
-        .Run();
+    cmd.Name("Dot").Input(self).Input(tensor).Output(result).Run();
 
     return result;
 }
 } // namespace
 
-at::Tensor& dot_out(const at::Tensor& self, const at::Tensor& tensor, at::Tensor& result) {
+at::Tensor &dot_out(const at::Tensor &self, const at::Tensor &tensor, at::Tensor &result)
+{
     auto self_dtype = self.scalar_type();
     TORCH_CHECK(self_dtype != at::kInt && self_dtype != at::kByte && self_dtype != at::kChar,
                 "'dot_npu' not implemented for 'Int'");
     c10::SmallVector<int64_t, N> output_size = {};
-    npu_preparation::CheckOut(
-        {self, tensor},
-        result,
-        self,
-        output_size);
+    npu_preparation::CheckOut({self, tensor}, result, self, output_size);
 
     if (!npu_utils::check_match(&result)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(result);
@@ -56,7 +50,8 @@ at::Tensor& dot_out(const at::Tensor& self, const at::Tensor& tensor, at::Tensor
     return result;
 }
 
-at::Tensor dot(const at::Tensor& self, const at::Tensor& tensor) {
+at::Tensor dot(const at::Tensor &self, const at::Tensor &tensor)
+{
     auto self_dtype = self.scalar_type();
     TORCH_CHECK(self_dtype != at::kInt && self_dtype != at::kByte && self_dtype != at::kChar,
                 "'dot_npu' not implemented for 'Int'");
@@ -65,4 +60,4 @@ at::Tensor dot(const at::Tensor& self, const at::Tensor& tensor) {
     dot_out_npu_nocheck(result, self, tensor);
     return result;
 }
-} // acl_op
+} // namespace acl_op

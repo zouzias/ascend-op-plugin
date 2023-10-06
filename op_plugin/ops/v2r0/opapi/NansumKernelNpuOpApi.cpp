@@ -18,8 +18,8 @@
 
 namespace op_api {
 
-at::Tensor& nansum_out(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim,
-                       c10::optional<c10::ScalarType> dtype, at::Tensor& result)
+at::Tensor &nansum_out(const at::Tensor &self, at::OptionalIntArrayRef dim, bool keepdim,
+                       c10::optional<c10::ScalarType> dtype, at::Tensor &result)
 {
     at::IntArrayRef dimArray;
     c10::SmallVector<int64_t, N> dimlist;
@@ -46,7 +46,7 @@ at::Tensor& nansum_out(const at::Tensor& self, at::OptionalIntArrayRef dim, bool
     return result;
 }
 
-at::Tensor nansum(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim,
+at::Tensor nansum(const at::Tensor &self, at::OptionalIntArrayRef dim, bool keepdim,
                   c10::optional<c10::ScalarType> dtype)
 {
     // create result tensor with int64 if dtype has no value and self is integral
@@ -69,4 +69,4 @@ at::Tensor nansum(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keep
     return result;
 }
 
-}  // namespace op_api
+} // namespace op_api

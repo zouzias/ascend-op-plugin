@@ -20,21 +20,13 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm_backward(
-    const at::Tensor& dY,
-    const at::Tensor& X,
-    const at::Tensor& mean,
-    const at::Tensor& rstd,
-    const c10::optional<at::Tensor>& gamma_opt,
-    int64_t N,
-    int64_t C,
-    int64_t HxW,
-    int64_t group,
-    std::array<bool, 3> grad_input_mask)
+std::tuple<at::Tensor, at::Tensor, at::Tensor>
+native_group_norm_backward(const at::Tensor &dY, const at::Tensor &X, const at::Tensor &mean, const at::Tensor &rstd,
+                           const c10::optional<at::Tensor> &gamma_opt, int64_t N, int64_t C, int64_t HxW, int64_t group,
+                           std::array<bool, 3> grad_input_mask)
 {
-    DO_COMPATIBILITY(aclnnGroupNormBackward,
-                     acl_op::native_group_norm_backward(dY, X, mean, rstd, gamma_opt, N, C, HxW, group,
-                                                        grad_input_mask));
+    DO_COMPATIBILITY(aclnnGroupNormBackward, acl_op::native_group_norm_backward(dY, X, mean, rstd, gamma_opt, N, C, HxW,
+                                                                                group, grad_input_mask));
 
     at::Tensor grad_x;
     at::Tensor grad_gamma;
@@ -49,8 +41,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm_backward(
         grad_beta = npu_preparation::apply_tensor_without_format(X, {C});
     }
 
-    EXEC_NPU_CMD(aclnnGroupNormBackward, dY, X, mean, rstd, gamma_opt, N, C, HxW, group, grad_input_mask,
-                 grad_x, grad_gamma, grad_beta);
+    EXEC_NPU_CMD(aclnnGroupNormBackward, dY, X, mean, rstd, gamma_opt, N, C, HxW, group, grad_input_mask, grad_x,
+                 grad_gamma, grad_beta);
     return std::make_tuple(grad_x, grad_gamma, grad_beta);
 }
 

@@ -21,16 +21,17 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor batch_norm_backward_elemt(const at::Tensor& grad_out, const at::Tensor& input, const at::Tensor& mean,
-                                     const at::Tensor& invstd, const c10::optional<at::Tensor>& weight_opt,
-                                     const at::Tensor& sum_dy, const at::Tensor& sum_dy_xmu, const at::Tensor& count) {
-  DO_COMPATIBILITY(
-      aclnnBatchNormElemtBackward,
-      acl_op::batch_norm_backward_elemt(grad_out, input, mean, invstd, weight_opt, sum_dy, sum_dy_xmu, count));
+at::Tensor batch_norm_backward_elemt(const at::Tensor &grad_out, const at::Tensor &input, const at::Tensor &mean,
+                                     const at::Tensor &invstd, const c10::optional<at::Tensor> &weight_opt,
+                                     const at::Tensor &sum_dy, const at::Tensor &sum_dy_xmu, const at::Tensor &count)
+{
+    DO_COMPATIBILITY(
+        aclnnBatchNormElemtBackward,
+        acl_op::batch_norm_backward_elemt(grad_out, input, mean, invstd, weight_opt, sum_dy, sum_dy_xmu, count));
 
-  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(input);
-  EXEC_NPU_CMD(aclnnBatchNormElemtBackward, grad_out, input, mean, invstd, weight_opt, sum_dy, sum_dy_xmu, count,
-               grad_input);
-  return grad_input;
+    at::Tensor grad_input = npu_preparation::apply_tensor_without_format(input);
+    EXEC_NPU_CMD(aclnnBatchNormElemtBackward, grad_out, input, mean, invstd, weight_opt, sum_dy, sum_dy_xmu, count,
+                 grad_input);
+    return grad_input;
 }
-}  // namespace op_api
+} // namespace op_api

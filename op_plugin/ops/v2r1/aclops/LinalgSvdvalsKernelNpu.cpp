@@ -20,25 +20,27 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& linalg_svdvals_out(const at::Tensor& A, c10::optional<c10::string_view> driver, at::Tensor & S) {
-  // Dummies
-  auto U = at::empty({0}, A.options());
-  auto Vh = at::empty({0}, A.options());
-  acl_op::_linalg_svd_out(A, false, false, driver, U, S, Vh);
-  return S;
+at::Tensor &linalg_svdvals_out(const at::Tensor &A, c10::optional<c10::string_view> driver, at::Tensor &S)
+{
+    // Dummies
+    auto U = at::empty({0}, A.options());
+    auto Vh = at::empty({0}, A.options());
+    acl_op::_linalg_svd_out(A, false, false, driver, U, S, Vh);
+    return S;
 }
 
-at::Tensor linalg_svdvals(const at::Tensor& A, c10::optional<c10::string_view> driver) {
-  auto U = at::empty({0}, A.options());
-  auto Vh = at::empty({0}, A.options());
-  auto sizes = A.sizes().vec();
-  int64_t k = std::min(A.size(-2), A.size(-1));
-  sizes.pop_back();
-  sizes.end()[-1] = k;
-  auto S = npu_preparation::apply_tensor(A, sizes);
-  S.fill_(0);
+at::Tensor linalg_svdvals(const at::Tensor &A, c10::optional<c10::string_view> driver)
+{
+    auto U = at::empty({0}, A.options());
+    auto Vh = at::empty({0}, A.options());
+    auto sizes = A.sizes().vec();
+    int64_t k = std::min(A.size(-2), A.size(-1));
+    sizes.pop_back();
+    sizes.end()[-1] = k;
+    auto S = npu_preparation::apply_tensor(A, sizes);
+    S.fill_(0);
 
-  acl_op::_linalg_svd_out(A, false, false, driver, U, S, Vh);
-  return S;
+    acl_op::_linalg_svd_out(A, false, false, driver, U, S, Vh);
+    return S;
 }
 } // namespace acl_op

@@ -21,22 +21,18 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
-    const at::Tensor& A,
-    const bool full_matrices,
-    const bool compute_uv,
-    c10::optional<c10::string_view> driver,
-    at::Tensor& U,
-    at::Tensor& S,
-    at::Tensor& Vh) {
-  return linalg_svd_out_common(A, full_matrices, compute_uv, U, S, Vh);
+std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> _linalg_svd_out(const at::Tensor &A, const bool full_matrices,
+                                                                     const bool compute_uv,
+                                                                     c10::optional<c10::string_view> driver,
+                                                                     at::Tensor &U, at::Tensor &S, at::Tensor &Vh)
+{
+    return linalg_svd_out_common(A, full_matrices, compute_uv, U, S, Vh);
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
-    const at::Tensor& A,
-    const bool full_matrices,
-    const bool compute_uv,
-    c10::optional<c10::string_view> driver) {
-  return _svd_helper(A, !full_matrices, compute_uv);
+std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(const at::Tensor &A, const bool full_matrices,
+                                                           const bool compute_uv,
+                                                           c10::optional<c10::string_view> driver)
+{
+    return _svd_helper(A, !full_matrices, compute_uv);
 }
 } // namespace acl_op

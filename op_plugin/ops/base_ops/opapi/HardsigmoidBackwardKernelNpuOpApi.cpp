@@ -14,19 +14,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
-#include "op_plugin/AclOpsInterface.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor hardsigmoid_backward(const at::Tensor& grad_output, const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnHardsigmoidBackward, acl_op::hardsigmoid_backward(grad_output, self));
-  at::ScalarType result_dtype = at::native::result_type(grad_output, self);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(result_dtype));
-  EXEC_NPU_CMD(aclnnHardsigmoidBackward, grad_output, self, result);
-  return result;
+at::Tensor hardsigmoid_backward(const at::Tensor &grad_output, const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnHardsigmoidBackward, acl_op::hardsigmoid_backward(grad_output, self));
+    at::ScalarType result_dtype = at::native::result_type(grad_output, self);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(result_dtype));
+    EXEC_NPU_CMD(aclnnHardsigmoidBackward, grad_output, self, result);
+    return result;
 }
 
-}  // namespace op_api
+} // namespace op_api

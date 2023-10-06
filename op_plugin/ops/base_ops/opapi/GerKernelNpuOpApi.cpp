@@ -21,23 +21,25 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& ger_out(const at::Tensor& self, const at::Tensor& vec2, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnGer, acl_op::ger_out(self, vec2, result));
-  auto output_size = op_infer::ger_output_size(self, vec2);
-  auto result_type = at::result_type(self, vec2);
-  npu_preparation::check_tensor({self, vec2}, result, result_type, output_size);
+at::Tensor &ger_out(const at::Tensor &self, const at::Tensor &vec2, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnGer, acl_op::ger_out(self, vec2, result));
+    auto output_size = op_infer::ger_output_size(self, vec2);
+    auto result_type = at::result_type(self, vec2);
+    npu_preparation::check_tensor({self, vec2}, result, result_type, output_size);
 
-  EXEC_NPU_CMD(aclnnGer, self, vec2, result);
-  return result;
+    EXEC_NPU_CMD(aclnnGer, self, vec2, result);
+    return result;
 }
 
-at::Tensor ger(const at::Tensor& self, const at::Tensor& vec2) {
-  DO_COMPATIBILITY(aclnnGer, acl_op::ger(self, vec2));
-  auto output_size = op_infer::ger_output_size(self, vec2);
-  auto result_type = at::result_type(self, vec2);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(result_type));
+at::Tensor ger(const at::Tensor &self, const at::Tensor &vec2)
+{
+    DO_COMPATIBILITY(aclnnGer, acl_op::ger(self, vec2));
+    auto output_size = op_infer::ger_output_size(self, vec2);
+    auto result_type = at::result_type(self, vec2);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(result_type));
 
-  EXEC_NPU_CMD(aclnnGer, self, vec2, result);
-  return result;
+    EXEC_NPU_CMD(aclnnGer, self, vec2, result);
+    return result;
 }
 } // namespace op_api

@@ -14,6 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include <ATen/native/TypeProperties.h>
+
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -21,35 +22,38 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& addr_out(const at::Tensor& self, const at::Tensor& vec1, const at::Tensor& vec2, const at::Scalar& beta,
-                     const at::Scalar& alpha, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnAddr, acl_op::addr_out(self, vec1, vec2, beta, alpha, result));
-  npu_preparation::check_tensor({self, vec1, vec2}, result, result);
-  EXEC_NPU_CMD(aclnnAddr, self, vec1, vec2, beta, alpha, result);
-  return result;
+at::Tensor &addr_out(const at::Tensor &self, const at::Tensor &vec1, const at::Tensor &vec2, const at::Scalar &beta,
+                     const at::Scalar &alpha, at::Tensor &result)
+{
+    DO_COMPATIBILITY(aclnnAddr, acl_op::addr_out(self, vec1, vec2, beta, alpha, result));
+    npu_preparation::check_tensor({self, vec1, vec2}, result, result);
+    EXEC_NPU_CMD(aclnnAddr, self, vec1, vec2, beta, alpha, result);
+    return result;
 }
 
-at::Tensor addr(const at::Tensor& self, const at::Tensor& vec1, const at::Tensor& vec2, const at::Scalar& beta,
-                const at::Scalar& alpha) {
-  DO_COMPATIBILITY(aclnnAddr, acl_op::addr(self, vec1, vec2, beta, alpha));
+at::Tensor addr(const at::Tensor &self, const at::Tensor &vec1, const at::Tensor &vec2, const at::Scalar &beta,
+                const at::Scalar &alpha)
+{
+    DO_COMPATIBILITY(aclnnAddr, acl_op::addr(self, vec1, vec2, beta, alpha));
 
-  // calculate the output size
-  at::ScalarType high_dtype = at::native::result_type({self, vec1, vec2});
-  auto output_size = op_infer::addr_npu_output_size(self, vec1, vec2, beta, alpha);
+    // calculate the output size
+    at::ScalarType high_dtype = at::native::result_type({self, vec1, vec2});
+    auto output_size = op_infer::addr_npu_output_size(self, vec1, vec2, beta, alpha);
 
-  // construct the output tensor of the NPU
-  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(high_dtype));
+    // construct the output tensor of the NPU
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(high_dtype));
 
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnAddr, self, vec1, vec2, beta, alpha, result);
-  return result;
+    // calculate the output result of the NPU
+    EXEC_NPU_CMD(aclnnAddr, self, vec1, vec2, beta, alpha, result);
+    return result;
 }
 
-at::Tensor& addr_(at::Tensor& self, const at::Tensor& vec1, const at::Tensor& vec2, const at::Scalar& beta,
-                  const at::Scalar& alpha) {
-  DO_COMPATIBILITY(aclnnInplaceAddr, acl_op::addr_(self, vec1, vec2, beta, alpha));
-  EXEC_NPU_CMD(aclnnInplaceAddr, self, vec1, vec2, beta, alpha);
-  return self;
+at::Tensor &addr_(at::Tensor &self, const at::Tensor &vec1, const at::Tensor &vec2, const at::Scalar &beta,
+                  const at::Scalar &alpha)
+{
+    DO_COMPATIBILITY(aclnnInplaceAddr, acl_op::addr_(self, vec1, vec2, beta, alpha));
+    EXEC_NPU_CMD(aclnnInplaceAddr, self, vec1, vec2, beta, alpha);
+    return self;
 }
 
-}  // namespace op_api
+} // namespace op_api

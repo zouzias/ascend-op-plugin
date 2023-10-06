@@ -19,15 +19,14 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& reflection_pad3d_out(
-    const at::Tensor& self,
-    at::IntArrayRef padding,
-    at::Tensor& result) {
-  TORCH_CHECK(false, "reflection_pad3d.out is not supported.");
+at::Tensor &reflection_pad3d_out(const at::Tensor &self, at::IntArrayRef padding, at::Tensor &result)
+{
+    TORCH_CHECK(false, "reflection_pad3d.out is not supported.");
 }
 
-at::Tensor reflection_pad3d(const at::Tensor& self, at::IntArrayRef padding) {
-  TORCH_CHECK(false, "reflection_pad3d is not supported.");
+at::Tensor reflection_pad3d(const at::Tensor &self, at::IntArrayRef padding)
+{
+    TORCH_CHECK(false, "reflection_pad3d is not supported.");
 }
 
 } // namespace acl_op

@@ -14,10 +14,11 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor channel_shuffle(const at::Tensor& self, int64_t groups) {
-  DO_COMPATIBILITY(aclnnChannelShuffle, acl_op::channel_shuffle(self, groups));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnChannelShuffle, self, groups, result);
-  return result;
+at::Tensor channel_shuffle(const at::Tensor &self, int64_t groups)
+{
+    DO_COMPATIBILITY(aclnnChannelShuffle, acl_op::channel_shuffle(self, groups));
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+    EXEC_NPU_CMD(aclnnChannelShuffle, self, groups, result);
+    return result;
 }
 } // namespace op_api

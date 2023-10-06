@@ -23,20 +23,20 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor &mv_out(const at::Tensor &self, const at::Tensor &vec, at::Tensor &result)
 {
-  DO_COMPATIBILITY(aclnnMv, acl_op::mv_out(self, vec, result));
-  npu_preparation::check_tensor({self, vec}, result, result.scalar_type(), {self.size(0)});
-  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
-  EXEC_NPU_CMD(aclnnMv, self, vec, result, cube_math_type);
-  return result;
+    DO_COMPATIBILITY(aclnnMv, acl_op::mv_out(self, vec, result));
+    npu_preparation::check_tensor({self, vec}, result, result.scalar_type(), {self.size(0)});
+    int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
+    EXEC_NPU_CMD(aclnnMv, self, vec, result, cube_math_type);
+    return result;
 }
 
 at::Tensor mv(const at::Tensor &self, const at::Tensor &vec)
 {
-  DO_COMPATIBILITY(aclnnMv, acl_op::mv(self, vec));
-  at::Tensor result = npu_preparation::apply_tensor_without_format({self.size(0)}, vec.options());
-  int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
-  EXEC_NPU_CMD(aclnnMv, self, vec, result, cube_math_type);
-  return result;
+    DO_COMPATIBILITY(aclnnMv, acl_op::mv(self, vec));
+    at::Tensor result = npu_preparation::apply_tensor_without_format({self.size(0)}, vec.options());
+    int8_t cube_math_type = npu_preparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());
+    EXEC_NPU_CMD(aclnnMv, self, vec, result, cube_math_type);
+    return result;
 }
 
-}  // namespace op_api
+} // namespace op_api

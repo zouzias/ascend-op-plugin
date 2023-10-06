@@ -21,18 +21,19 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor isclose(const at::Tensor& self, const at::Tensor& other, double rtol, double atol, bool equal_nan) {
-  DO_COMPATIBILITY(aclnnIsClose, acl_op::isclose(self, other, rtol, atol, equal_nan));
+at::Tensor isclose(const at::Tensor &self, const at::Tensor &other, double rtol, double atol, bool equal_nan)
+{
+    DO_COMPATIBILITY(aclnnIsClose, acl_op::isclose(self, other, rtol, atol, equal_nan));
 
-  // calculate the output size
-  auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  if (at::isFloatingType(self.scalar_type()) && equal_nan) {
-    output_size = self.sizes();
-  }
-  auto out = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kBool));
+    // calculate the output size
+    auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
+    if (at::isFloatingType(self.scalar_type()) && equal_nan) {
+        output_size = self.sizes();
+    }
+    auto out = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kBool));
 
-  // construct the output tensor of the NPU
-  EXEC_NPU_CMD(aclnnIsClose, self, other, rtol, atol, equal_nan, out);
-  return out;
+    // construct the output tensor of the NPU
+    EXEC_NPU_CMD(aclnnIsClose, self, other, rtol, atol, equal_nan, out);
+    return out;
 }
 } // namespace op_api

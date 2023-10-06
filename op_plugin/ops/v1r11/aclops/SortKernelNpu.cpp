@@ -18,22 +18,16 @@
 #include "op_plugin/utils/OpAdapter.h"
 
 namespace acl_op {
-std::tuple<at::Tensor, at::Tensor> sort(
-    const at::Tensor& self,
-    c10::optional<bool> stable,
-    int64_t dim,
-    bool descending) {
-  TORCH_CHECK(false, "sort.stable is not supported.");
+std::tuple<at::Tensor, at::Tensor> sort(const at::Tensor &self, c10::optional<bool> stable, int64_t dim,
+                                        bool descending)
+{
+    TORCH_CHECK(false, "sort.stable is not supported.");
 }
 
-std::tuple<at::Tensor&, at::Tensor&> sort_out(
-    const at::Tensor& self,
-    c10::optional<bool> stable,
-    int64_t dim,
-    bool descending,
-    at::Tensor& values,
-    at::Tensor& indices) {
-  TORCH_CHECK(false, "sort.stable is not supported.");
+std::tuple<at::Tensor &, at::Tensor &> sort_out(const at::Tensor &self, c10::optional<bool> stable, int64_t dim,
+                                                bool descending, at::Tensor &values, at::Tensor &indices)
+{
+    TORCH_CHECK(false, "sort.stable is not supported.");
 }
 
 } // namespace acl_op

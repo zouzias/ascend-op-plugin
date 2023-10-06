@@ -20,10 +20,11 @@
 
 namespace op_api {
 
-at::Tensor &signbit_out(const at::Tensor &self, at::Tensor &result) {
-  at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), self.sizes());
-  EXEC_NPU_CMD(aclnnSignbit, self, result);
-  return result;
+at::Tensor &signbit_out(const at::Tensor &self, at::Tensor &result)
+{
+    at_npu::native::OpPreparation::check_tensor({self}, result, result.scalar_type(), self.sizes());
+    EXEC_NPU_CMD(aclnnSignbit, self, result);
+    return result;
 }
 
-}  // namespace op_api
+} // namespace op_api

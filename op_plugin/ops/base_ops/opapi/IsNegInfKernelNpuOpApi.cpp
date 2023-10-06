@@ -23,16 +23,17 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& isneginf_out(const at::Tensor& self, at::Tensor& out) {
-  DO_COMPATIBILITY(aclnnIsNegInf, acl_op::isneginf_out(self, out));
-  // resize_ the output size when size of out and self don't match with each other.
-  if (out.sizes() != self.sizes()) {
-    auto output_size = op_infer::input_same_output_size(self);
-    out.resize_(output_size);
-  }
-  // dispatch hostAPI
-  EXEC_NPU_CMD(aclnnIsNegInf, self, out);
-  return out;
+at::Tensor &isneginf_out(const at::Tensor &self, at::Tensor &out)
+{
+    DO_COMPATIBILITY(aclnnIsNegInf, acl_op::isneginf_out(self, out));
+    // resize_ the output size when size of out and self don't match with each other.
+    if (out.sizes() != self.sizes()) {
+        auto output_size = op_infer::input_same_output_size(self);
+        out.resize_(output_size);
+    }
+    // dispatch hostAPI
+    EXEC_NPU_CMD(aclnnIsNegInf, self, out);
+    return out;
 }
 
 } // namespace op_api

@@ -21,27 +21,24 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& hardshrink_backward_out(const at::Tensor& grad_output,
-                                    const at::Tensor& self,
-                                    const at::Scalar& lambd,
-                                    at::Tensor& grad_input) {
-  DO_COMPATIBILITY(aclnnHardshrinkBackward, acl_op::hardshrink_backward_out(grad_output, self, lambd, grad_input));
-  auto output_size = op_infer::broadcast_ops_npu_output_size(grad_output, self);
-  npu_preparation::check_tensor({grad_output, self}, grad_input, grad_input.scalar_type(), output_size);
-  EXEC_NPU_CMD(aclnnHardshrinkBackward, grad_output, self, lambd, grad_input);
-  return grad_input;
+at::Tensor &hardshrink_backward_out(const at::Tensor &grad_output, const at::Tensor &self, const at::Scalar &lambd,
+                                    at::Tensor &grad_input)
+{
+    DO_COMPATIBILITY(aclnnHardshrinkBackward, acl_op::hardshrink_backward_out(grad_output, self, lambd, grad_input));
+    auto output_size = op_infer::broadcast_ops_npu_output_size(grad_output, self);
+    npu_preparation::check_tensor({grad_output, self}, grad_input, grad_input.scalar_type(), output_size);
+    EXEC_NPU_CMD(aclnnHardshrinkBackward, grad_output, self, lambd, grad_input);
+    return grad_input;
 }
 
-at::Tensor hardshrink_backward(const at::Tensor& grad_output,
-                               const at::Tensor& self,
-                               const at::Scalar& lambd) {
-  DO_COMPATIBILITY(aclnnHardshrinkBackward, acl_op::hardshrink_backward(grad_output, self, lambd));
-  at::ScalarType result_dtype = at::native::result_type(grad_output, self);
-  auto output_size = op_infer::broadcast_ops_npu_output_size(grad_output, self);
-  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(result_dtype));
-  EXEC_NPU_CMD(aclnnHardshrinkBackward, grad_output, self, lambd, result);
-  return result;
+at::Tensor hardshrink_backward(const at::Tensor &grad_output, const at::Tensor &self, const at::Scalar &lambd)
+{
+    DO_COMPATIBILITY(aclnnHardshrinkBackward, acl_op::hardshrink_backward(grad_output, self, lambd));
+    at::ScalarType result_dtype = at::native::result_type(grad_output, self);
+    auto output_size = op_infer::broadcast_ops_npu_output_size(grad_output, self);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(result_dtype));
+    EXEC_NPU_CMD(aclnnHardshrinkBackward, grad_output, self, lambd, result);
+    return result;
 }
 
-}  // namespace op_api
-
+} // namespace op_api

@@ -18,8 +18,9 @@
 
 namespace acl_op {
 
-at::Tensor dequantize(const at::Tensor& self) {
-  return self.to(at::kFloat);
+at::Tensor dequantize(const at::Tensor &self)
+{
+    return self.to(at::kFloat);
 }
 
 } // namespace acl_op

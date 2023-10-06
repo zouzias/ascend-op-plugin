@@ -21,19 +21,19 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> slogdet(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnSlogdet, acl_op::slogdet(self));
-  // calculate the output size
-  auto outputSize = op_infer::array_to_small_vector(self.sizes());
-  outputSize.erase(outputSize.end() - 2, outputSize.end());
-  // construct the output tensor of the NPU
-  at::Tensor sign = npu_preparation::apply_tensor(self, outputSize);
-  at::Tensor log = npu_preparation::apply_tensor(self, outputSize);
-  // calculate the output result of the NPU
-  EXEC_NPU_CMD(aclnnSlogdet, self, sign, log);
+std::tuple<at::Tensor, at::Tensor> slogdet(const at::Tensor &self)
+{
+    DO_COMPATIBILITY(aclnnSlogdet, acl_op::slogdet(self));
+    // calculate the output size
+    auto outputSize = op_infer::array_to_small_vector(self.sizes());
+    outputSize.erase(outputSize.end() - 2, outputSize.end());
+    // construct the output tensor of the NPU
+    at::Tensor sign = npu_preparation::apply_tensor(self, outputSize);
+    at::Tensor log = npu_preparation::apply_tensor(self, outputSize);
+    // calculate the output result of the NPU
+    EXEC_NPU_CMD(aclnnSlogdet, self, sign, log);
 
-  return std::tie(sign, log);
+    return std::tie(sign, log);
 }
 
-}  // namespace op_api
-
+} // namespace op_api

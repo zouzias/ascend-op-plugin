@@ -21,18 +21,12 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm(
-    const at::Tensor& X,
-    const c10::optional<at::Tensor>& gamma_opt,
-    const c10::optional<at::Tensor>& beta_opt,
-    int64_t N,
-    int64_t C,
-    int64_t HxW,
-    int64_t group,
-    double eps)
+std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm(const at::Tensor &X,
+                                                                 const c10::optional<at::Tensor> &gamma_opt,
+                                                                 const c10::optional<at::Tensor> &beta_opt, int64_t N,
+                                                                 int64_t C, int64_t HxW, int64_t group, double eps)
 {
-    DO_COMPATIBILITY(aclnnGroupNorm,
-                     acl_op::native_group_norm(X, gamma_opt, beta_opt, N, C, HxW, group, eps));
+    DO_COMPATIBILITY(aclnnGroupNorm, acl_op::native_group_norm(X, gamma_opt, beta_opt, N, C, HxW, group, eps));
 
     at::Tensor y = npu_preparation::apply_tensor_without_format(X);
     at::Tensor mean = npu_preparation::apply_tensor_without_format(X, {N, group});

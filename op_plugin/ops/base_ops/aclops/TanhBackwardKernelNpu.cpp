@@ -22,39 +22,32 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& tanh_backward_out_npu_nocheck(
-    at::Tensor& result,
-    const at::Tensor& grad_output,
-    const at::Tensor& self) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("TanhGrad")
-      .Input(self)
-      .Input(grad_output)
-      .Output(result)
-      .Run();
-  return result;
+at::Tensor &tanh_backward_out_npu_nocheck(at::Tensor &result, const at::Tensor &grad_output, const at::Tensor &self)
+{
+    at_npu::native::OpCommand cmd;
+    cmd.Name("TanhGrad").Input(self).Input(grad_output).Output(result).Run();
+    return result;
 }
 } // namespace
 
-at::Tensor& tanh_backward_out(
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    at::Tensor& result) {
-  npu_preparation::CheckOut({grad_output, self}, result, self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    tanh_backward_out_npu_nocheck(contiguous_result, grad_output, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
-    tanh_backward_out_npu_nocheck(result, grad_output, self);
-  }
+at::Tensor &tanh_backward_out(const at::Tensor &grad_output, const at::Tensor &self, at::Tensor &result)
+{
+    npu_preparation::CheckOut({grad_output, self}, result, self);
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        tanh_backward_out_npu_nocheck(contiguous_result, grad_output, self);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        tanh_backward_out_npu_nocheck(result, grad_output, self);
+    }
 
-  return result;
+    return result;
 }
 
-at::Tensor tanh_backward(const at::Tensor& grad_output, const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  tanh_backward_out_npu_nocheck(result, grad_output, self);
-  return result;
+at::Tensor tanh_backward(const at::Tensor &grad_output, const at::Tensor &self)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self);
+    tanh_backward_out_npu_nocheck(result, grad_output, self);
+    return result;
 }
 } // namespace acl_op
