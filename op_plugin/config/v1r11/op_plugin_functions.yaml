@@ -111,7 +111,7 @@ official:
  - func: _slow_conv2d_forward(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias, int[2] stride, int[2] padding) -> Tensor
    impl_ns: acl_op, op_api
  - func: _slow_conv2d_forward.output(Tensor self, Tensor weight, int[2] kernel_size, Tensor? bias, int[2] stride, int[2] padding, *, Tensor(a!) output) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: _softmax(Tensor self, int dim, bool half_to_float) -> Tensor
    impl_ns: acl_op, op_api
  - func: _softmax.out(Tensor self, int dim, bool half_to_float, *, Tensor(a!) out) -> Tensor(a!)
@@ -293,9 +293,9 @@ official:
  - func: avg_pool2d.out(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, bool ceil_mode=False, bool count_include_pad=True, int? divisor_override=None, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: avg_pool2d_backward(Tensor grad_output, Tensor self, int[2] kernel_size, int[2] stride, int[2] padding, bool ceil_mode, bool count_include_pad, int? divisor_override) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: avg_pool2d_backward.grad_input(Tensor grad_output, Tensor self, int[2] kernel_size, int[2] stride, int[2] padding, bool ceil_mode, bool count_include_pad, int? divisor_override, *, Tensor(a!) grad_input) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: avg_pool3d(Tensor self, int[3] kernel_size, int[3] stride=[], int[3] padding=0, bool ceil_mode=False, bool count_include_pad=True, int? divisor_override=None) -> Tensor
    impl_ns: acl_op
  - func: avg_pool3d.out(Tensor self, int[3] kernel_size, int[3] stride=[], int[3] padding=0, bool ceil_mode=False, bool count_include_pad=True, int? divisor_override=None, *, Tensor(a!) out) -> Tensor(a!)
@@ -445,8 +445,6 @@ official:
  - func: complex(Tensor real, Tensor imag) -> Tensor
    impl_ns: acl_op, op_api
  - func: complex.out(Tensor real, Tensor imag, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
- - func: real(Tensor(a) self) -> Tensor(a)
    impl_ns: acl_op, op_api
  - func: col2im(Tensor self, int[2] output_size, int[2] kernel_size, int[2] dilation, int[2] padding, int[2] stride) -> Tensor
    impl_ns: acl_op, op_api
@@ -864,6 +862,10 @@ official:
    impl_ns: acl_op, op_api
  - func: linalg_slogdet.out(Tensor self, *, Tensor(a!) sign, Tensor(b!) logabsdet) -> (Tensor(a!) sign, Tensor(b!) logabsdet)
    impl_ns: acl_op, op_api
+ - func: linalg_vector_norm(Tensor self, Scalar ord=2, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None) -> Tensor
+   impl_ns: acl_op, op_api
+ - func: linalg_vector_norm.out(Tensor self, Scalar ord=2, int[1]? dim=None, bool keepdim=False, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: linalg_cross(Tensor self, Tensor other, *, int dim=-1) -> Tensor
    impl_ns: acl_op, op_api
  - func: linalg_cross.out(Tensor self, Tensor other, *, int dim=-1, Tensor(a!) out) -> Tensor(a!)
@@ -872,10 +874,14 @@ official:
    impl_ns: acl_op, op_api
  - func: linalg_qr.out(Tensor self, str mode='reduced', *, Tensor(a!) Q, Tensor(b!) R) -> (Tensor(a!) Q, Tensor(b!) R)
    impl_ns: acl_op, op_api
+ - func: linalg_solve_triangular(Tensor self, Tensor B, *, bool upper, bool left=True, bool unitriangular=False) -> Tensor
+   impl_ns: op_api
+ - func: linalg_solve_triangular.out(Tensor self, Tensor B, *, bool upper, bool left=True, bool unitriangular=False, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: op_api
  - func: linspace(Scalar start, Scalar end, int steps, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: linspace.out(Scalar start, Scalar end, int steps, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: log(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: log.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
@@ -1127,11 +1133,11 @@ official:
  - func: nanmedian.dim(Tensor self, int dim, bool keepdim=False) -> (Tensor values, Tensor indices)
    impl_ns: acl_op, op_api
  - func: nan_to_num(Tensor self, float? nan=None, float? posinf=None, float? neginf=None) -> Tensor
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: nan_to_num_(Tensor(a!) self, float? nan=None, float? posinf=None, float? neginf=None) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: nan_to_num.out(Tensor self, float? nan=None, float? posinf=None, float? neginf=None, *, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: native_batch_norm(Tensor input, Tensor? weight, Tensor? bias, Tensor? running_mean, Tensor? running_var, bool training, float momentum, float eps) -> (Tensor, Tensor, Tensor)
    impl_ns: acl_op, op_api
  - func: native_batch_norm_backward(Tensor grad_out, Tensor input, Tensor? weight, Tensor? running_mean, Tensor? running_var, Tensor? save_mean, Tensor? save_invstd, bool train, float eps, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
@@ -1357,6 +1363,10 @@ official:
  - func: replication_pad2d_backward(Tensor grad_output, Tensor self, int[4] padding) -> Tensor
    impl_ns: acl_op, op_api
  - func: replication_pad2d_backward.grad_input(Tensor grad_output, Tensor self, int[4] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
+   impl_ns: acl_op, op_api
+ - func: replication_pad3d(Tensor self, int[6] padding) -> Tensor
+   impl_ns: acl_op, op_api
+ - func: replication_pad3d.out(Tensor self, int[6] padding, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: roll(Tensor self, int[1] shifts, int[1] dims=[]) -> Tensor
    impl_ns: acl_op, op_api
@@ -1735,7 +1745,7 @@ official:
  - func: _s_where(Tensor condition, Tensor self, Tensor other) -> Tensor
    impl_ns: acl_op, op_api
  - func: where(Tensor condition) -> Tensor[]
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: where.self(Tensor condition, Tensor self, Tensor other) -> Tensor
    impl_ns: acl_op, op_api
  - func: xlogy.OutScalar_Other(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)
@@ -1819,7 +1829,7 @@ official:
  - func: _foreach_frac_(Tensor(a!)[] self) -> ()
    impl_ns: op_api
  - func: _foreach_frac(Tensor(a!)[] self) -> Tensor[]
-   impl_ns: op_api 
+   impl_ns: op_api
  - func: _foreach_mul_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
    impl_ns: op_api
  - func: _foreach_sub_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
@@ -1885,9 +1895,9 @@ official:
  - func: _foreach_cos(Tensor[] tensors) -> Tensor[]
    impl_ns: op_api
  - func: native_group_norm(Tensor input, Tensor? weight, Tensor? bias, int N, int C, int HxW, int group, float eps) -> (Tensor, Tensor, Tensor)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: native_group_norm_backward(Tensor grad_out, Tensor input, Tensor mean, Tensor rstd, Tensor? weight, int N, int C, int HxW, int group, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
-   impl_ns: acl_op
+   impl_ns: acl_op, op_api
  - func: _foreach_maximum.List(Tensor[] self, Tensor[] other) -> Tensor[]
    impl_ns: op_api
  - func: _foreach_minimum.List(Tensor[] self, Tensor[] other) -> Tensor[]
@@ -1900,7 +1910,14 @@ official:
    impl_ns: op_api
  - func: _foreach_addcmul.ScalarList(Tensor[] input, Tensor[] tensor1, Tensor[] tensor2, Scalar[] scalars) -> Tensor[]
    impl_ns: op_api
-
+ - func: _foreach_exp_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_exp(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_neg(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_neg_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
 
 symint:
 
@@ -1918,9 +1935,7 @@ tocpu:
   - _fft_c2r.out
   - _fft_c2c
   - _fft_c2c.out
-  - _foreach_exp
   - _foreach_zero_
-  - _foreach_exp_
   - _foreach_sqrt
   - _foreach_sqrt_
   - _foreach_abs
@@ -1951,8 +1966,6 @@ tocpu:
   - _foreach_log1p_
   - _foreach_log2
   - _foreach_log2_
-  - _foreach_neg
-  - _foreach_neg_
   - _foreach_tan
   - _foreach_tan_
   - _foreach_tanh
@@ -1988,8 +2001,6 @@ tocpu:
   - cholesky_inverse.out
   - exponential_
   - geometric_
-  - linalg_vector_norm
-  - linalg_vector_norm.out
   - log_normal_
   - logit
   - logit_
@@ -2005,6 +2016,7 @@ tocpu:
   - narrow_copy.out
   - poisson
   - polar.out
+  - real
   - replication_pad3d_backward.grad_input
   - replication_pad3d_backward
   - repeat_interleave.Tensor
@@ -2066,8 +2078,6 @@ tocpu:
   - fractional_max_pool2d
   - fractional_max_pool2d_backward.grad_input
   - fractional_max_pool2d_backward
-  - replication_pad3d.out
-  - replication_pad3d
   - logit_backward.grad_input
   - logit_backward
   - orgqr.out
@@ -2120,8 +2130,6 @@ unsupported:
   - linalg_eigh.eigvals
   - linalg_eigvalsh
   - linalg_eigvalsh.out
-  - linalg_solve_triangular.out
-  - linalg_solve_triangular
   - linalg_lstsq
   - linalg_lstsq.out
   - special_entr
@@ -2296,6 +2304,10 @@ custom:
     impl_ns: acl_op
   - func: npu_multi_head_attention_backward(Tensor query, Tensor key, Tensor value, Tensor query_weight, Tensor key_weight, Tensor value_weight, Tensor out_proj_weight, Tensor? query_bias, Tensor? key_bias, Tensor? value_bias, Tensor? out_proj_bias, Tensor query_res, Tensor key_res, Tensor value_res, Tensor attn_scores, Tensor attn_res, Tensor context, Tensor y_grad, Tensor dropout_mask, int attn_head_num, int attn_dim_per_head, int src_len, int tgt_len, float dropout_prob, bool softmax_use_float) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
+  - func: npu_flash_attention(Tensor query, Tensor key, Tensor value, int head_num, str input_layout, Tensor? pse=None, Tensor? padding_mask=None, Tensor? atten_mask=None, float scale=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int inner_precise=1, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
+    impl_ns: op_api
+  - func: npu_flash_attention_grad(Tensor query, Tensor key, Tensor value, Tensor dy, int head_num, str input_layout, *, Tensor? pse=None, Tensor? padding_mask=None, Tensor? atten_mask=None, Tensor? softmax_max=None, Tensor? softmax_sum=None, Tensor? softmax_in=None, Tensor? attention_in=None, float scale_value=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int inner_precise=1, int seed=0, int offset=0, int numels=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor)
+    impl_ns: op_api
   - func: npu_dropout_gen_mask(int[] size, float p, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     impl_ns: acl_op
     tags: nondeterministic_seeded
@@ -2322,7 +2334,7 @@ custom:
   - func: slow_conv_dilated2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)
     impl_ns: acl_op, op_api
   - func: slow_conv_transpose2d_backward(Tensor grad_output, Tensor self, Tensor weight, int[2] kernel_size, int[2] stride, int[2] padding, int[2] output_padding, int[2] dilation, bool[3] output_mask) -> (Tensor grad_input, Tensor grad_weight, Tensor grad_bias)
-    impl_ns: acl_op
+    impl_ns: acl_op, op_api
   - func: npu_lstm_cell_backward(Tensor? grady, Tensor? gradh, Tensor? gradc, Tensor input, Tensor w_ih, Tensor w_hh, Tensor h, Tensor c, Tensor y_output, Tensor h_output, Tensor c_output, Tensor i, Tensor j, Tensor f, Tensor o, Tensor tanhc) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
   - func: batch_norm_reduce(Tensor input, float eps) -> (Tensor, Tensor)
@@ -2421,4 +2433,26 @@ custom:
   - func: _npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> (Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_binary_cross_entropy_with_logits_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight=None, Tensor? pos_weight=None, int reduction=Mean) -> Tensor
+    impl_ns: acl_op
+  - func: npu_convolution_transpose_backward(Tensor input, Tensor grad, Tensor weight, int[] padding, int[] output_padding, int[] stride, int[] dilation, int groups, bool[3] grad_input_mask) -> (Tensor, Tensor, Tensor)
+    impl_ns: acl_op
+  - func: npu_scaled_masked_softmax_backward(Tensor y_grad, Tensor y, Tensor mask, Scalar scale, bool fixed_triu_mask) -> Tensor
+    impl_ns: acl_op
+  - func: npu_dtype_cast_backward(Tensor grad, ScalarType dtype) -> Tensor
+    impl_ns: acl_op, op_api
+  - func: npu_confusion_transpose_backward(Tensor grad, int[] perm, int[] shape, bool transpose_first) -> Tensor
+    impl_ns: acl_op
+  - func: npu_max_backward(Tensor grad, int dim, Tensor indices, int[] sizes, bool keepdim) -> Tensor
+    impl_ns: acl_op
+  - func: npu_min_backward(Tensor grad, int dim, Tensor indices, int[] sizes, bool keepdim) -> Tensor
+    impl_ns: acl_op
+  - func: npu_ps_roi_pooling_backward(Tensor output_grad, Tensor rois, float spatial_scale, int group_size, int output_dim, int[] input_size) -> Tensor
+    impl_ns: acl_op
+  - func: npu_bmm_v2_mat1_backward(Tensor grad, Tensor mat1, Tensor mat2, int[] size) -> Tensor
+    impl_ns: acl_op
+  - func: npu_bmm_v2_mat2_backward(Tensor grad, Tensor mat1, Tensor mat2, int[] size) -> Tensor
+    impl_ns: acl_op
+  - func: selu_backward(Tensor grad_output, Tensor result) -> Tensor
+    impl_ns: acl_op
+  - func: npu_lstm_data_backward(Tensor? grady_opt, Tensor? gradh_opt, Tensor? gradc_opt, Tensor input, Tensor batch_sizes, Tensor weight, Tensor bias, Tensor init_h, Tensor init_c, Tensor y, Tensor h, Tensor c, Tensor i, Tensor j, Tensor f, Tensor o, Tensor tanhc, bool flag_direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op

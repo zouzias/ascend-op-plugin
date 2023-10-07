@@ -476,8 +476,6 @@ official:
    impl_ns: acl_op, op_api
  - func: complex.out(Tensor real, Tensor imag, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
- - func: real(Tensor(a) self) -> Tensor(a)
-   impl_ns: acl_op, op_api
  - func: ctc_loss.IntList(Tensor log_probs, Tensor targets, int[] input_lengths, int[] target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor
    impl_ns: acl_op
  - func: ctc_loss.Tensor(Tensor log_probs, Tensor targets, Tensor input_lengths, Tensor target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor
@@ -840,6 +838,10 @@ official:
    impl_ns: acl_op
  - func: linalg_qr.out(Tensor self, str mode='reduced', *, Tensor(a!) Q, Tensor(b!) R) -> (Tensor(a!) Q, Tensor(b!) R)
    impl_ns: acl_op
+ - func: linalg_solve_triangular(Tensor self, Tensor B, *, bool upper, bool left=True, bool unitriangular=False) -> Tensor
+   impl_ns: op_api
+ - func: linalg_solve_triangular.out(Tensor self, Tensor B, *, bool upper, bool left=True, bool unitriangular=False, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: op_api
  - func: linspace(Scalar start, Scalar end, int steps, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
    impl_ns: acl_op
  - func: linspace.out(Scalar start, Scalar end, int steps, *, Tensor(a!) out) -> Tensor(a!)
@@ -1315,6 +1317,10 @@ official:
  - func: replication_pad2d_backward(Tensor grad_output, Tensor self, SymInt[4] padding) -> Tensor
    impl_ns: acl_op
  - func: replication_pad2d_backward.grad_input(Tensor grad_output, Tensor self, SymInt[4] padding, *, Tensor(a!) grad_input) -> Tensor(a!)
+   impl_ns: acl_op
+ - func: replication_pad3d(Tensor self, SymInt[6] padding) -> Tensor
+   impl_ns: acl_op
+ - func: replication_pad3d.out(Tensor self, SymInt[6] padding, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: roll(Tensor self, int[1] shifts, int[1] dims=[]) -> Tensor
    impl_ns: acl_op
@@ -1836,6 +1842,18 @@ official:
    impl_ns: op_api
  - func: _foreach_addcmul.ScalarList(Tensor[] input, Tensor[] tensor1, Tensor[] tensor2, Scalar[] scalars) -> Tensor[]
    impl_ns: op_api
+ - func: _foreach_exp_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_exp(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_neg(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_neg_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: native_group_norm(Tensor input, Tensor? weight, Tensor? bias, int N, int C, int HxW, int group, float eps) -> (Tensor, Tensor, Tensor)
+   impl_ns: acl_op
+ - func: native_group_norm_backward(Tensor grad_out, Tensor input, Tensor mean, Tensor rstd, Tensor? weight, int N, int C, int HxW, int group, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
+   impl_ns: acl_op
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
@@ -1843,6 +1861,18 @@ symint:
  - func: embedding_backward(Tensor grad, Tensor indices, SymInt num_weights, SymInt padding_idx, bool scale_grad_by_freq, bool sparse) -> Tensor
    impl_ns: acl_op
  - func: _embedding_bag_backward(Tensor grad, Tensor indices, Tensor offsets, Tensor offset2bag, Tensor bag_size, Tensor maximum_indices, SymInt num_weights, bool scale_grad_by_freq, int mode, bool sparse, Tensor? per_sample_weights, int padding_idx=-1) -> Tensor
+   impl_ns: acl_op
+ - func: npu_confusion_transpose_backward(Tensor grad, int[] perm, SymInt[] shape, bool transpose_first) -> Tensor
+   impl_ns: acl_op
+ - func: npu_max_backward(Tensor grad, int dim, Tensor indices, SymInt[] sizes, bool keepdim) -> Tensor
+   impl_ns: acl_op
+ - func: npu_min_backward(Tensor grad, int dim, Tensor indices, SymInt[] sizes, bool keepdim) -> Tensor
+   impl_ns: acl_op
+ - func: npu_ps_roi_pooling_backward(Tensor output_grad, Tensor rois, float spatial_scale, int group_size, int output_dim, SymInt[] input_size) -> Tensor
+   impl_ns: acl_op
+ - func: npu_bmm_v2_mat1_backward(Tensor grad, Tensor mat1, Tensor mat2, SymInt[] size) -> Tensor
+   impl_ns: acl_op
+ - func: npu_bmm_v2_mat2_backward(Tensor grad, Tensor mat1, Tensor mat2, SymInt[] size) -> Tensor
    impl_ns: acl_op
 
 tocpu:
@@ -1858,9 +1888,7 @@ tocpu:
   - _fft_c2r.out
   - _fft_c2c
   - _fft_c2c.out
-  - _foreach_exp
   - _foreach_zero_
-  - _foreach_exp_
   - _foreach_abs
   - _foreach_abs_
   - _foreach_acos
@@ -1887,8 +1915,6 @@ tocpu:
   - _foreach_log1p_
   - _foreach_log2
   - _foreach_log2_
-  - _foreach_neg
-  - _foreach_neg_
   - _foreach_tan
   - _foreach_tan_
   - _foreach_tanh
@@ -1942,6 +1968,7 @@ tocpu:
   - narrow_copy.out
   - poisson
   - polar.out
+  - real
   - replication_pad3d_backward.grad_input
   - replication_pad3d_backward
   - repeat_interleave.Tensor
@@ -2010,8 +2037,6 @@ tocpu:
   - fractional_max_pool2d
   - fractional_max_pool2d_backward.grad_input
   - fractional_max_pool2d_backward
-  - replication_pad3d.out
-  - replication_pad3d
   - logit_backward.grad_input
   - logit_backward
   - orgqr.out
@@ -2065,8 +2090,6 @@ unsupported:
   - linalg_eigh.eigvals
   - linalg_eigvalsh
   - linalg_eigvalsh.out
-  - linalg_solve_triangular.out
-  - linalg_solve_triangular
   - linalg_lstsq
   - linalg_lstsq.out
   - special_entr
@@ -2343,6 +2366,10 @@ custom:
     impl_ns: acl_op
   - func: npu_multi_head_attention(Tensor query, Tensor key, Tensor value, Tensor query_weight, Tensor key_weight, Tensor value_weight, Tensor attn_mask, Tensor out_proj_weight, Tensor? query_bias, Tensor? key_bias, Tensor? value_bias, Tensor? out_proj_bias, Tensor? dropout_mask, int attn_head_num, int attn_dim_per_head, int src_len, int tgt_len, float dropout_prob, bool softmax_use_float) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
+  - func: npu_fusion_attention(Tensor query, Tensor key, Tensor value, int head_num, str input_layout, Tensor? pse=None, Tensor? padding_mask=None, Tensor? atten_mask=None, float scale=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int inner_precise=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
+    impl_ns: op_api
+  - func: npu_fusion_attention_grad(Tensor query, Tensor key, Tensor value, Tensor dy, int head_num, str input_layout, *, Tensor? pse=None, Tensor? padding_mask=None, Tensor? atten_mask=None, Tensor? softmax_max=None, Tensor? softmax_sum=None, Tensor? softmax_in=None, Tensor? attention_in=None, float scale_value=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int inner_precise=0, int seed=0, int offset=0, int numels=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor)
+    impl_ns: op_api
   - func: npu_dropout_do_mask(Tensor self, Tensor mask, float p) -> (Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> Tensor
@@ -2352,4 +2379,32 @@ custom:
   - func: npu_fused_attention_score(Tensor query_layer, Tensor key_layer, Tensor value_layer, Tensor attention_mask, Scalar scale, float keep_prob, bool query_transpose=False, bool key_transpose=False, bool bmm_score_transpose_a=False, bool bmm_score_transpose_b=False, bool value_transpose=False, bool dx_transpose=False) -> Tensor
     impl_ns: acl_op
   - func: _npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> (Tensor, Tensor)
+    impl_ns: acl_op
+  - func: npu_convolution_transpose_backward(Tensor input, Tensor grad, Tensor weight, int[] padding, int[] output_padding, int[] stride, int[] dilation, int groups, bool[3] grad_input_mask) -> (Tensor, Tensor, Tensor)
+    impl_ns: acl_op
+  - func: npu_scaled_masked_softmax_backward(Tensor y_grad, Tensor y, Tensor mask, Scalar scale, bool fixed_triu_mask) -> Tensor
+    impl_ns: acl_op
+  - func: npu_dtype_cast_backward(Tensor grad, ScalarType dtype) -> Tensor
+    impl_ns: acl_op
+  - func: npu_binary_cross_entropy_with_logits_backward(Tensor grad_output, Tensor self, Tensor target, Tensor? weight_opt, Tensor? pos_weight_opt, int reduction) -> Tensor
+    impl_ns: acl_op
+  - func: npu_confusion_transpose_backward(Tensor grad, int[] perm, SymInt[] shape, bool transpose_first) -> Tensor
+    impl_ns: acl_op
+  - func: npu_max_backward(Tensor grad, int dim, Tensor indices, SymInt[] sizes, bool keepdim) -> Tensor
+    impl_ns: acl_op
+  - func: npu_min_backward(Tensor grad, int dim, Tensor indices, SymInt[] sizes, bool keepdim) -> Tensor
+    impl_ns: acl_op
+  - func: npu_ps_roi_pooling_backward(Tensor output_grad, Tensor rois, float spatial_scale, int group_size, int output_dim, SymInt[] input_size) -> Tensor
+    impl_ns: acl_op
+  - func: npu_bmm_v2_mat1_backward(Tensor grad, Tensor mat1, Tensor mat2, SymInt[] size) -> Tensor
+    impl_ns: acl_op
+  - func: npu_bmm_v2_mat2_backward(Tensor grad, Tensor mat1, Tensor mat2, SymInt[] size) -> Tensor
+    impl_ns: acl_op
+  - func: selu_backward(Tensor grad_output, Tensor result) -> Tensor
+    impl_ns: acl_op
+  - func: npu_lstm_data_backward(Tensor? grady_opt, Tensor? gradh_opt, Tensor? gradc_opt, Tensor input, Tensor batch_sizes, Tensor weight, Tensor bias, Tensor init_h, Tensor init_c, Tensor y, Tensor h, Tensor c, Tensor i, Tensor j, Tensor f, Tensor o, Tensor tanhc, bool flag_direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
+    impl_ns: acl_op
+  - func: l1_loss_backward(Tensor grad_output, Tensor self, Tensor target, int reduction) -> Tensor
+    impl_ns: acl_op
+  - func: kl_div_backward(Tensor grad_output, Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
     impl_ns: acl_op

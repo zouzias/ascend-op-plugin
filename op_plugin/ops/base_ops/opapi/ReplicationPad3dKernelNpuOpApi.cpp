@@ -20,22 +20,23 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor real(const at::Tensor& self) {
-  DO_COMPATIBILITY(aclnnReal, acl_op::real(self));
+at::Tensor& replication_pad3d_out(const at::Tensor& self, at::IntArrayRef padding, at::Tensor& out)
+{
+  DO_COMPATIBILITY(aclnnReplicationPad3d, acl_op::replication_pad3d_out(self, padding, out));
+  auto output_size = op_infer::replication_pad3d_npu_out_size(self, padding);
+  npu_preparation::check_tensor({self}, out, self, output_size);
+  EXEC_NPU_CMD(aclnnReplicationPad3d, self, padding, out);
+  return out;
+}
 
-  auto dtype = self.dtype();
-  if (self.dtype() == at::ScalarType::ComplexDouble) {
-    dtype = at::ScalarType::Double;
-  } else if (self.dtype() == at::ScalarType::ComplexFloat) {
-    dtype = at::ScalarType::Float;
-  } else if (self.dtype() == at::ScalarType::ComplexHalf) {
-    dtype = at::ScalarType::Half;
-  }
-
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(dtype));
-
-  EXEC_NPU_CMD(aclnnReal, self, result);
-  return result;
+at::Tensor replication_pad3d(const at::Tensor& self, at::IntArrayRef padding)
+{
+  DO_COMPATIBILITY(aclnnReplicationPad3d, acl_op::replication_pad3d(self, padding));
+  auto output_size = op_infer::replication_pad3d_npu_out_size(self, padding);
+  at::Tensor out = npu_preparation::apply_tensor_without_format(self, output_size);
+  EXEC_NPU_CMD(aclnnReplicationPad3d, self, padding, out);
+  return out;
 }
 
 }  // namespace op_api
+
