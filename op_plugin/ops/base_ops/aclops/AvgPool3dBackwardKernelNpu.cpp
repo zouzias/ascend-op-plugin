@@ -45,6 +45,8 @@ void avg_pool3d_backward_out_nocheck(
     grad_output = grad_output.unsqueeze(0);
   }
 
+  TORCH_CHECK(paddingss.size() >= 3, "padding length shoud be at least 3");
+
   c10::SmallVector<int64_t, N> dim_list(input.sizes());
   c10::SmallVector<int64_t, N> pads =
       {paddingss[0], paddingss[0], paddingss[1], paddingss[1], paddingss[2], paddingss[2]};
