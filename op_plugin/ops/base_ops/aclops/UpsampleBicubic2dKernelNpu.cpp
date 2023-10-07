@@ -76,6 +76,11 @@ at::Tensor& upsample_bicubic2d_out(
     c10::optional<double> scales_h,
     c10::optional<double> scales_w,
     at::Tensor& result) {
+  TORCH_CHECK(self.dim() >= 2, "The self shoud be at least 2D, but self got", self.dim());
+  TORCH_CHECK(output_size.size() = 2, 
+      "It is expected output_size equals to 2, but got size ",
+      output_size.size());
+
   int64_t N = self.size(0);
   int64_t C = self.size(1);
   int64_t H = output_size[0];
@@ -105,6 +110,11 @@ at::Tensor upsample_bicubic2d(
     bool align_corners,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w) {
+
+  TORCH_CHECK(self.dim() >= 2, "The self shoud be at least 2D, but self got", self.dim());
+  TORCH_CHECK(output_size.size() = 2, 
+      "It is expected output_size equals to 2, but got size ",
+      output_size.size());
   int64_t N = self.size(0);
   int64_t C = self.size(1);
   int64_t H = output_size[0];
