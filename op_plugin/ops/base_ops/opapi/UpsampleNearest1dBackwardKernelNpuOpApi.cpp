@@ -34,7 +34,8 @@ at::Tensor& upsample_nearest1d_backward_out(
       grad_input,
       grad_output,
       input_size);
-  double scales_attr = scales.value_or(-1);
+  constexpr int DEFAULT_SCALES = -1;
+  double scales_attr = scales.value_or(DEFAULT_SCALES);
   EXEC_NPU_CMD(aclnnUpsampleNearest1dBackward, grad_output, output_size, input_size, scales_attr, grad_input);
   return grad_input;
 }
@@ -47,7 +48,8 @@ at::Tensor upsample_nearest1d_backward(
   DO_COMPATIBILITY(aclnnUpsampleNearest1dBackward,
                    acl_op::upsample_nearest1d_backward(grad_output, output_size, input_size, scales));
   at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output, input_size);
-  double scales_attr = scales.value_or(-1);
+  constexpr int DEFAULT_SCALES = -1;
+  double scales_attr = scales.value_or(DEFAULT_SCALES);
   EXEC_NPU_CMD(aclnnUpsampleNearest1dBackward, grad_output, output_size, input_size, scales_attr,
                grad_input);
   return grad_input;
