@@ -23,16 +23,8 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Scalar& other) {
-  auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
-  if (!other.isFloatingPoint()) {
-    unified_result.common_type = self.scalar_type();
-    if (self.scalar_type() == at::kBool) {
-      unified_result.common_type = other.type();
-    }
-  }
   at_npu::native::OpCommand cmd;
   cmd.Name("Mul")
-      .Expect(unified_result)
       .Input(self)
       .Input(other, self.scalar_type())
       .Output(result)
@@ -46,10 +38,8 @@ at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, cons
   } else if (npu_preparation::IsCPUScalar(self)) {
     mul_out_npu_nocheck(result, other, self.item());
   } else {
-    auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
     at_npu::native::OpCommand cmd;
     cmd.Name("Mul")
-        .Expect(unified_result)
         .Input(self)
         .Input(other)
         .Output(result)
@@ -75,8 +65,19 @@ at::Tensor& mul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   if (calculate_type == at::kBool) {
     calculate_type = at::kFloat;
   }
-  at::Tensor self_cast = (self.scalar_type() == calculate_type) ? self : self.to(calculate_type);
-  at::Tensor other_cast = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
+  auto self_dtype = self.scalar_type();
+  auto other_dtype = other.scalar_type();
+
+  at::Tensor self_cast;
+  at::Tensor other_cast;
+  if ((self_dtype == at::kFloat && other_dtype == at::kHalf) ||
+      (self_dtype == at::kHalf && other_dtype == at::kFloat)) {
+    self_cast = self;
+    other_cast = other;
+  } else {
+    self_cast = (self_dtype == calculate_type) ? self : self.to(calculate_type);
+    other_cast = (other_dtype == calculate_type) ? other : other.to(calculate_type);
+  }
 
   at::Tensor result_cast = (result_type == calculate_type) ? result :
       at_npu::native::custom_ops::npu_dtype_cast(result, calculate_type);
@@ -102,8 +103,19 @@ at::Tensor mul(const at::Tensor& self, const at::Tensor& other) {
     calculate_type = at::kFloat;
   }
 
-  at::Tensor self_cast = (self.scalar_type() == calculate_type) ? self : self.to(calculate_type);
-  at::Tensor other_cast = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
+  auto self_dtype = self.scalar_type();
+  auto other_dtype = other.scalar_type();
+
+  at::Tensor self_cast;
+  at::Tensor other_cast;
+  if ((self_dtype == at::kFloat && other_dtype == at::kHalf) ||
+      (self_dtype == at::kHalf && other_dtype == at::kFloat)) {
+    self_cast = self;
+    other_cast = other;
+  } else {
+    self_cast = (self_dtype == calculate_type) ? self : self.to(calculate_type);
+    other_cast = (other_dtype == calculate_type) ? other : other.to(calculate_type);
+  }
 
   bool is_self_wrapped = npu_preparation::is_scalar_wrapped_to_tensor(self_cast) || npu_preparation::IsCPUScalar(self_cast);
   at::Tensor output_tensor = is_self_wrapped ? other_cast : self_cast;
