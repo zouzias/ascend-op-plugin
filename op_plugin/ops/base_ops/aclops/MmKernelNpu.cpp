@@ -22,7 +22,6 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using format_helper = at_npu::native::FormatHelper;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
@@ -190,7 +189,6 @@ int64_t ceil_div(int64_t x, int64_t y) {
   TORCH_CHECK(y != 0, "Error, zero division.");
   return (x + y - 1) / y;
 }
-
 
 at::Tensor& mm_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& mat2) {
   const auto& self_desc = torch_npu::NPUBridge::GetNpuStorageImplDesc(self);

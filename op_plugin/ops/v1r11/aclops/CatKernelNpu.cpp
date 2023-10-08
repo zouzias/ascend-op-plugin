@@ -24,7 +24,6 @@
 namespace acl_op {
 using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {

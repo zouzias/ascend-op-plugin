@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 at::Tensor kl_div_backward(
     const at::Tensor& grad_output,

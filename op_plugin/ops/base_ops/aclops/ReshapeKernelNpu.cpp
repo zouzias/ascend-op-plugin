@@ -21,7 +21,6 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
-using calcu_op_util = at_npu::native::CalcuOpUtil;
 
 at::Tensor& npu_reshape_out(
     const at::Tensor& src,

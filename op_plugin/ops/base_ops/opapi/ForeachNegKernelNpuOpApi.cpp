@@ -19,7 +19,6 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-using npu_calcu_util = at_npu::native::CalcuOpUtil;
 
 void _foreach_neg_(const at::TensorList self)
 {
