@@ -120,6 +120,7 @@ void _amp_foreach_non_finite_check_and_unscale_(at::TensorList scaled_grads, at:
   bool is_finite = !amp_foreach_non_finite_check(scaled_grads);
   if (!is_finite) {
     op_api::ones_out(1, found_inf);
+    return;
   }
 
   auto expected_device = scaled_grads[0].device();
