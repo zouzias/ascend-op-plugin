@@ -31,6 +31,7 @@ at::Tensor& log_softmax_nocheck(
   return result;
 }
 
+// to test
 at::Tensor log_softmax_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
