@@ -92,8 +92,7 @@ at::Tensor& all_out(const at::Tensor& self, at::Tensor& result) {
       result,
       result,
       output_size);
-  auto dim_list = op_plugin::utils::get_dimlist_for_tensor(self);
-
+    c10::SmallVector<int64_t, N> dim_list = op_plugin::utils::get_dimlist_for_tensor(self);
   return all_out_nocheck(result, self, dim_list, false);
 }
 
