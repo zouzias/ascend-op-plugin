@@ -763,17 +763,16 @@ c10::SmallVector<int64_t, SIZE> conv_depthwise2d_npu_output_size(
   int64_t stride_num = stride.size();
   int64_t padding_num = padding.size();
   int64_t dilation_num = dilation.size();
+  auto weight_size = weight.sizes().slice(2);
   TORCH_CHECK(self_num == 4 && weight_num == 4, "self and weight should be 4D");
   TORCH_CHECK(kernel_size_num == 2 && stride_num == 2 && padding_num == 2 && dilation_num == 2,
               "Attr length should be 2");
-  TORCH_CHECK(kernel_size == weight.sizes().slice(2),
-              "kernel size should be equal to the last 2 dim of weight");
   int64_t N = self.size(0);
   int64_t Co = weight.size(0);
   int64_t H = self.size(2);
   int64_t W = self.size(3);
-  int64_t Ho = (H + 2 * padding[0] - dilation[0] * (kernel_size[0] - 1) - 1) / stride[0] + 1;
-  int64_t Wo = (W + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1) / stride[1] + 1;
+  int64_t Ho = (H + 2 * padding[0] - dilation[0] * (weight_size[0] - 1) - 1) / stride[0] + 1;
+  int64_t Wo = (W + 2 * padding[1] - dilation[1] * (weight_size[1] - 1) - 1) / stride[1] + 1;
   c10::SmallVector<int64_t, SIZE> output_size = {N, Co, Ho, Wo};
   return output_size;
 }
