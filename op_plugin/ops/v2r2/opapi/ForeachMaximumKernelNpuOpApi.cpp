@@ -74,6 +74,7 @@ std::vector<at::Tensor> _foreach_maximum(at::TensorList tensors, const at::Scala
 void _foreach_maximum_(at::TensorList tensors, const at::Scalar& scalar)
 {
     at::native::check_foreach_api_restrictions(tensors);
+
     if (!at::native::can_use_fast_route(tensors, scalar, false)) {
         return at::native::foreach_tensor_clamp_min_scalar_kernel_slow_(tensors, scalar);
     }

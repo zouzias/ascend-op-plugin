@@ -25,6 +25,7 @@ std::vector<at::Tensor> _foreach_add(const at::TensorList self, const at::Scalar
         !at::native::can_use_fast_route(self, scalar, false)) {
         return at::native::foreach_tensor_add_scalar_kernel_slow(self, scalar);
     }
+
     auto scalar_type = self[0].scalar_type();
     if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
         TORCH_CHECK(false, "input must be half, float or int32", OPS_ERROR(ErrCode::TYPE));

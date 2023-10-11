@@ -41,6 +41,7 @@ at::Tensor &inplace_mul_out_npu_no_check(at::Tensor &self, const at::Tensor &oth
     } else {
         EXEC_NPU_CMD(aclnnInplaceMul, self, other);
     }
+
     return self;
 }
 

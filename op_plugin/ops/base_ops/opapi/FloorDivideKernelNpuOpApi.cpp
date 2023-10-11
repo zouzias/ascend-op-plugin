@@ -24,6 +24,7 @@ using npu_preparation = at_npu::native::OpPreparation;
  * Different from Pytorch1.11 for torch.floor_divide() using truncation division,
  * hostapi are corrected to use floor division.
  */
+
 static at::Tensor& floor_divide_out_npu_opapi(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
   // executing the NPU operator
   if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {

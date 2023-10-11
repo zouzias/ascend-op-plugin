@@ -42,6 +42,7 @@ static at::Tensor &add_out_npu_nocheck(
     } else {
         EXEC_NPU_CMD(aclnnAdd, self, other, alpha, result);
     }
+
     return result;
 }
 

@@ -68,6 +68,7 @@ void _foreach_div_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars)
 void _foreach_div_(const at::TensorList self, const at::Scalar &scalar)
 {
     at::native::check_foreach_api_restrictions(self);
+
     if (!at_npu::native::env::CheckJitDisable() ||
         !at::native::can_use_fast_route(self, scalar, true)) {
         return at::native::foreach_tensor_div_scalar_kernel_slow_(self, scalar);

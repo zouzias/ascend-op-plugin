@@ -36,6 +36,7 @@ at::Tensor &maximum_out(const at::Tensor &self, const at::Tensor &other, at::Ten
 at::Tensor maximum(const at::Tensor &self, const at::Tensor &other)
 {
     DO_COMPATIBILITY(aclnnMaximum, acl_op::maximum(self, other));
+
     at::Tensor cp_other = other;
     if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
         at::Scalar scalar = other.item();

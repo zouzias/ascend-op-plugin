@@ -23,6 +23,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor& logical_or_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result)
 {
     DO_COMPATIBILITY(aclnnLogicalOr, acl_op::logical_or_out(self, other, result));
+
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     npu_preparation::check_tensor({self, other}, result, output_size);
     EXEC_NPU_CMD(aclnnLogicalOr, self, other, result);
