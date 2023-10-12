@@ -649,6 +649,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm(
   return std::tie(output, h, c);
 }
 
+
+
 std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm(
     const at::Tensor& data,
     const at::Tensor& batch_sizes,
