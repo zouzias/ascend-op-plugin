@@ -29,7 +29,7 @@ at::Tensor _pdist_forward(const at::Tensor& self, double p) {
   if (std::isinf(p)) {
     p_float = std::numeric_limits<float>::infinity();
   } else {
-    TORCH_CHECK(p <= std::numeric_limits<float>::max(), "p dose not support float64 currently." );
+    TORCH_CHECK(p <= std::numeric_limits<float>::max(), "p dose not support float64 currently.");
     p_float = static_cast<float>(p);
   }
   auto output_size = op_infer::pdist_npu_output_size(self, p_float);
@@ -41,7 +41,7 @@ at::Tensor _pdist_forward(const at::Tensor& self, double p) {
 at::Tensor pdist(
     const at::Tensor& self,
     double p) {
-  return op_api::_pdist_forward(self, p);
+  return at::_pdist_forward(self, p);
 }
 
 } // namespace op_api

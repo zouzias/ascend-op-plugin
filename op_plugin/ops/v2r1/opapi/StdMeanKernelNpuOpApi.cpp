@@ -22,10 +22,10 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> std_mean(
-      const at::Tensor& self,
-      at::DimnameList dim,
-      const c10::optional<at::Scalar>& correction,
-      bool keepdim) {
+    const at::Tensor& self,
+    at::DimnameList dim,
+    const c10::optional<at::Scalar>& correction,
+    bool keepdim) {
   return op_api::std_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
 }
 
@@ -63,12 +63,12 @@ std::tuple<at::Tensor, at::Tensor> std_mean(
     at::OptionalIntArrayRef dim,
     bool unbiased,
     bool keepdim) {
-  return op_api::std_mean(self, at::OptionalIntArrayRef(dim),
-                          c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
+  return at::std_mean(self, at::OptionalIntArrayRef(dim),
+                      c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), keepdim);
 }
 
 std::tuple<at::Tensor, at::Tensor> std_mean(const at::Tensor& self, bool unbiased) {
-  return op_api::std_mean(self, c10::nullopt, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), false);
+  return at::std_mean(self, c10::nullopt, c10::make_optional<c10::Scalar>(unbiased ? 1 : 0), false);
 }
 
 } // namespace op_api
