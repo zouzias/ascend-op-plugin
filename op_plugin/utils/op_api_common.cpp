@@ -14,6 +14,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// murmur_hash was written by Austin Appleby, and is placed in the public
+// domain. The author hereby disclaims copyright to this source code.
+
 #include "op_api_common.h"
 
 thread_local char g_hash_buf[g_hash_buf_size];
