@@ -71,4 +71,26 @@ at::Tensor npu_clear_float_status(const at::Tensor& self) {
   }
   return result;
 }
+
+at::Tensor npu_get_float_debug_status(const at::Tensor& self)
+{
+    npu_op_command cmd;
+
+    at::Tensor out_tensor = npu_preparation::apply_tensor_with_format(
+        output_size, self.options().dtype(at::kInt), npu_preparation::get_tensor_npu_format(self));
+    cmd.Name("NPUGetFloatDebugStatus")
+        .Output(out_tensor)
+        .Run();
+    return out_tensor;
+}
+
+at::Tensor npu_clear_float_debug_status(const at::Tensor& self)
+{
+    at::Tensor result = npu_preparation::apply_tensor(self, output_size);
+    npu_op_command cmd;
+
+    cmd.Name("NPUClearFloatDebugStatus")
+        .Run();
+    return result;
+}
 } // namespace acl_op
