@@ -69,6 +69,7 @@ at::Tensor var(const at::Tensor &self, c10::optional<at::IntArrayRef> dim, c10::
     return result;
 }
 
+<<<<<<< HEAD
 at::Tensor var(const at::Tensor &self, bool unbiased)
 {
     return at::var(self, c10::nullopt, int64_t{unbiased ? 1 : 0});
@@ -94,6 +95,8 @@ std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, at::DimnameL
     return op_api::var_mean(self, dimnames_to_positions(self, dim), unbiased, keepdim);
 }
 
+=======
+>>>>>>> 9d8d6f2 (remove aten not support backward.)
 std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, c10::optional<at::IntArrayRef> dims,
                                             c10::optional<int64_t> correction, bool keepdim)
 {
@@ -111,6 +114,7 @@ std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, c10::optiona
     return std::tuple<at::Tensor, at::Tensor>(mean, var);
 }
 
+<<<<<<< HEAD
 std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, at::DimnameList dim,
                                             c10::optional<int64_t> correction, bool keepdim)
 {
@@ -128,4 +132,6 @@ std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, c10::optiona
     return at::var_mean(self, c10::optional<at::IntArrayRef>(dim), int64_t{unbiased ? 1 : 0}, keepdim);
 }
 
+=======
+>>>>>>> 9d8d6f2 (remove aten not support backward.)
 } // namespace op_api
