@@ -1203,7 +1203,7 @@ official:
  - func: ones_like(Tensor self, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None, MemoryFormat? memory_format=None) -> Tensor
    impl_ns: acl_op, op_api
  - func: pdist(Tensor self, float p=2) -> Tensor
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: pow.Scalar(Scalar self, Tensor exponent) -> Tensor
    impl_ns: acl_op, op_api
  - func: pow.Scalar_out(Scalar self, Tensor exponent, *, Tensor(a!) out) -> Tensor(a!)
@@ -1659,11 +1659,11 @@ official:
  - func: upsample_trilinear3d_backward.grad_input(Tensor grad_output, SymInt[3] output_size, SymInt[5] input_size, bool align_corners, float? scales_d=None, float? scales_h=None, float? scales_w=None, *, Tensor(a!) grad_input) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: var(Tensor self, bool unbiased=True) -> Tensor
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: var.dim(Tensor self, int[1]? dim, bool unbiased=True, bool keepdim=False) -> Tensor
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: var.names_dim(Tensor self, Dimname[1] dim, bool unbiased=True, bool keepdim=False) -> Tensor
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: var.names_out(Tensor self, Dimname[1] dim, bool unbiased=True, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: var.out(Tensor self, int[1]? dim, bool unbiased=True, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
@@ -1671,21 +1671,21 @@ official:
  - func: var.correction(Tensor self, int[1]? dim=None, *, Scalar? correction=None, bool keepdim=False) -> Tensor
    impl_ns: acl_op, op_api
  - func: var.correction_names(Tensor self, Dimname[1] dim, *, Scalar? correction=None, bool keepdim=False) -> Tensor
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: var.correction_out(Tensor self, int[1]? dim=None, *, Scalar? correction=None, bool keepdim=False, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: var.correction_names_out(Tensor self, Dimname[1] dim, *, Scalar? correction=None, bool keepdim=False, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: var_mean(Tensor self, bool unbiased=True) -> (Tensor, Tensor)
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: var_mean.dim(Tensor self, int[1]? dim, bool unbiased=True, bool keepdim=False) -> (Tensor, Tensor)
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: var_mean.names_dim(Tensor self, Dimname[1] dim, bool unbiased=True, bool keepdim=False) -> (Tensor, Tensor)
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: var_mean.correction(Tensor self, int[1]? dim=None, *, Scalar? correction=None, bool keepdim=False) -> (Tensor, Tensor)
    impl_ns: acl_op, op_api
  - func: var_mean.correction_names(Tensor self, Dimname[1] dim, *, Scalar? correction=None, bool keepdim=False) -> (Tensor, Tensor)
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: _weight_norm(Tensor v, Tensor g, int dim=0) -> Tensor
    impl_ns: acl_op
  - func: where(Tensor condition) -> Tensor[]
