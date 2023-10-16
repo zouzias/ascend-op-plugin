@@ -38,10 +38,4 @@ at::Tensor _pdist_forward(const at::Tensor& self, double p) {
   return result;
 }
 
-at::Tensor pdist(
-    const at::Tensor& self,
-    double p) {
-  return op_api::_pdist_forward(self, p);
-}
-
 } // namespace op_api
