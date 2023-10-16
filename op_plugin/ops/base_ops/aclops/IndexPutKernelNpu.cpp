@@ -18,6 +18,8 @@
 #include <ATen/native/TypeProperties.h>
 
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/AdvancedIndex.h"
 #include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
@@ -233,7 +235,39 @@ at::Tensor& index_put_aicore(
   }
   return self;
 }
-} // namespace
+
+bool is_force_aclnn(const at::Tensor& self, const at::Tensor& value) {
+  if (!at_npu::native::env::ForceNoJIT()) {
+    return false;
+  }
+  if (!at_npu::native::FormatHelper::IsOpInputBaseFormat(self) ||
+      !at_npu::native::FormatHelper::IsOpInputBaseFormat(value)) {
+    return false;
+  }
+
+  bool has_no_aclnn = false;
+  DO_COMPATIBILITY(aclnnIndexPutImpl, has_no_aclnn);
+  return true;
+}
+
+at::Tensor& call_aclnn_indexput(at::Tensor& self, const c10::List<c10::optional<at::Tensor>>& indices,
+                                const at::Tensor& value, const bool accumulate, const bool unsafe) {
+  at::Tensor temp_self = self;
+  at::Tensor temp_value = value;
+  if (self.scalar_type() == at::ScalarType::BFloat16) {
+    temp_self = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
+    temp_value = at_npu::native::custom_ops::npu_dtype_cast(value, at::ScalarType::Float);
+  }
+  op_api::_index_put_impl_(temp_self, indices, temp_value, accumulate, unsafe);
+  if (self.scalar_type() == at::ScalarType::BFloat16) {
+    temp_self = at_npu::native::custom_ops::npu_dtype_cast(temp_self, at::ScalarType::BFloat16);
+    self.copy_(temp_self);
+  } else {
+    self = temp_self;
+  }
+  return self;
+}
+}  // namespace
 
 at::Tensor index_put(
     const at::Tensor& self,
@@ -260,6 +294,11 @@ at::Tensor& _index_put_impl_(
   if (self.device().type() == at::kCPU) {
     return at::native::_index_put_impl_(self, indices, value, accumulate, unsafe);
   }
+
+  if (is_force_aclnn(self, value)) {
+    return call_aclnn_indexput(self, indices, value, accumulate, unsafe);
+  }
+
   at::native::checkIndexTensorTypes(indices);
   at::SmallVector<int64_t, N> masks;
   std::vector<at::Tensor> all_defined_indices;
