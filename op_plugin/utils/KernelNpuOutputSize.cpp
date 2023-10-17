@@ -13,6 +13,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <iostream>
+#include <string>
 
 #include "op_plugin/utils/KernelNpuOutputSize.h"
 #include <bitset>
@@ -438,6 +440,7 @@ std::vector<at::Tensor> index_expand_outplace(at::TensorList to_expand) {
   bool first = true;
   std::vector<int64_t> sizes;
   for (size_t i = 0; i < to_expand.size(); ++i) {
+    std::cout<< "to_expand " << to_expand[i] <<std::endl;
     if (!to_expand[i].defined()) {
       continue;
     } else if (first) {
@@ -447,6 +450,7 @@ std::vector<at::Tensor> index_expand_outplace(at::TensorList to_expand) {
       sizes = at::infer_size(sizes, to_expand[i].sizes());
     }
   }
+    std::cout<< "sizes " << sizes <<std::endl;
   std::vector<at::Tensor> result(to_expand.size());
   for (size_t i = 0; i < to_expand.size(); ++i) {
     if (!to_expand[i].defined()) {
@@ -482,17 +486,22 @@ c10::SmallVector<int64_t, SIZE> index_reshape(
 }
 
 c10::SmallVector<int64_t, SIZE> index_npu_output_size(const at::Tensor &self, at::TensorList indices) {
-  std::vector<at::Tensor> mid_indices = index_expand_outplace(indices);
+    std::cout<< "[wzy]test, in func index_npu_output_size." <<std::endl;
+    std::vector<at::Tensor> mid_indices = index_expand_outplace(indices);
+    std::cout<< "mid_indices " << mid_indices <<std::endl;
 
   while (mid_indices.size() < (size_t)self.dim()) {
     mid_indices.emplace_back();
   }
+    std::cout<< "self " << self <<std::endl;
   at::Tensor src = self;
   std::vector<at::Tensor> end_indices = mid_indices;
   if (!hasContiguousSubspace(mid_indices)) {
     end_indices.clear();
     std::tie(src, end_indices) = at::native::transposeToFront(self, mid_indices);
   }
+    std::cout<< "end_indices " << end_indices <<std::endl;
+    std::cout<< "src " << src <<std::endl;
 
   int64_t dims_before = 0;
   int64_t dims_after = 0;
@@ -512,20 +521,33 @@ c10::SmallVector<int64_t, SIZE> index_npu_output_size(const at::Tensor &self, at
       indexed_sizes.push_back(src.size(dim));
     }
   }
+
+    std::cout<< "indexed_sizes " << indexed_sizes <<std::endl;
+    std::cout<< "dims_before " << dims_before <<std::endl;
+    std::cout<< "dims_after " << dims_after <<std::endl;
+    std::cout<< "dims_indexed " << dims_indexed <<std::endl;
+
+    std::cout<< "replacement_shape " << replacement_shape <<std::endl;
   if (std::find(indexed_sizes.begin(), indexed_sizes.end(), 0) != indexed_sizes.end() &&
       std::find(replacement_shape.begin(), replacement_shape.end(), 0) == replacement_shape.end()) {
     TORCH_CHECK_INDEX(false, "index is out of bounds for dimension with size 0");
   }
   auto self_shape = at::DimVector(src.sizes());
+    std::cout<< "self_shape " << self_shape <<std::endl;
   int64_t end = dims_before + dims_indexed;
   self_shape.erase(self_shape.begin() + dims_before, self_shape.begin() + end);
   self_shape.insert(self_shape.begin() + dims_before, replacement_shape.begin(), replacement_shape.end());
 
+    std::cout<< "self_shape " << self_shape <<std::endl;
+
   c10::SmallVector<int64_t, SIZE> index_shape = index_reshape(end_indices, dims_before, dims_after);
   c10::SmallVector<int64_t, SIZE> outputSize = index_shape;
+    std::cout<< "index_shape " << index_shape <<std::endl;
+    std::cout<< "outputSize " << outputSize <<std::endl;
   if (index_shape != self_shape) {
     outputSize = at::infer_size(index_shape, self_shape);
   }
+    std::cout<< "outputSize " << outputSize <<std::endl;
   return outputSize;
 }
 
