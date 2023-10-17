@@ -1854,6 +1854,14 @@ official:
    impl_ns: acl_op
  - func: native_group_norm_backward(Tensor grad_out, Tensor input, Tensor mean, Tensor rstd, Tensor? weight, int N, int C, int HxW, int group, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
    impl_ns: acl_op
+ - func: _foreach_log(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_log_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
+ - func: _foreach_log10(Tensor[] tensors) -> Tensor[]
+   impl_ns: op_api
+ - func: _foreach_log10_(Tensor(a!)[] self) -> ()
+   impl_ns: op_api
 
 symint:
  - func: embedding(Tensor weight, Tensor indices, SymInt padding_idx=-1, bool scale_grad_by_freq=False, bool sparse=False) -> Tensor
@@ -1907,10 +1915,6 @@ tocpu:
   - _foreach_erfc_
   - _foreach_expm1
   - _foreach_expm1_
-  - _foreach_log
-  - _foreach_log_
-  - _foreach_log10
-  - _foreach_log10_
   - _foreach_log1p
   - _foreach_log1p_
   - _foreach_log2
