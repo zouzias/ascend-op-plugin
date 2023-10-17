@@ -91,16 +91,16 @@ def name(
     faithful_name_for_out_overloads: bool = False,
     symint_overload: bool = False,
 ) -> str:
-    name = str(func.name.name)
+    func_name = str(func.name.name)
     if symint_overload:
-        name += "_symint"
+        func_name += "_symint"
     if func.is_out_fn():
         if faithful_name_for_out_overloads:
-            name += "_outf"
+            func_name += "_outf"
         else:
-            name += "_out"
+            func_name += "_out"
 
-    return name
+    return func_name
 
 
 # Translation of "value types" in JIT schema to C++ API type.  Value
@@ -135,7 +135,8 @@ def valuetype_type(
         return NamedCType(binds, OptionalCType(elem.type))
     elif isinstance(t, ListType):
         if str(t.elem) == "bool":
-            assert t.size is not None
+            if t.size is None:
+                raise ValueError("t.size is None")
             return NamedCType(binds, ArrayCType(BaseCType(boolT), t.size))
         else:
             return None
@@ -271,11 +272,11 @@ def returntype_type(t: Type, *, mutable: bool, symint: bool = False) -> CType:
         elif t.name == BaseTy.Scalar:
             return BaseCType(scalarT)
     elif isinstance(t, ListType):
-        assert (
-            not mutable
-        ), "Native functions should never return a mutable tensor list. They should return void."
+        if mutable:
+            raise ValueError("Native functions should never return a mutable tensor list. They should return void.")
         elem = returntype_type(t.elem, mutable=False)
-        assert t.size is None, f"fixed size list returns not supported: {t}"
+        if t.size is not None:
+            raise ValueError(f"fixed size list returns not supported: {t}")
         return VectorCType(elem)
 
     raise AssertionError(f"unrecognized return type {t}")
@@ -303,28 +304,29 @@ def return_names(f: NativeFunction, *, fallback_name: str = "result") -> Sequenc
         # implicitly named self.
         # TODO: Consider incorporating this into the data model
         if f.func.name.name.inplace:
-            assert i == 0, "illegal inplace function with multiple returns"
-            name = "self"
+            if i != 0:
+                raise ValueError("illegal inplace function with multiple returns")
+            return_name = "self"
         # If we are out function, the name is the name of the
         # corresponding output function (r.name will get recorded
         # in field_name later.)
         elif f.func.is_out_fn():
-            name = f.func.arguments.out[i].name
+            return_name = f.func.arguments.out[i].name
         # If the return argument is explicitly named...
         elif r.name:
             name_conflict = any(
                 r.name == a.name for a in f.func.schema_order_arguments()
             )
             if name_conflict and not f.func.is_out_fn():
-                name = f"{r.name}_return"
+                return_name = f"{r.name}_return"
             else:
-                name = r.name
+                return_name = r.name
         # If there is no explicit name and no fallback name was passed in, we just name the output result,
         # unless it's a multi-return, in which case it's result0,
         # result1, etc (zero-indexed)
         else:
-            name = fallback_name if len(f.func.returns) == 1 else f"{fallback_name}{i}"
-        returns.append(name)
+            return_name = fallback_name if len(f.func.returns) == 1 else f"{fallback_name}{i}"
+        returns.append(return_name)
     return returns
 
 
@@ -434,7 +436,8 @@ def argument(
         else:
             default = None
             # Enforced by NativeFunction.__post_init__
-            assert "options" not in cpp_no_default_args
+            if "options" in cpp_no_default_args:
+                raise ValueError("options in cpp_no_default_args")
             if all(x.default == "None" for x in a.all()):
                 default = "{}"
             elif a.dtype.default == "long":

@@ -22,14 +22,16 @@
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
 namespace op_api {
+static const uint64_t PHILOX_DEFAULT_NUM = 10;
+
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& bernoulli_(at::Tensor& self, double p, c10::optional<at::Generator> gen) {
   DO_COMPATIBILITY(aclnnInplaceBernoulli, acl_op::bernoulli_(self, p, gen));
   auto gen_ = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen, at_npu::detail::getDefaultNPUGenerator());
-  auto pair = gen_->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  auto pair = gen_->philox_engine_inputs(PHILOX_DEFAULT_NUM);
+  const uint64_t seed = pair.first;
+  const uint64_t offset = pair.second;
 
   const c10::Scalar& pScalar = at::Scalar(p);
   EXEC_NPU_CMD(aclnnInplaceBernoulli, self, pScalar, seed, offset);
@@ -39,9 +41,9 @@ at::Tensor& bernoulli_(at::Tensor& self, double p, c10::optional<at::Generator> 
 at::Tensor& bernoulli_(at::Tensor& self, const at::Tensor& p, c10::optional<at::Generator> gen) {
   DO_COMPATIBILITY(aclnnInplaceBernoulliTensor, acl_op::bernoulli_(self, p, gen));
   auto gen_ = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen, at_npu::detail::getDefaultNPUGenerator());
-  auto pair = gen_->philox_engine_inputs(10);
-  const int64_t seed = pair.first;
-  const int64_t offset = pair.second;
+  auto pair = gen_->philox_engine_inputs(PHILOX_DEFAULT_NUM);
+  const uint64_t seed = pair.first;
+  const uint64_t offset = pair.second;
   EXEC_NPU_CMD(aclnnInplaceBernoulliTensor, self, p, seed, offset);
   return self;
 }

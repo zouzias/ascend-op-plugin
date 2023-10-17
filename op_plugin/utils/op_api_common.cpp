@@ -31,14 +31,14 @@ void add_param_to_buf(const at::Tensor &at_tensor) {
         return;
     }
     // view shape
-    MEMCPY_TO_BUF(at_tensor.sizes().data(), at_tensor.sizes().size() * sizeof(int64_t));
+    MEMCPY_TO_BUF(at_tensor.sizes().data(), static_cast<int64_t>(at_tensor.sizes().size() * sizeof(int64_t)));
     // data type
     auto st = at_tensor.scalar_type();
     MEMCPY_TO_BUF(&st, sizeof(st));
     // seperator
     MEMCPY_TO_BUF(",", 1);
     // strides
-    MEMCPY_TO_BUF(at_tensor.strides().data(), at_tensor.sizes().size() * sizeof(int64_t));
+    MEMCPY_TO_BUF(at_tensor.strides().data(), static_cast<int64_t>(at_tensor.sizes().size() * sizeof(int64_t)));
     // offset
     auto so = at_tensor.storage_offset();
     MEMCPY_TO_BUF(&so, sizeof(so));
@@ -46,9 +46,10 @@ void add_param_to_buf(const at::Tensor &at_tensor) {
     aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(st);
     c10::SmallVector<int64_t, 5> storageDims;
     if (acl_data_type != ACL_STRING) {
+        TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.");
         storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
     }
-    MEMCPY_TO_BUF(storageDims.data(), storageDims.size() * sizeof(int64_t));
+    MEMCPY_TO_BUF(storageDims.data(), static_cast<int64_t>(storageDims.size() * sizeof(int64_t)));
 
     addTensorAddrToCachedListFunc(const_cast<void*>(at_tensor.storage().data()));
 }
@@ -83,11 +84,11 @@ void add_param_to_buf(const at::Scalar &at_scalar) {
 }
 
 void add_param_to_buf(const at::IntArrayRef &at_array) {
-    MEMCPY_TO_BUF(at_array.data(), at_array.size() * sizeof(int64_t));
+    MEMCPY_TO_BUF(at_array.data(), static_cast<int64_t>(at_array.size() * sizeof(int64_t)));
 }
 
 void add_param_to_buf(const at::ArrayRef<bool> &at_array) {
-    MEMCPY_TO_BUF(at_array.data(), at_array.size() * sizeof(bool));
+    MEMCPY_TO_BUF(at_array.data(), static_cast<int64_t>(at_array.size() * sizeof(bool)));
 }
 
 void add_param_to_buf(const at::TensorList &at_tensor_list) {
@@ -127,7 +128,7 @@ void add_param_to_buf(const at::ScalarType scalar_type) {
 }
 
 void add_param_to_buf(const string& s) {
-    MEMCPY_TO_BUF(s.c_str(), s.size());
+    MEMCPY_TO_BUF(s.c_str(), static_cast<int64_t>(s.size()));
 }
 
 void add_param_to_buf() {}
@@ -206,7 +207,7 @@ uint64_t murmur_hash(const void *key, const int len, const uint32_t seed = 0xdea
     uint64_t k2 = 0;
     // because the size of a block is 16, different offsets are calculated for tail blocks
     // for different sizes
-    switch (len & 15)
+    switch (static_cast<uint64_t>(len) & 15)
     {
     case 15:
         k2 ^= ((uint64_t)tail[14]) << 48;
@@ -261,10 +262,12 @@ uint64_t murmur_hash(const void *key, const int len, const uint32_t seed = 0xdea
         k1 *= c2;
         h1 ^= k1;
         [[fallthrough]];;
+    default:
+        [[fallthrough]];;
     };
 
-    h1 ^= len;
-    h2 ^= len;
+    h1 ^= static_cast<uint64_t>(len);
+    h2 ^= static_cast<uint64_t>(len);
 
     h1 += h2;
     h2 += h1;

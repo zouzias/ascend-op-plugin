@@ -69,9 +69,9 @@ official:
  - func: _convolution(Tensor input, Tensor weight, Tensor? bias, int[] stride, int[] padding, int[] dilation, bool transposed, int[] output_padding, int groups, bool benchmark, bool deterministic, bool cudnn_enabled, bool allow_tf32) -> Tensor
    impl_ns: acl_op, op_api
  - func: _ctc_loss(Tensor log_probs, Tensor targets, int[] input_lengths, int[] target_lengths, int blank=0, bool zero_infinity=False) -> (Tensor, Tensor)
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: _ctc_loss_backward(Tensor grad, Tensor log_probs, Tensor targets, int[] input_lengths, int[] target_lengths, Tensor neg_log_likelihood, Tensor log_alpha, int blank, bool zero_infinity=False) -> Tensor
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: _cummax_helper(Tensor self, Tensor(a!) values, Tensor(b!) indices, int dim) -> ()
    impl_ns: acl_op, op_api
  - func: _cummin_helper(Tensor self, Tensor(a!) values, Tensor(b!) indices, int dim) -> ()
@@ -489,9 +489,9 @@ official:
  - func: cosh_(Tensor(a!) self) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: ctc_loss.IntList(Tensor log_probs, Tensor targets, int[] input_lengths, int[] target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: ctc_loss.Tensor(Tensor log_probs, Tensor targets, Tensor input_lengths, Tensor target_lengths, int blank=0, int reduction=Mean, bool zero_infinity=False) -> Tensor
-   impl_ns: acl_op, op_api
+   impl_ns: acl_op
  - func: cumprod.dimname_out(Tensor self, Dimname dim, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
  - func: cumprod.out(Tensor self, int dim, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
@@ -2213,9 +2213,9 @@ custom:
   - func: npu_stride_copy.out(Tensor self, int[] shape, int[] stride, Scalar storage_offset, *, Tensor(a!) out) -> Tensor(a!)
     impl_ns: acl_op
   - func: npu_roi_align(Tensor self, Tensor rois, float spatial_scale, int pooled_height, int pooled_width, int sample_num, int roi_end_mode) -> Tensor
-    impl_ns: acl_op
+    impl_ns: acl_op, op_api
   - func: npu_roi_alignbk(Tensor self, Tensor rois, int[] xdiff_shape, int pooled_width, int pooled_height, float spatial_scale, int sample_num, int? roi_end_mode=None) -> Tensor
-    impl_ns: acl_op
+    impl_ns: acl_op, op_api
   - func: npu_sort_v2.out(Tensor self, int dim=-1, bool descending=False, *, Tensor(a!) out) -> Tensor(a!)
     impl_ns: acl_op
   - func: npu_sort_v2(Tensor self, int dim=-1, bool descending=False) -> Tensor
