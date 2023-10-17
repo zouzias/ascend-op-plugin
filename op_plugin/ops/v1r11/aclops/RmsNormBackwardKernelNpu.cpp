@@ -25,7 +25,7 @@ std::tuple<at::Tensor, at::Tensor> npu_rms_norm_backward(const at::Tensor &grad,
                                                          const at::Tensor &gamma, const at::Tensor &rstd)
 {
     at::Tensor dx = npu_preparation::apply_tensor(self);
-    at::Tensor dgamma = npu_preparation::apply_tensor(gamma.sizes(), gamma.options.dtype(at::kFloat), gamma);
+    at::Tensor dgamma = npu_preparation::apply_tensor(gamma.sizes(), gamma.options().dtype(at::kFloat), gamma);
     at_npu::native::OpCommand cmd;
     cmd.Name("RmsNormGrad")
         .Input(grad, "dy")
