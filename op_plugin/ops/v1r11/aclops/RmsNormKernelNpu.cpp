@@ -37,7 +37,7 @@ std::tuple<at::Tensor, at::Tensor> npu_rms_norm(const at::Tensor &self, const at
 {
     at::Tensor y = npu_preparation::apply_tensor(self);
     auto rstd_shape = get_rstd_shape(self, gamma);
-    at::Tensor rstd = npu_preparation::apply_tensor(rstd_shape, self.options.dtype(at::kFloat), self);
+    at::Tensor rstd = npu_preparation::apply_tensor(rstd_shape, self.options().dtype(at::kFloat), self);
 
     at_npu::native::OpCommand cmd;
     cmd.Name("RmsNorm")
