@@ -24,7 +24,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 std::tuple<at::Tensor, at::Tensor> npu_rms_norm_backward(const at::Tensor& grad, 
                                                          const at::Tensor& self, 
                                                          const at::Tensor& gamma, 
-                                                         const at::Tensor& rstd) {
+                                                         const at::Tensor& rstd)
+{
   at::Tensor dx = npu_preparation::apply_tensor(self);
   at::Tensor dgamma = npu_preparation::apply_tensor(gamma.sizes(), 
                                                     gamma.options.dtype(at::kFloat), 

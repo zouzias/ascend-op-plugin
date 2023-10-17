@@ -22,19 +22,21 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-c10::SmallVector<int64_t, SIZE> get_rstd_shape(const at::Tensor &self, const at::Tensor &gamma) {
+c10::SmallVector<int64_t, SIZE> get_rstd_shape(const at::Tensor &self, const at::Tensor &gamma)
+{
     c10::SmallVector<int64_t, SIZE> ret;
     for (int64_t i = 0; i < self.dim() - gamma.dim(); i++) {
-      ret.emplace_back(self.size(i));
+        ret.emplace_back(self.size(i));
     }
     return ret;
-
 }
+
 }  // namespace
 
-std::tuple<at::Tensor, at::Tensor> npu_rms_norm(const at::Tensor& self, 
-                                                const at::Tensor& gamma, 
-                                                double epsilon) {
+std::tuple<at::Tensor, at::Tensor> npu_rms_norm(const at::Tensor& self,
+                                                const at::Tensor& gamma,
+                                                double epsilon)
+{
   at::Tensor y = npu_preparation::apply_tensor(self);
   auto rstd_shape = get_rstd_shape(self, gamma);
   at::Tensor rstd = npu_preparation::apply_tensor(rstd_shape, self.options.dtype(at::kFloat), self);
