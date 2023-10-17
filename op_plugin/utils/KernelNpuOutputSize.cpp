@@ -490,37 +490,37 @@ c10::SmallVector<int64_t, SIZE> index_npu_output_size(const at::Tensor &self, at
     std::vector<at::Tensor> mid_indices = index_expand_outplace(indices);
     std::cout<< "mid_indices " << mid_indices <<std::endl;
 
-  while (mid_indices.size() < (size_t)self.dim()) {
-    mid_indices.emplace_back();
-  }
+    while (mid_indices.size() < (size_t)self.dim()) {
+        mid_indices.emplace_back();
+    }
     std::cout<< "self " << self <<std::endl;
-  at::Tensor src = self;
-  std::vector<at::Tensor> end_indices = mid_indices;
-  if (!hasContiguousSubspace(mid_indices)) {
-    end_indices.clear();
-    std::tie(src, end_indices) = at::native::transposeToFront(self, mid_indices);
-  }
+    at::Tensor src = self;
+    std::vector<at::Tensor> end_indices = mid_indices;
+    if (!hasContiguousSubspace(mid_indices)) {
+        end_indices.clear();
+        std::tie(src, end_indices) = at::native::transposeToFront(self, mid_indices);
+    }
     std::cout<< "end_indices " << end_indices <<std::endl;
     std::cout<< "src " << src <<std::endl;
 
-  int64_t dims_before = 0;
-  int64_t dims_after = 0;
-  int64_t dims_indexed = 0;
-  c10::SmallVector<int64_t, SIZE> replacement_shape;
-  at::DimVector indexed_sizes;
-  for (size_t dim = 0; dim < end_indices.size(); dim++) {
-    if (!end_indices[dim].defined()) {
-      if (dims_indexed == 0) {
-        dims_before++;
-      } else {
-        dims_after++;
-      }
-    } else {
-      dims_indexed++;
-      replacement_shape = end_indices[dim].sizes();
-      indexed_sizes.push_back(src.size(dim));
+    int64_t dims_before = 0;
+    int64_t dims_after = 0;
+    int64_t dims_indexed = 0;
+    c10::SmallVector<int64_t, SIZE> replacement_shape;
+    at::DimVector indexed_sizes;
+    for (size_t dim = 0; dim < end_indices.size(); dim++) {
+        if (!end_indices[dim].defined()) {
+            if (dims_indexed == 0) {
+                dims_before++;
+            } else {
+                dims_after++;
+            }
+        } else {
+            dims_indexed++;
+            replacement_shape = end_indices[dim].sizes();
+            indexed_sizes.push_back(src.size(dim));
+        }
     }
-  }
 
     std::cout<< "indexed_sizes " << indexed_sizes <<std::endl;
     std::cout<< "dims_before " << dims_before <<std::endl;
@@ -528,27 +528,27 @@ c10::SmallVector<int64_t, SIZE> index_npu_output_size(const at::Tensor &self, at
     std::cout<< "dims_indexed " << dims_indexed <<std::endl;
 
     std::cout<< "replacement_shape " << replacement_shape <<std::endl;
-  if (std::find(indexed_sizes.begin(), indexed_sizes.end(), 0) != indexed_sizes.end() &&
-      std::find(replacement_shape.begin(), replacement_shape.end(), 0) == replacement_shape.end()) {
-    TORCH_CHECK_INDEX(false, "index is out of bounds for dimension with size 0");
-  }
-  auto self_shape = at::DimVector(src.sizes());
-    std::cout<< "self_shape " << self_shape <<std::endl;
-  int64_t end = dims_before + dims_indexed;
-  self_shape.erase(self_shape.begin() + dims_before, self_shape.begin() + end);
-  self_shape.insert(self_shape.begin() + dims_before, replacement_shape.begin(), replacement_shape.end());
+    if (std::find(indexed_sizes.begin(), indexed_sizes.end(), 0) != indexed_sizes.end() &&
+        std::find(replacement_shape.begin(), replacement_shape.end(), 0) == replacement_shape.end()) {
+        TORCH_CHECK_INDEX(false, "index is out of bounds for dimension with size 0");
+    }
+    auto self_shape = at::DimVector(src.sizes());
+        std::cout<< "self_shape " << self_shape <<std::endl;
+    int64_t end = dims_before + dims_indexed;
+    self_shape.erase(self_shape.begin() + dims_before, self_shape.begin() + end);
+    self_shape.insert(self_shape.begin() + dims_before, replacement_shape.begin(), replacement_shape.end());
 
-    std::cout<< "self_shape " << self_shape <<std::endl;
+        std::cout<< "self_shape " << self_shape <<std::endl;
 
-  c10::SmallVector<int64_t, SIZE> index_shape = index_reshape(end_indices, dims_before, dims_after);
-  c10::SmallVector<int64_t, SIZE> outputSize = index_shape;
-    std::cout<< "index_shape " << index_shape <<std::endl;
-    std::cout<< "outputSize " << outputSize <<std::endl;
-  if (index_shape != self_shape) {
-    outputSize = at::infer_size(index_shape, self_shape);
-  }
-    std::cout<< "outputSize " << outputSize <<std::endl;
-  return outputSize;
+    c10::SmallVector<int64_t, SIZE> index_shape = index_reshape(end_indices, dims_before, dims_after);
+    c10::SmallVector<int64_t, SIZE> outputSize = index_shape;
+        std::cout<< "index_shape " << index_shape <<std::endl;
+        std::cout<< "outputSize " << outputSize <<std::endl;
+    if (index_shape != self_shape) {
+        outputSize = at::infer_size(index_shape, self_shape);
+    }
+        std::cout<< "outputSize " << outputSize <<std::endl;
+    return outputSize;
 }
 
 c10::SmallVector<int64_t, SIZE> index_select_npu_output_size(const at::Tensor &self, int64_t dim,
