@@ -353,9 +353,11 @@ at::Tensor npu_prompt_flash_attention(
     const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
     c10::OptionalIntArrayRef actual_seq_lengths,
+    c10::OptionalIntArrayRef actual_seq_lengths_kv,
     int64_t num_heads, double scale_value,
     int64_t pre_tokens, int64_t next_tokens,
-    c10::string_view input_layout, int64_t num_key_value_heads)
+    c10::string_view input_layout, int64_t num_key_value_heads,
+    int64_t sparse_mode)
 {
     // construct the output tensor of the NPU
     auto output = npu_preparation::apply_tensor_without_format(query);
@@ -365,10 +367,11 @@ at::Tensor npu_prompt_flash_attention(
     char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
     
     auto actSeqLen = (actual_seq_lengths.has_value()) ? actual_seq_lengths.value().vec() : std::vector<at::IntArrayRef::value_type>{};
+    auto actSeqLenKv = (actual_seq_lengths_kv.has_value()) ? actual_seq_lengths_kv.value().vec() : std::vector<at::IntArrayRef::value_type>{};
 
     // dispatch hostAPI
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttention, query, key, value, padding_mask, atten_mask, actSeqLen,
-                                 num_heads, scale_value, pre_tokens, next_tokens, input_layout_ptr, num_key_value_heads, output);
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttention, query, key, value, padding_mask, atten_mask, actSeqLen, actSeqLenKv,
+                                 num_heads, scale_value, pre_tokens, next_tokens, input_layout_ptr, num_key_value_heads, sparse_mode, output);
     return output;
 }
 
