@@ -2408,3 +2408,7 @@ custom:
     impl_ns: acl_op
   - func: kl_div_backward(Tensor grad_output, Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
     impl_ns: acl_op
+  - func: npu_rms_norm(Tensor self, Tensor gamma, float epsilon=1e-06) -> (Tensor, Tensor)
+    impl_ns: acl_op
+  - func: npu_rms_norm_backward(Tensor grad, Tensor self, Tensor gamma, Tensor rstd) -> (Tensor, Tensor)
+    impl_ns: acl_op
