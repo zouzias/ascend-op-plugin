@@ -24,14 +24,14 @@ namespace {
 
 std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> nll_loss2d_npu_output_size(
     const at::Tensor& self, const at::Tensor& target, int64_t reduction, int64_t ignore_index) {
-  c10::SmallVector<int64_t, SIZE> outputSize;
-  c10::SmallVector<int64_t, SIZE> totalWeightSize;
+    c10::SmallVector<int64_t, SIZE> outputSize;
+    c10::SmallVector<int64_t, SIZE> totalWeightSize;
+    TORCH_CHECK(self.dim() >= 4, "self dim has to be more than or equal 4");
+    if (reduction == at::Reduction::None) {
+      outputSize = {self.size(0), self.size(2), self.size(3)};
+    }
 
-  if (reduction == at::Reduction::None) {
-    outputSize = {self.size(0), self.size(2), self.size(3)};
-  }
-
-  return std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>(outputSize, totalWeightSize);
+    return std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>(outputSize, totalWeightSize);
 }
 }  // namespace
 
