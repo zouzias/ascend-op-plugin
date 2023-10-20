@@ -65,11 +65,11 @@ bool check_index_aicore(const at::Tensor &self, const at::TensorList &indices, c
             }
         }
 
-        if (static_cast<int64_t>(self.dim()) == indices.size()) {
+        if (static_cast<uint64_t>(self.dim()) == indices.size()) {
             return true;
         }
 
-        if (static_cast<int64_t>(self.dim()) >= indices.size()) {
+        if (static_cast<uint64_t>(self.dim()) >= indices.size()) {
             if (masks.size() != indices.size()) {
                 return false;
             }
