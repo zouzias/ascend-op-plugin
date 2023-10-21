@@ -45,3 +45,23 @@ OP-Plugin算子插件的编译、使用依赖昇腾PyTorch Adapter。因此，�
    pip3 install --upgrade dist/torch_npu-1.11.0-cp37-cp37m-linux_aarch64.whl
    # 若用户在x86架构下安装插件，请替换为对应的whl包。
    ```
+
+
+7、2.x如图的系列提交
+
+a、op-plugin仓：aten ir
+https://gitee.com/ascend/op-plugin/pulls/793/files
+变成了：
+https://gitee.com/ascend/op-plugin/pulls/808/files
+
+b.cann仓：fa fallback
+https://gitee.com/gao-keming/canndev/blob/actk_sk/ops/built-in/op_fallback/fallback_prompt_flash_attention.cpp
+https://gitee.com/ascend/canndev/pulls/35873/files
+新的
+https://gitee.com/ascend/canndev/pulls/36133/files
+
+c、pytorch 仓 ：meta实现
+https://gitee.com/ascend/pytorch/pulls/6668
+
+d:torchair仓:convertor仓
+https://gitee.com/ascend/torchair/pulls/139
