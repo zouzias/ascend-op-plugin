@@ -314,6 +314,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     at::Tensor format_pse = format_trans(pse);
     at::Tensor format_padding_mask = format_trans(padding_mask);
     at::Tensor format_atten_mask = format_trans(atten_mask);
+    at::Tensor dtype_atten_mask =
+        (format_atten_mask.defined() && format_atten_mask.scalar_type() != at::ScalarType::Bool) ?
+        NPUNativeFunctions::npu_dtype_cast(format_atten_mask, at::ScalarType::Bool): format_atten_mask;
 
     int64_t seed;
     int64_t offset;
@@ -333,7 +336,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
 
     char* input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionScore, format_query, format_key, format_value,
-        format_pse, format_drop_mask, format_padding_mask, format_atten_mask,
+        format_pse, format_drop_mask, format_padding_mask, dtype_atten_mask,
         scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_ptr, inner_precise,
         softmax_max, softmax_sum, softmax_out, attention_score);
 
