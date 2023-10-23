@@ -1608,6 +1608,10 @@ official:
    impl_ns: acl_op, op_api
  - func: topk.values(Tensor self, int k, int dim=-1, bool largest=True, bool sorted=True, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)
    impl_ns: acl_op, op_api
+ - func: rms_norm(Tensor self, int k, int dim=-1, bool largest=True, bool sorted=True) -> (Tensor values, Tensor indices)
+   impl_ns: acl_op, op_api
+ - func: rms_norm.values(Tensor self, int k, int dim=-1, bool largest=True, bool sorted=True, *, Tensor(a!) values, Tensor(b!) indices) -> (Tensor(a!) values, Tensor(b!) indices)
+   impl_ns: acl_op, op_api
  - func: trace(Tensor self) -> Tensor
    impl_ns: acl_op, op_api
  - func: triangular_solve.X(Tensor self, Tensor A, bool upper=True, bool transpose=False, bool unitriangular=False, *, Tensor(a!) X, Tensor(b!) M) -> (Tensor(a!) solution, Tensor(b!) cloned_coefficient)
@@ -2460,3 +2464,6 @@ custom:
     impl_ns: acl_op
   - func: npu_lstm_data_backward(Tensor? grady_opt, Tensor? gradh_opt, Tensor? gradc_opt, Tensor input, Tensor batch_sizes, Tensor weight, Tensor bias, Tensor init_h, Tensor init_c, Tensor y, Tensor h, Tensor c, Tensor i, Tensor j, Tensor f, Tensor o, Tensor tanhc, bool flag_direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
+  - func: rms_norm(Tensor self, Tensor gamma, Tensor target, float epsilon=1e-6) -> (Tensor y, Tensor rstd)
+    impl_ns: acl_op, op_api
+
