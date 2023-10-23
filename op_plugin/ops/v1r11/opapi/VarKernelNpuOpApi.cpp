@@ -69,31 +69,6 @@ at::Tensor var(const at::Tensor &self, c10::optional<at::IntArrayRef> dim, c10::
     return result;
 }
 
-at::Tensor var(const at::Tensor &self, bool unbiased)
-{
-    return at::var(self, c10::nullopt, int64_t{unbiased ? 1 : 0});
-}
-
-at::Tensor var(const at::Tensor &self, at::DimnameList dim, c10::optional<int64_t> correction, bool keepdim)
-{
-    return op_api::var(self, dimnames_to_positions(self, dim), correction, keepdim);
-}
-
-at::Tensor var(const at::Tensor &self, c10::optional<at::IntArrayRef> dim, bool unbiased, bool keepdim)
-{
-    return at::var(self, dim, int64_t{unbiased ? 1 : 0}, keepdim);
-}
-
-at::Tensor var(const at::Tensor &self, at::DimnameList dim, bool unbiased, bool keepdim)
-{
-    return op_api::var(self, dimnames_to_positions(self, dim), unbiased, keepdim);
-}
-
-std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, at::DimnameList dim, bool unbiased, bool keepdim)
-{
-    return op_api::var_mean(self, dimnames_to_positions(self, dim), unbiased, keepdim);
-}
-
 std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, c10::optional<at::IntArrayRef> dims,
                                             c10::optional<int64_t> correction, bool keepdim)
 {
@@ -109,23 +84,6 @@ std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, c10::optiona
 
     EXEC_NPU_CMD(aclnnVarMean, self, dims, real_correction, keepdim, mean, var);
     return std::tuple<at::Tensor, at::Tensor>(mean, var);
-}
-
-std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, at::DimnameList dim,
-                                            c10::optional<int64_t> correction, bool keepdim)
-{
-    return op_api::var_mean(self, dimnames_to_positions(self, dim), correction, keepdim);
-}
-
-std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, bool unbiased)
-{
-    return at::var_mean(self, c10::nullopt, int64_t{unbiased ? 1 : 0});
-}
-
-std::tuple<at::Tensor, at::Tensor> var_mean(const at::Tensor &self, c10::optional<at::IntArrayRef> dim, bool unbiased,
-                                            bool keepdim)
-{
-    return at::var_mean(self, c10::optional<at::IntArrayRef>(dim), int64_t{unbiased ? 1 : 0}, keepdim);
 }
 
 } // namespace op_api
