@@ -14,7 +14,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
@@ -39,7 +38,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 std::tuple<at::Tensor, at::Tensor> rms_norm(
     const at::Tensor& self,
     const at::Tensor& gamma,
-    float epsilon) {
+    double epsilon) {
   //DO_COMPATIBILITY(aclnnRMSNorm, acl_op::rms_norm(self, gamma, epsilon));
   auto output_size = op_infer::rms_norm_npu_output_size(self, gamma, epsilon);
   at::Tensor y = npu_preparation::apply_tensor_without_format(output_size[0], self.options());

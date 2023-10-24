@@ -285,7 +285,7 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> sum_npu_output_size(const at::T
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> topk_npu_output_size(const at::Tensor& self, int64_t k, int64_t dim,
                                                                       bool largest, bool sorted);
 OP_PLUGIN_HIDDEN std::vector<c10::SmallVector<int64_t, SIZE>> rms_norm_npu_output_size(const at::Tensor &self, 
-                                                                      const at::Tensor &gamma, float epsilon);
+                                                                      const at::Tensor &gamma, double epsilon);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> trace_npu_output_size(const at::Tensor& self);
 
