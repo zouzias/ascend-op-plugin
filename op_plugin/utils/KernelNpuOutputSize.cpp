@@ -1119,7 +1119,7 @@ c10::SmallVector<int64_t, SIZE> rms_norm_npu_output_size(const at::Tensor &self,
     auto rstd_dim_num = x_dim_num - gamma_dim_num;
     auto shape = at::DimVector();
     for (int64_t i = 0; i < rstd_dim_num; i++) {
-        shape.append(x_shape[i]);
+        shape.append(x_shape[i], 1);
     }
     return [x_shape, rstd_shape];
 }
