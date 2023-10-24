@@ -41,7 +41,7 @@ std::tuple<at::Tensor, at::Tensor> rms_norm(
     const at::Tensor& gamma,
     float epsilon) {
   DO_COMPATIBILITY(aclnnRMSNorm, acl_op::rms_norm(self, gamma, epsilon));
-  auto y_size, rstd_size = op_infer::rms_norm_npu_output_size(self, gamma, epsilon);
+  auto y_size, auto rstd_size = op_infer::rms_norm_npu_output_size(self, gamma, epsilon);
   at::Tensor y = npu_preparation::apply_tensor_without_format(y_size, self.options());
   at::Tensor rstd = npu_preparation::apply_tensor_without_format(rstd_size, self.options().dtype(at::kFloat));
 
