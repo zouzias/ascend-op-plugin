@@ -2409,4 +2409,4 @@ custom:
   - func: kl_div_backward(Tensor grad_output, Tensor self, Tensor target, int reduction=Mean, *, bool log_target=False) -> Tensor
     impl_ns: acl_op
   - func: rms_norm(Tensor self, Tensor gamma, float epsilon=1e-6) -> (Tensor y, Tensor rstd)
-    impl_ns: acl_op, op_api
+    impl_ns: op_api
