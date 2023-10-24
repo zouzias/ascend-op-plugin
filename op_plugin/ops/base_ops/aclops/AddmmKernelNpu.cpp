@@ -110,7 +110,7 @@ at::Tensor& addmm_out(
     const at::Scalar& beta,
     const at::Scalar& alpha,
     at::Tensor& result) {
-    static const bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
+    static const bool is_support_nd_out = c10_npu::GetSocVersion() >= SocVersion(220);
     // k-cut is conflict with bias in mm
     bool need_to_convert_bias = !mm_check_split_k(mat1, mat2, is_support_nd_out) && self.dim() == 1;
     if (beta.toFloat() == 1.0 && alpha.toFloat() == 1.0 && need_to_convert_bias) {
