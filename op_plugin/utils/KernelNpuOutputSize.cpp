@@ -1111,7 +1111,7 @@ c10::SmallVector<int64_t, SIZE> topk_npu_output_size(const at::Tensor &self, int
 }
 
 std::vector<c10::SmallVector<int64_t, SIZE>> rms_norm_npu_output_size(const at::Tensor &self,
- const at::Tensor &gamma, double eplision)
+ const at::Tensor &gamma, double epsilon)
 {
     auto x_shape = array_to_small_vector(self.sizes());
     c10::SmallVector<int64_t, SIZE> rstd_shape;
