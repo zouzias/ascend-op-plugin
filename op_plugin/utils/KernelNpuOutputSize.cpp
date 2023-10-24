@@ -1121,7 +1121,8 @@ c10::SmallVector<int64_t, SIZE> rms_norm_npu_output_size(const at::Tensor &self,
     for (int64_t i = 0; i < rstd_dim_num; i++) {
         shape.append(x_shape[i], 1);
     }
-    return x_shape, rstd_shape;
+
+    return {x_shape, rstd_shape};
 }
 
 c10::SmallVector<int64_t, SIZE> transpose_npu_output_size(const at::Tensor &self, c10::IntArrayRef perm)
