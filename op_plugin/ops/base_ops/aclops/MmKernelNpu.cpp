@@ -147,7 +147,7 @@ bool is_transpose_inner_axis(const at::Tensor &self)
 {
     const static int64_t kInnerAxisMinBytes = 256;
     const static int64_t kInnerAxisMaxLimit = 65535;
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1 || self.dim() < 2 ||
+    if (c10_npu::GetSocVersion() < SocVersion(220) || self.dim() < 2 ||
         (self.scalar_type() != at::ScalarType::Half && self.scalar_type() != at::ScalarType::Float)) {
         return false;
     }
@@ -278,7 +278,7 @@ at::Tensor mm(const at::Tensor &self, const at::Tensor &mat2)
 
     at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
     bool need_nd_out = false;
-    static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
+    static bool is_support_nd_out = c10_npu::GetSocVersion() >= SocVersion(220);
     bool split_k = mm_check_split_k(self, mat2, is_support_nd_out);
     // check format_out of mm is NCHW. Delate after definite NLP model.
     if ((self.scalar_type() == at::ScalarType::Half)) {
