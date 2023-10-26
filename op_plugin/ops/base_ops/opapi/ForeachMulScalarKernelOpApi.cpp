@@ -13,9 +13,6 @@ std::vector<at::Tensor> _foreach_mul(const at::TensorList self, const at::Scalar
     }
 
     auto scalar_type = self[0].scalar_type();
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
-        TORCH_CHECK(false, "input must be half, float or int32");
-    }
     
     std::vector<at::Tensor> result;
     result.reserve(self.size());

@@ -18,9 +18,7 @@ std::vector<at::Tensor> _foreach_addcdiv(const at::TensorList input,
     }
 
     auto scalar_type = input[0].scalar_type();
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float) {
-        TORCH_CHECK(false, "input must be half, float");
-    }
+
     std::vector<at::Tensor> result;
     result.reserve(input.size());
     for (const at::Tensor &tensor : input) {
@@ -48,9 +46,7 @@ void _foreach_addcdiv_(const at::TensorList input,
 
     at::native::check_foreach_api_restrictions(input, tensors1, tensors2);
     auto scalar_type = input[0].scalar_type();
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float) {
-        TORCH_CHECK(false, "input must be half, float");
-    }
+
     auto scalar_tensor = npu_preparation::copy_tensor_host_to_device(scalars);
     EXEC_NPU_CMD(aclnnForeachAddcdivScalarList, input, tensors1, tensors2, scalar_tensor, input);
 }
