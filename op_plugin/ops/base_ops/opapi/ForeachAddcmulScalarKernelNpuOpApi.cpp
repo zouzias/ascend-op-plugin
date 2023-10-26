@@ -16,9 +16,6 @@ std::vector<at::Tensor> _foreach_addcmul(const at::TensorList input,
         return at::native::foreach_tensor_addcmul_scalar_slow(input, tensors1, tensors2, scalar);
     }
     auto scalar_type = input[0].scalar_type();
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
-        TORCH_CHECK(false, "input must be half, float or int32");
-    }
     std::vector<at::Tensor> result;
     result.reserve(input.size());
     for (const at::Tensor &tensor : input) {
@@ -43,9 +40,6 @@ void _foreach_addcmul_(const at::TensorList input,
         return at::native::foreach_tensor_addcmul_scalar_slow_(input, tensors1, tensors2, scalar);
     }
     auto scalar_type = input[0].scalar_type();
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
-        TORCH_CHECK(false, "input must be half, float or int32");
-    }
 
     at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, input[0].scalar_type());
     EXEC_NPU_CMD(aclnnForeachAddcmulScalar, input, tensors1, tensors2, scalar_tensor, input);

@@ -12,9 +12,6 @@ void _foreach_cos_(const at::TensorList self)
         return at::native::foreach_tensor_cos_slow_(self);
     }
     auto scalar_type = self[0].scalar_type();
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float) {
-        TORCH_CHECK(false, "input must be half or float");
-    }
     EXEC_NPU_CMD(aclnnForeachCos, self, self);
 }
 
@@ -26,9 +23,6 @@ std::vector<at::Tensor> _foreach_cos(const at::TensorList self)
     }
 
     auto scalar_type = self[0].scalar_type();
-    if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float) {
-        TORCH_CHECK(false, "input must be half or float");
-    }
 
     // construct output tensorlist
     std::vector<at::Tensor> result;
