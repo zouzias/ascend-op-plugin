@@ -44,7 +44,7 @@ std::tuple<at::Tensor, at::Tensor> npu_rms_norm(const at::Tensor &self, const at
         .Input(self, "x")
         .Input(gamma, "gamma")
         .Output(y, "y")
-        .Output(rstd, "y")
+        .Output(rstd, "rstd")
         .Attr("epsilon", static_cast<float>(epsilon))
         .Run();
 
