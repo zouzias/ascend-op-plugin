@@ -26,7 +26,7 @@ at::Tensor& index_copy_(at::Tensor& self, const int64_t dim, const at::Tensor& i
   return self;
 }
 
-at::Tensor index_copy(at::Tensor& self, const int64_t dim, const at::Tensor& index,
+at::Tensor index_copy(const at::Tensor& self, const int64_t dim, const at::Tensor& index,
                         const at::Tensor& source) {
   at::Tensor out = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(),self.options());
   EXEC_NPU_CMD(aclnnIndexCopy, self, dim, index, source, out);
