@@ -1102,6 +1102,24 @@ c10::SmallVector<int64_t, SIZE> topk_npu_output_size(const at::Tensor &self, int
     return shape;
 }
 
+std::vector<c10::SmallVector<int64_t, SIZE>> rms_norm_npu_output_size(const at::Tensor &self,
+ const at::Tensor &gamma, double epsilon)
+{
+    auto x_shape = array_to_small_vector(self.sizes());
+    c10::SmallVector<int64_t, SIZE> rstd_shape;
+    auto x_dim_num = self.dim();
+    auto gamma_dim_num = gamma.dim();
+    auto rstd_dim_num = x_dim_num - gamma_dim_num;
+    auto shape = at::DimVector();
+    for (int64_t i = 0; i < rstd_dim_num; i++) {
+        shape.append(x_shape[i], 1);
+    }
+    std::vector<c10::SmallVector<int64_t, SIZE>> output_size;
+    output_size.push_back(x_shape);
+    output_size.push_back(rstd_shape);
+    return output_size;
+}
+
 c10::SmallVector<int64_t, SIZE> transpose_npu_output_size(const at::Tensor &self, c10::IntArrayRef perm)
 {
     auto sizes = self.sizes();
