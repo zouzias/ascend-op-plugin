@@ -20,21 +20,6 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-// std::tuple<at::Tensor&, at::Tensor&> rms_norm_out(
-//     const at::Tensor& self,
-//     const at::Tensor& gamma,
-//     float eplision,
-//     at::Tensor& y,
-//     at::Tensor& rstd) {
-//   DO_COMPATIBILITY(aclnnRmsNorm, acl_op::rms_norm_out(self, gamma, eplision, y, rstd));
-//   auto output_size = op_infer::rms_norm_npu_output_size(self, gamma, eplision);
-//   npu_preparation::check_tensor({self, gamma}, y, self.scalar_type(), output_size);
-//   npu_preparation::check_tensor({self, gamma}, rstd, at::ScalarType::Float, output_size);
-
-//   EXEC_NPU_CMD(aclnnRmsNorm, self, gamma, eplision, y, rstd);
-//   return std::tuple<at::Tensor&, at::Tensor&>(y, rstd);
-// }
-
 std::tuple<at::Tensor, at::Tensor> rms_norm(
     const at::Tensor& self,
     const at::Tensor& gamma,
