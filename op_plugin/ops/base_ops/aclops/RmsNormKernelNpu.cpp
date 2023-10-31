@@ -40,21 +40,36 @@ c10::SmallVector<int64_t, SIZE> get_rstd_shape(const at::Tensor &self, const at:
 
 std::tuple<at::Tensor, at::Tensor> npu_rms_norm(const at::Tensor &self, const at::Tensor &gamma, double epsilon)
 {
-    at::Tensor y = npu_preparation::apply_tensor(self.sizes(), self.options().dtype(gamma.dtype()), self);
-    auto rstd_shape = get_rstd_shape(self, gamma);
-    at::Tensor rstd = npu_preparation::apply_tensor(rstd_shape, self.options().dtype(at::kFloat), self);
+    // at::Tensor y = npu_preparation::apply_tensor(self.sizes(), self.options().dtype(gamma.dtype()), self);
+    // auto rstd_shape = get_rstd_shape(self, gamma);
+    // at::Tensor rstd = npu_preparation::apply_tensor(rstd_shape, self.options().dtype(at::kFloat), self);
 
     at::Tensor self_cast = at_npu::native::custom_ops::npu_dtype_cast(self, at::kFloat);
 
-    at_npu::native::OpCommand cmd;
-    cmd.Name("RmsNorm")
-        .Input(self, "x")
-        .Input(gamma, "gamma")
-        .Output(y, "y")
-        .Output(rstd, "rstd")
-        .Attr("epsilon", static_cast<float>(epsilon))
-        .Run();
+    at::Tensor self_square = at::pow(self_cast, 2);
 
-    return std::make_tuple(y, rstd);
+    at::Tensor self_mean = at::mean(self_square, {self.dim() - 1}, true);
+
+    at::Scalar epsScalar(static_cast<float>(epsilon));
+    at::Tensor self_var = at::add(self_mean, epsScalar);
+
+    at::Tensor self_rstd = at::sqrt(self_var);
+
+    at::Tensor self_y = at::mul(self_cast, self_rstd);
+
+    at::Tensor self_y_cast = at_npu::native::custom_ops::npu_dtype_cast(self, gamma.dtype());
+
+    at::Tensor self_res = at::mul(self_y_cast, gamma);
+
+    // at_npu::native::OpCommand cmd;
+    // cmd.Name("RmsNorm")
+    //     .Input(self, "x")
+    //     .Input(gamma, "gamma")
+    //     .Output(y, "y")
+    //     .Output(rstd, "rstd")
+    //     .Attr("epsilon", static_cast<float>(epsilon))
+    //     .Run();
+
+    return std::make_tuple(self_res, rstd);
 }
 } // namespace acl_op
