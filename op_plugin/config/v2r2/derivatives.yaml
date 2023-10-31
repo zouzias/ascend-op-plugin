@@ -115,3 +115,6 @@
 
 - name: _npu_format_cast(Tensor self, int acl_format) -> Tensor
   self: grad
+
+- name: npu_roi_align(Tensor self, Tensor rois, float spatial_scale, int pooled_height, int pooled_width, int sample_num, int roi_end_mode) -> Tensor
+  self: npu_roi_alignbk(grad, rois, self.sym_sizes(), pooled_width, pooled_height, spatial_scale, sample_num, roi_end_mode)

@@ -1896,6 +1896,8 @@ symint:
    impl_ns: acl_op
  - func: npu_ps_roi_pooling_backward(Tensor output_grad, Tensor rois, float spatial_scale, int group_size, int output_dim, SymInt[] input_size) -> Tensor
    impl_ns: acl_op
+ - func: npu_roi_alignbk(Tensor self, Tensor rois, SymInt[] xdiff_shape, int pooled_width, int pooled_height, float spatial_scale, int sample_num, int? roi_end_mode=None) -> Tensor
+   impl_ns: acl_op, op_api
 
 custom:
   - func: npu_view_copy(Tensor(a!) self, Tensor other, bool non_blocking) -> Tensor(a!)
@@ -1968,7 +1970,7 @@ custom:
     impl_ns: acl_op
   - func: npu_roi_align(Tensor self, Tensor rois, float spatial_scale, int pooled_height, int pooled_width, int sample_num, int roi_end_mode) -> Tensor
     impl_ns: acl_op, op_api
-  - func: npu_roi_alignbk(Tensor self, Tensor rois, int[] xdiff_shape, int pooled_width, int pooled_height, float spatial_scale, int sample_num, int? roi_end_mode=None) -> Tensor
+  - func: npu_roi_alignbk(Tensor self, Tensor rois, SymInt[] xdiff_shape, int pooled_width, int pooled_height, float spatial_scale, int sample_num, int? roi_end_mode=None) -> Tensor
     impl_ns: acl_op, op_api
   - func: npu_sort_v2.out(Tensor self, int dim=-1, bool descending=False, *, Tensor(a!) out) -> Tensor(a!)
     impl_ns: acl_op
