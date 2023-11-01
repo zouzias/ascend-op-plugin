@@ -51,7 +51,7 @@ std::tuple<at::Tensor, at::Tensor> npu_rms_norm(const at::Tensor &self, const at
 
     at::Tensor self_y = at::mul(self_cast, self_rstd);
 
-    at::Tensor self_y_cast = at_npu::native::custom_ops::npu_dtype_cast(self, gamma.dtype());
+    at::Tensor self_y_cast = at_npu::native::custom_ops::npu_dtype_cast(self, gamma.scalar_type());
 
     at::Tensor self_res = at::mul(self_y_cast, gamma);
 
