@@ -22,12 +22,9 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& std_out(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    const c10::optional<c10::Scalar>& correction,
-    bool keepdim,
-    at::Tensor& result) {
+at::Tensor& std_out(const at::Tensor& self, at::OptionalIntArrayRef dim, 
+                    const c10::optional<c10::Scalar>& correction, bool keepdim, at::Tensor& result) 
+{
     DO_COMPATIBILITY(aclnnStd, acl_op::std_out(self, dim, correction, keepdim, result));
     c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
     if (dim.has_value()) {
@@ -41,11 +38,9 @@ at::Tensor& std_out(
     return result;
 }
 
-at::Tensor std(
-    const at::Tensor& self,
-    at::OptionalIntArrayRef dim,
-    const c10::optional<c10::Scalar>& correction,
-    bool keepdim) {
+at::Tensor std(const at::Tensor& self, at::OptionalIntArrayRef dim, 
+               const c10::optional<c10::Scalar>& correction, bool keepdim) 
+{
     DO_COMPATIBILITY(aclnnStd, acl_op::std(self, dim, correction, keepdim));
     c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
     if (dim.has_value()) {
