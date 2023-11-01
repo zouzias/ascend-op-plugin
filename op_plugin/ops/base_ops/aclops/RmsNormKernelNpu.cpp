@@ -47,7 +47,7 @@ std::tuple<at::Tensor, at::Tensor> npu_rms_norm(const at::Tensor &self, const at
     at::Scalar epsScalar(static_cast<float>(epsilon));
     at::Tensor self_var = at::add(self_mean, epsScalar);
 
-    at::Tensor self_rstd = at::sqrt(self_var);
+    at::Tensor self_rstd = at::rsqrt(self_var);
 
     at::Tensor self_y = at::mul(self_cast, self_rstd);
 
