@@ -2312,6 +2312,8 @@ custom:
     impl_ns: op_api
   - func: npu_geglu_grad(Tensor grad_output, Tensor self, Tensor gelu, int dim=-1, int approximate=1) -> Tensor
     impl_ns: op_api
+  - func: rms_norm(Tensor self, Tensor gamma, float epsilon=1e-6) -> (Tensor, Tensor)
+    impl_ns: op_api
   - func: npu_dropout_gen_mask(int[] size, float p, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     impl_ns: acl_op
     tags: nondeterministic_seeded
@@ -2458,8 +2460,6 @@ custom:
     impl_ns: acl_op
   - func: selu_backward(Tensor grad_output, Tensor result) -> Tensor
     impl_ns: acl_op
-  - func: rms_norm(Tensor self, Tensor gamma, float epsilon=1e-6) -> (Tensor, Tensor)
-    impl_ns: op_api
   - func: npu_lstm_data_backward(Tensor? grady_opt, Tensor? gradh_opt, Tensor? gradc_opt, Tensor input, Tensor batch_sizes, Tensor weight, Tensor bias, Tensor init_h, Tensor init_c, Tensor y, Tensor h, Tensor c, Tensor i, Tensor j, Tensor f, Tensor o, Tensor tanhc, bool flag_direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
 
