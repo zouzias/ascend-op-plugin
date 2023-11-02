@@ -15,7 +15,26 @@
 # limitations under the License.
 
 import re
+import os
+import stat
 from typing import Match, Optional, Sequence, Mapping
+
+
+def check_dir_path(file_path):
+    """
+    check file path readable.
+    """
+    file_path = os.path.realpath(file_path)
+    if not os.path.exists(file_path):
+        raise ValueError(f"The path does not exist: {file_path}")
+    if os.stat(file_path).st_uid != os.getuid():
+        check_msg = input("The path does not belong to you, do you want to continue? [y/n]")
+        if check_msg.lower() != 'y':
+            raise RuntimeError("The user choose not to contiue")
+    if os.path.islink(file_path):
+        raise RuntimeError(f"Invalid path is a soft chain: {file_path}")
+    if not os.access(file_path, os.R_OK):
+        raise RuntimeError(f"The path permission check filed: {file_path}")
 
 # match $identifier or ${identifier} and replace with value in env
 # If this identifier is at the beginning of whitespace on a line
@@ -45,6 +64,7 @@ class CodeTemplate:
 
     @staticmethod
     def from_file(filename: str) -> 'CodeTemplate':
+        check_dir_path(filename)
         with open(filename, 'r') as f:
             return CodeTemplate(f.read(), filename)
 
