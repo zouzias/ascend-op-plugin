@@ -1511,6 +1511,40 @@ small_vector repeat_interleave_npu_output_size_opapi(const at::Tensor &self, con
     return shape;
 }
 
+std::vector<c10::SmallVector<int64_t, SIZE>> rms_norm_npu_output_size(const at::Tensor &self,
+                                                                      const at::Tensor &gamma)
+{
+    auto x_shape = array_to_small_vector(self.sizes());
+    auto x_dim_num = self.dim();
+    auto gamma_dim_num = gamma.dim();
+    auto rstd_dim_num = x_dim_num - gamma_dim_num;
+    c10::SmallVector<int64_t, SIZE> rstd_shape;
+    for (int64_t i = 0; i < x_dim_num; i++) {
+        if (i < x_dim_num - gamma_dim_num) {
+            rstd_shape.push_back(x_shape[i]);
+        } else {
+            rstd_shape.push_back(1);
+        }
+    }
+    std::vector<c10::SmallVector<int64_t, SIZE>> output_size;
+    output_size.push_back(x_shape);
+    output_size.push_back(rstd_shape);
+    return output_size;
+}
+
+std::vector<c10::SmallVector<int64_t, SIZE>> rms_norm_grad_npu_output_size(const at::Tensor &dy,
+                                                                           const at::Tensor &self,
+                                                                           const at::Tensor &rstd,
+                                                                           const at::Tensor &gamma)
+{
+    auto x_shape = array_to_small_vector(self.sizes());
+    auto gamma_shape = array_to_small_vector(gamma.sizes());
+    std::vector<c10::SmallVector<int64_t, SIZE>> output_size;
+    output_size.push_back(x_shape);
+    output_size.push_back(gamma_shape);
+    return output_size;
+}
+
 c10::SmallVector<int64_t, SIZE> max_pool3d_output_size(const at::Tensor &self, at::IntArrayRef output_size)
 {
     c10::SmallVector<int64_t, SIZE> shape = {};
