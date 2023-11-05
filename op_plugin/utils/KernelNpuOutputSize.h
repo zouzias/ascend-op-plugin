@@ -337,9 +337,7 @@ OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> max_pool2d_out_size(const at::T
 OP_PLUGIN_HIDDEN std::vector<c10::SmallVector<int64_t, SIZE>> rms_norm_npu_output_size(const at::Tensor &self,
                                                                                        const at::Tensor &gamma);
 
-OP_PLUGIN_HIDDEN std::vector<c10::SmallVector<int64_t, SIZE>> rms_norm_grad_npu_output_size(const at::Tensor &dy,
-                                                                                            const at::Tensor &self,
-                                                                                            const at::Tensor &rstd,
+OP_PLUGIN_HIDDEN std::vector<c10::SmallVector<int64_t, SIZE>> rms_norm_grad_npu_output_size(const at::Tensor &self,
                                                                                             const at::Tensor &gamma);
 
 OP_PLUGIN_HIDDEN c10::SmallVector<int64_t, SIZE> ger_output_size(const at::Tensor& self, const at::Tensor& vec2);

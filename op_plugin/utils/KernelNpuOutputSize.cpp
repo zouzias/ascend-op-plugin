@@ -1532,9 +1532,7 @@ std::vector<c10::SmallVector<int64_t, SIZE>> rms_norm_npu_output_size(const at::
     return output_size;
 }
 
-std::vector<c10::SmallVector<int64_t, SIZE>> rms_norm_grad_npu_output_size(const at::Tensor &dy,
-                                                                           const at::Tensor &self,
-                                                                           const at::Tensor &rstd,
+std::vector<c10::SmallVector<int64_t, SIZE>> rms_norm_grad_npu_output_size(const at::Tensor &self,
                                                                            const at::Tensor &gamma)
 {
     auto x_shape = array_to_small_vector(self.sizes());
