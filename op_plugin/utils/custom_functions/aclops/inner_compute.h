@@ -72,5 +72,9 @@ std::tuple<at::Tensor, at::Tensor> cal_var_mean(const at::Tensor& self, at::IntA
 int64_t var_get_shape_prod(const at::Tensor& self, at::IntArrayRef dim);
 std::tuple<at::Tensor, at::Tensor, at::Tensor> _svd_helper(const at::Tensor& self, bool some, bool compute_uv);
 at::Tensor index_common(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& orig);
+at::Tensor& roi_align_backward_npu_common_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& rois,
+                                                  at::IntArrayRef xdiff_shape, int64_t pooled_width,
+                                                  int64_t pooled_height, double spatial_scale, int64_t sample_num,
+                                                  c10::optional<int64_t> roi_end_mode);
 } // namespace acl_op
 #endif

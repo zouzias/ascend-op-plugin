@@ -113,3 +113,6 @@
 
 - name: binary_cross_entropy_with_logits(Tensor self, Tensor target, Tensor? weight=None, Tensor? pos_weight=None, int reduction=Mean) -> Tensor
   self: npu_binary_cross_entropy_with_logits_backward(grad, self, target, weight, pos_weight, reduction)
+
+- name: npu_roi_align(Tensor self, Tensor rois, float spatial_scale, int pooled_height, int pooled_width, int sample_num, int roi_end_mode) -> Tensor
+  self: npu_roi_alignbk(grad, rois, self.sizes(), pooled_width, pooled_height, spatial_scale, sample_num, roi_end_mode)
