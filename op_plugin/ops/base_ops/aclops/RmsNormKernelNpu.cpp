@@ -25,8 +25,8 @@ namespace {
 c10::SmallVector<int64_t, SIZE> get_rstd_shape(const at::Tensor &self, const at::Tensor &gamma)
 {
     c10::SmallVector<int64_t, SIZE> ret;
-    int64_t rstd_dim = self.dim() - gamma.dim();
-    for (int64_t i = 0; i < self.dim(); i++) {
+    auto rstd_dim = self.dim() - gamma.dim();
+    for (uint64_t i = 0; i < self.dim(); i++) {
         if (i < rstd_dim) {
             ret.emplace_back(self.size(i));
         } else {
