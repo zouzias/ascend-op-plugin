@@ -287,6 +287,15 @@ inline aclTensor *ConvertType(const c10::optional<at::Tensor> &opt_tensor)
     return nullptr;
 }
 
+inline aclIntArray *ConvertType(const c10::OptionalIntArrayRef &opt_array)
+{
+    if (opt_array.has_value()) {
+        return ConvertType(opt_array.value());
+    }
+
+    return nullptr;
+}
+
 inline aclIntArray *ConvertType(const c10::optional<at::IntArrayRef> &opt_array)
 {
     if (opt_array.has_value()) {
@@ -437,6 +446,7 @@ void add_param_to_buf(const at::TensorList &);
 void add_param_to_buf(const at::ArrayRef<at::Scalar> &);
 void add_param_to_buf(const c10::optional<at::Tensor> &);
 void add_param_to_buf(const c10::optional<at::IntArrayRef> &);
+void add_param_to_buf(const c10::optional<at::OptionalIntArrayRef> &);
 void add_param_to_buf(const c10::optional<at::Scalar> &);
 void add_param_to_buf(const at::ScalarType);
 void add_param_to_buf(const string &);
