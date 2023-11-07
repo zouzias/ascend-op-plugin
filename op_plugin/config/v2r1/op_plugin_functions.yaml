@@ -1918,6 +1918,10 @@ custom:
     impl_ns: acl_op
   - func: npu_clear_float_status(Tensor self, int mode=0) -> Tensor
     impl_ns: acl_op
+  - func: npu_get_float_debug_status(Tensor self) -> Tensor
+    impl_ns: acl_op
+  - func: npu_clear_float_debug_status(Tensor self) -> Tensor
+    impl_ns: acl_op
   - func: one_(Tensor(a!) self) -> Tensor(a!)
     impl_ns: acl_op, op_api
   - func: npu_fast_gelu(Tensor self) -> Tensor

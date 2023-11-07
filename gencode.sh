@@ -1,3 +1,5 @@
+* 混合精度动态loss scale场景下，正常训练会有"Gradient overflow. SKipping step"日志，添加溢出检测后日志消失，可以通过设置环境变量export OVERFLOW_DEBUG_MODE_ENABLE=1,并将register_hook位置调整amp.initialize之前解决。
+
 #!/bin/bash
 
 # Copyright (c) 2023 Huawei Technologies Co., Ltd
