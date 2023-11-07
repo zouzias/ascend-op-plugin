@@ -16,14 +16,14 @@ class TestNPURmsNormBackward(TestCase):
         np.broadcast(gamma, grad_y)
         dgamma = np.sum(grad_y * x * rstd, 0, keepdims=True)
         dxp1 = grad_y * gamma * rstd
-        dxp2 = x * np.sum(rstd*rstd*rstd*grad_y*gamma*x, 1, keepdims=True)/128
+        dxp2 = x * np.sum(rstd * rstd * rstd * grad_y * gamma * x, 1, keepdims=True) / 128
         dx = dxp1 - dxp2
         dgamma = np.reshape(dgamma, (128))
         return dx, dgamma
 
     def custom_op_exec(self, npu_input0, npu_input1, npu_grad_y):
-        npu_input0.requires_grad=True
-        npu_input1.requires_grad=True
+        npu_input0.requires_grad = True
+        npu_input1.requires_grad = True
         setattr(npu_input1, 'sequence_parallel', False)
         out = torch_npu.npu_rms_norm(npu_input0, npu_input1)[0]
         out.backward(npu_grad_y)
