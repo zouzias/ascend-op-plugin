@@ -20,38 +20,30 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm_out_npu(
+std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm_npu_nocheck(
     at::Tensor& y,
     at::Tensor& mean,
-    at::Tensor& variance,
     at::Tensor& rstd,
     const at::Tensor& X,
-    const c10::optional<at::Tensor>& gamma_opt,
-    const c10::optional<at::Tensor>& beta_opt,
+    const at::Tensor& gamma,
+    const at::Tensor& beta,
     int64_t num_groups,
     double eps,
     int64_t C)
 {
-    const at::Tensor& gamma_ = c10::value_or_else(gamma_opt, [] {return at::Tensor();});
-    at::Tensor gamma = gamma_.defined() ? gamma_ : at::ones({C}, X.options());
-
-    const at::Tensor& beta_ = c10::value_or_else(beta_opt, [] {return at::Tensor();});
-    at::Tensor beta = beta_.defined() ? beta_ : at::zeros({C}, X.options());
-
     at_npu::native::OpCommand cmd;
-    cmd.Name("GroupNorm")
+    cmd.Name("GroupNormV2")
         .Input(X)
         .Input(gamma)
         .Input(beta)
         .Output(y)
         .Output(mean)
-        .Output(variance)
+        .Output(rstd)
         .Attr("num_groups", num_groups)
         .Attr("eps", static_cast<float>(eps))
         .Attr("is_training", true)
         .Run();
 
-    rstd = 1.0 / (variance + eps).sqrt();
     return std::make_tuple(y, mean, rstd);
 }
 }
@@ -67,9 +59,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm(
     double eps)
 {
     at::Tensor result = npu_preparation::ApplyTensor(X);
-    at::Tensor mean = npu_preparation::ApplyTensor(X, {N * group});
-    at::Tensor variance = npu_preparation::ApplyTensor(X, {N * group});
-    at::Tensor rstd = npu_preparation::ApplyTensor(X, {N * group});
-    return native_group_norm_out_npu(result, mean, variance, rstd, X, gamma_opt, beta_opt, group, eps, C);
+    at::Tensor mean = npu_preparation::apply_tensor_with_format({N * group}, X.options(), ACL_FORMAT_ND);
+    at::Tensor rstd = npu_preparation::apply_tensor_with_format({N * group}, X.options(), ACL_FORMAT_ND);
+
+    const at::Tensor& gamma_ = c10::value_or_else(gamma_opt, [] {return at::Tensor();});
+    const at::Tensor gamma = gamma_.defined() ? gamma_ : at::ones({C}, X.options());
+    const at::Tensor& beta_ = c10::value_or_else(beta_opt, [] {return at::Tensor();});
+    const at::Tensor beta = beta_.defined() ? beta_ : at::zeros({C}, X.options());
+
+    return native_group_norm_npu_nocheck(result, mean, rstd, X, gamma, beta, group, eps, C);
 }
 } // namespace acl_op
