@@ -120,6 +120,7 @@ function main()
 
     cp -rf ${CODE_ROOT_PATH}/op_plugin ${PYTORCH_THIRD_PATH}/
     cp -rf ${CODE_ROOT_PATH}/codegen ${PYTORCH_THIRD_PATH}/
+    cp -rf ${CODE_ROOT_PATH}/test ${PYTORCH_THIRD_PATH}/
     cp -rf ${CODE_ROOT_PATH}/*.sh ${PYTORCH_THIRD_PATH}/
 
     # compile torch_adapter
