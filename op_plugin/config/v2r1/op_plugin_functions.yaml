@@ -1720,6 +1720,8 @@ official:
    impl_ns: op_api
  - func: index_copy_(Tensor(a!) self, int dim, Tensor index, Tensor source) -> Tensor(a!)
    impl_ns: op_api
+ - func: index_copy(Tensor self, int dim, Tensor index, Tensor source) -> Tensor
+   impl_ns: op_api
  - func: _foreach_maximum.Scalar(Tensor[] self, Scalar scalar) -> Tensor[]
    impl_ns: op_api
  - func: _foreach_maximum_.Scalar(Tensor(a!)[] self, Scalar scalar) -> ()
