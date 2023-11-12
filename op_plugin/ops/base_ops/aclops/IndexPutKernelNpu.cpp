@@ -202,7 +202,19 @@ at::Tensor &index_put_aicore(at::Tensor &self, std::vector<at::Tensor> indices_e
                              const at::Tensor &value, bool accumulate)
 {
     // value broadcast
-    auto index_output_size = op_infer::index_npu_output_size(self, indices_expand);
+    int32_t masksNum = masks.sizes();
+    int32_t indicesNum = indices_expand.sizes();
+    at::SmallVector<int64_t, N> index_output_size;
+    auto indicesShape = all_defined_indices[0].sizes();
+    for (int32_t i = 0; i < masksNum - indicesNum; i++) {
+      index_output_size.emplace_back(self.sizes()[i]);
+    }
+    for (int32_t j = 0; j < all_defined_indices[0].dim(); j++) {
+        index_output_size.emplace_back(indicesShape[j]);
+    }
+    for (int32_t j = masksNum; j < self.dim(); j++) {
+        index_output_size.emplace_back(self.sizes()[j]);
+    }
     auto value_shape = op_infer::array_to_small_vector(value.sizes());
     at::Tensor value_broadcast =
         (index_output_size != value_shape) ? acl_op::npu_broadcast(value, index_output_size) : value;
