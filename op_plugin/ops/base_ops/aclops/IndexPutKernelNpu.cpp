@@ -45,13 +45,20 @@ bool is_aicpu_valid(const at::Tensor &self, const std::vector<at::Tensor> &all_d
                     const at::SmallVector<int64_t, N> masks)
 {
     // using aicore when index is continous, otherwise aicpu
-    bool is_zero_in_masks = false;
+    int32_t start = 0;
     for (uint32_t i = 0; i < masks.size(); i++) {
+        if (masks[i] == 1) {
+        break;
+        }
+        start++;
+    }
+    bool is_zero_in_masks = false;
+    for (size_t i = start; i < masks.size(); i++) {
         if (is_zero_in_masks && masks[i] == 1) {
-            return true;
+        return true;
         }
         if (masks[i] == 0) {
-            is_zero_in_masks = true;
+        is_zero_in_masks = true;
         }
     }
     // using aicpu when indices num is more than 20000 or the type of self tensor is double.
@@ -95,16 +102,10 @@ at::Tensor &index_put_aicore_nocheck(at::Tensor &self, const std::vector<at::Ten
         temp_self = at_npu::native::custom_ops::npu_dtype_cast(self, at::ScalarType::Float);
         temp_value = at_npu::native::custom_ops::npu_dtype_cast(value, at::ScalarType::Float);
     }
-    at::Tensor temp_value_broadcast = temp_value;
-    if (self.dim() == 1 && all_defined_indices.size() == 1 && all_defined_indices[0].scalar_type() == at::kLong &&
-        all_defined_indices[0].sizes()[0] != value.sizes()[0]) {
-        temp_value_broadcast = acl_op::npu_broadcast(temp_value, all_defined_indices[0].sizes());
-    }
-
     at_npu::native::OpCommand cmd;
     cmd.Name("IndexPutV2")
         .Input(temp_self, x_str)
-        .Input(temp_value_broadcast, value_str)
+        .Input(value, value_str)
         .Input(masks, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, "", indexed_sizes_str)
         .Input(expand_masks, at::kLong, npu_compile_type::MEMORY_HOST_COMPILE_INDEPENDENT, "", indexed_strides_str);
     for (uint i = 0; i < all_defined_indices.size(); i++) {
@@ -277,7 +278,7 @@ at::Tensor &_index_put_impl_(at::Tensor &self, const c10::List<c10::optional<at:
         index_put_aicpu(self_copy, self_copy, all_defined_indices, masks, value_copy, accumulate);
     } else {
         auto bool_mask = npu_expand_tensors_mask(self, indices);
-        index_put_aicore(self_copy, indices_expand, masks, bool_mask, value_copy, accumulate);
+        index_put_aicore(self_copy, all_defined_indices, masks, bool_mask, value_copy, accumulate);
     }
     self.copy_(self_copy);
     return self;
