@@ -129,20 +129,16 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_ascend_attention_
     // required input
     const at::Tensor &x,
     const at::Tensor &weight,
-    const at::Tensor &bias,
     const at::Tensor &qkv,
     const at::Tensor &dy,
-    int64_t head_num,
-    const std::string input_layout,
     // optional input
     const c10::optional<at::Tensor> &pse,
-    const c10::optional<at::Tensor> &drop_mask,
-    const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
+    const c10::optional<at::Tensor> &drop_mask,
     const c10::optional<at::Tensor> &softmax_max,
     const c10::optional<at::Tensor> &softmax_sum,
-    const c10::optional<at::Tensor> &softmax_in,
     const c10::optional<at::Tensor> &attention_in,
+    const c10::optional<at::Tensor> &bias,
     // optional attrs
     double scale_qk,
     double scale_q,
@@ -151,75 +147,71 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_ascend_attention_
     int64_t pre_tokens,
     int64_t next_tokens,
     int64_t sparse_mode,
-    int64_t inner_precise)
+    int64_t head_num)
 {
     double scale = scale_value;
 
     const at::Tensor &pse_const = pse.value_or(at::Tensor());
-    const at::Tensor &drop_mask_const = drop_mask.value_or(at::Tensor());
-    const at::Tensor &padding_mask_const = padding_mask.value_or(at::Tensor());
     const at::Tensor &atten_mask_const = atten_mask.value_or(at::Tensor());
+    const at::Tensor &drop_mask_const = drop_mask.value_or(at::Tensor());
     const at::Tensor &softmax_max_const = softmax_max.value_or(at::Tensor());
     const at::Tensor &softmax_sum_const = softmax_sum.value_or(at::Tensor());
-    const at::Tensor &softmax_const = softmax_in.value_or(at::Tensor());
     const at::Tensor &attention_const = attention_in.value_or(at::Tensor());
+    const at::Tensor &bias_const = bias.value_or(at::Tensor());
 
     at::Tensor format_x = format_trans(x);
     at::Tensor format_wgt = format_trans(weight);
-    at::Tensor format_bias = format_trans(bias);
     at::Tensor format_qkv = format_trans(qkv);
     at::Tensor format_dy = format_trans(dy);
 
     at::Tensor format_pse = format_trans(pse_const);
-    at::Tensor format_drop_mask = format_trans(drop_mask_const);
-    at::Tensor format_padding_mask = format_trans(padding_mask_const);
     at::Tensor format_atten_mask = format_trans(atten_mask_const);
+    at::Tensor format_drop_mask = format_trans(drop_mask_const);
     at::Tensor format_softmax_max = format_trans(softmax_max_const);
     at::Tensor format_softmax_sum = format_trans(softmax_sum_const);
-    at::Tensor format_softmax = format_trans(softmax_const);
     at::Tensor format_attention = format_trans(attention_const);
-    at::Tensor dx = OpPreparation::apply_tensor_without_format(format_query);
-    at::Tensor dwgt = OpPreparation::apply_tensor_without_format(format_key);
-    char* input_layout_ptr = const_cast<char *>(input_layout.c_str());
+    at::Tensor format_bias = format_trans(bias_const);
+
+    at::Tensor dx = OpPreparation::apply_tensor_without_format(format_query);//TODO dw和dx的格式无法参照输入，怎么填？
+    at::Tensor dwgt = OpPreparation::apply_tensor_without_format(format_key);//TODO
     at::Tensor dpse;
     if (format_pse.defined()) {
         dpse = OpPreparation::apply_tensor_without_format(format_pse);
     } else {
         dpse = at::empty({0}, query.options());
     }
+    at::Tensor dqkv = OpPreparation::apply_tensor_without_format(format_key);
 
     EXEC_NPU_NO_FORMAT_CHECK_CMD(
-        aclnnFlashAttentionScoreGrad, format_x, format_wgt, format_bias, format_qkv, format_dy,
-        format_pse, format_drop_mask, format_padding_mask, format_atten_mask,
-        format_softmax_max, format_softmax_sum, format_softmax, format_attention, scale_qk, scale_q, 
-        scale_k, keep_prob, pre_tokens, next_tokens, head_num, input_layout_ptr,
-        inner_precise, dx, dwgt, dpse);
+        aclnnFlashAttentionScoreGrad, 
+        format_x, format_wgt, format_qkv, format_dy, format_pse, format_atten_mask, format_drop_mask, 
+        format_softmax_max, format_softmax_sum, format_attention, format_bias,
+        scale_qk, scale_q, scale_k, keep_prob, pre_tokens, next_tokens, sparse_mode, head_num, 
+        dx, dwgt, dpse, dqkv);
 
     if (!format_pse.defined()) {
         at::Tensor dpse_required;
         dpse = dpse_required;
     }
 
-    return std::make_tuple(dx, dwgt, dpse);
+    return std::make_tuple(dx, dwgt, dpse, dqkv);
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_ascend_attention_grad(
     // required input
     const at::Tensor &x,
     const at::Tensor &weight,
-    const at::Tensor &bias,
     const at::Tensor &qkv,
     const at::Tensor &dy,
-    int64_t head_num,
-    c10::string_view input_layout,
+    
     // optional input
     const c10::optional<at::Tensor> &pse,
-    const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
     const c10::optional<at::Tensor> &softmax_max,
     const c10::optional<at::Tensor> &softmax_sum,
     const c10::optional<at::Tensor> &softmax_in,
     const c10::optional<at::Tensor> &attention_in,
+    const c10::optional<at::Tensor> &bias,
     // optional attrs
     double scale_qk,
     double scale_q,
@@ -228,7 +220,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_ascend_attention_
     int64_t pre_tokens,
     int64_t next_tokens,
     int64_t sparse_mode,
-    int64_t inner_precise,
+    int64_t head_num,
+
     int64_t seed,
     int64_t offset,
     int64_t numels,
@@ -241,12 +234,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_ascend_attention_
     TORCH_CHECK(qkv.dim() == 3, "The shapes of the input qkv should be 3-dimensional, but got ", qkv.dim(), "-dimensional");
     TORCH_CHECK(dy.dim() == 3, "The shapes of the input dy should be 3-dimensional, but got ", dy.dim(), "-dimensional");
     TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
-    std::string input_layout_str = std::string(input_layout);
-    for (auto & c : input_layout_str) {
-        c = toupper(c);
-    }
-    TORCH_CHECK(input_layout_str == "BSH" || input_layout_str == "SBH",
-        "The input_layout should be BSH/SBH(case-insensitive), but got ", input_layout);
 
     int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
     length += 32;
@@ -256,10 +243,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_ascend_attention_
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
         drop_mask = at::zeros(at::IntArrayRef{length}, query.options().dtype(at::kByte));
     }
-    auto result = npu_flash_attention_backward(x,
-        weight, bias, qkv, dy, head_num, input_layout_str, pse, drop_mask, padding_mask, atten_mask,
-        softmax_max, softmax_sum, softmax_in, attention_in, scale_qk, scale_q, scale_k,
-        keep_prob, pre_tokens, next_tokens, sparse_mode, inner_precise);
+    auto result = npu_ascend_attention_backward(
+        x, weight, qkv, dy, 
+        pse, atten_mask, drop_mask, softmax_max, softmax_sum, attention_in, bias, 
+        scale_qk, scale_q, scale_k, keep_prob, pre_tokens, next_tokens, sparse_mode, head_num);
     if (!sync) {
         c10_npu::NPUEvent npu_event;
         npu_event.record(c10_npu::getCurrentNPUStream());
