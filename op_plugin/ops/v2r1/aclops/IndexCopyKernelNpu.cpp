@@ -39,10 +39,10 @@ at::Tensor& index_copy_npu_impl(
     // if (source.dim() == 0) {
     //     source_reshape = at::native::reshape(source_reshape,{1});
     // }
-    if (source.dim() == 0) {
-        result[index[0].item<int64_t>()] = source;
-        return result;
-    }
+    // if (source.dim() == 0) {
+    //     result[index[0].item<int64_t>()] = source;
+    //     return result;
+    // }
 
     if (result.dim() > 1) {
         at::Tensor des;
@@ -52,8 +52,6 @@ at::Tensor& index_copy_npu_impl(
             src = at::native::select(source, dim, i);
             at_npu::native::NPUNativeFunctions::copy_(des, src, false);
         }
-    } else if (result.dim() == 0) {
-        result = source[0];
     } else if (index.dim() == 0) {
         result[index.item<int64_t>()] = source[0];
     } else {
