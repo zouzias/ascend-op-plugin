@@ -34,6 +34,7 @@ at::Tensor l1_loss(const at::Tensor& self,
     auto output_size_vec = op_infer::broadcast_ops_npu_output_size(self, target);
     output_size = output_size_vec;
   }
+  
   at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
   // dispatch hostAPI
   EXEC_NPU_CMD(aclnnL1Loss, self, target, reduction, result);
