@@ -34,19 +34,27 @@ at::Tensor& index_copy_npu_impl(
     index_copy_npu_par_check(dim, index, source, result);
     int64_t num_indices = index.numel();
     int64_t i;
+    
+    const at::Tensor& source_reshape = nullptr;
+    if (source.dim() == 0) {
+        source_reshape = at::native::reshape(source,{1});
+    }else{
+        source_reshape = source;
+    }
+
     if (result.dim() > 1) {
         at::Tensor des;
         at::Tensor src;
         for (i = 0; i < num_indices; i++) {
             des = at::native::select(result, dim, index[i].item<int64_t>());
-            src = source.dim() == 0 ? source : at::native::select(source, dim, i);
+            src = at::native::select(source_reshape, dim, i);
             at_npu::native::NPUNativeFunctions::copy_(des, src, false);
         }
     } else if (index.dim() == 0) {
-        result[index.item<int64_t>()] = source[0];
+        result[index.item<int64_t>()] = source_reshape[0];
     } else {
         for (i = 0; i < num_indices; i++) {
-            result[index[i].item<int64_t>()] = source[i];
+            result[index[i].item<int64_t>()] = source_reshape[i];
         }
     }
     return result;
