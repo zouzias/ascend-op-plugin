@@ -35,14 +35,13 @@ at::Tensor& index_copy_npu_impl(
     int64_t num_indices = index.numel();
     int64_t i;
 
-    at::Tensor source_reshape = const_cast<at::Tensor &>(source);
+    // at::Tensor source_reshape = const_cast<at::Tensor &>(source);
+    // if (source.dim() == 0) {
+    //     source_reshape = at::native::reshape(source_reshape,{1});
+    // }
     if (source.dim() == 0) {
-        source_reshape = at::native::reshape(source_reshape,{1});
-    }
-
-    at::Tensor index_reshape = const_cast<at::Tensor &>(index);
-    if (index.dim() == 0) {
-        index_reshape = at::native::reshape(index_reshape, {1});
+        result[index[0].item<int64_t>()] = source;
+        return result;
     }
 
     if (result.dim() > 1) {
@@ -50,14 +49,16 @@ at::Tensor& index_copy_npu_impl(
         at::Tensor src;
         for (i = 0; i < num_indices; i++) {
             des = at::native::select(result, dim, index[i].item<int64_t>());
-            src = at::native::select(source_reshape, dim, i);
+            src = at::native::select(source, dim, i);
             at_npu::native::NPUNativeFunctions::copy_(des, src, false);
         }
+    } else if (result.dim() == 0) {
+        result = source[0];
     } else if (index.dim() == 0) {
-        result[index.item<int64_t>()] = source_reshape[0];
+        result[index.item<int64_t>()] = source[0];
     } else {
         for (i = 0; i < num_indices; i++) {
-            result[index[i].item<int64_t>()] = source_reshape[i];
+            result[index[i].item<int64_t>()] = source[i];
         }
     }
     return result;
