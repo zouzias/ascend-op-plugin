@@ -34,12 +34,15 @@ at::Tensor& index_copy_npu_impl(
     index_copy_npu_par_check(dim, index, source, result);
     int64_t num_indices = index.numel();
     int64_t i;
-    
-    const at::Tensor& source_reshape = nullptr;
+
+    at::Tensor source_reshape = const_cast<at::Tensor &>(source);
     if (source.dim() == 0) {
-        source_reshape = at::native::reshape(source,{1});
-    }else{
-        source_reshape = source;
+        source_reshape = at::native::reshape(source_reshape,{1});
+    }
+
+    at::Tensor index_reshape = const_cast<at::Tensor &>(index);
+    if (index.dim() == 0) {
+        index_reshape = at::native::reshape(index_reshape, {1});
     }
 
     if (result.dim() > 1) {
