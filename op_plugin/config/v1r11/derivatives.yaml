@@ -116,4 +116,4 @@
   self, gamma: npu_rms_norm_backward(grad, self, gamma, result1)
 
 - name: binary_cross_entropy_with_logits(Tensor self, Tensor target, Tensor? weight=None, Tensor? pos_weight=None, int reduction=Mean) -> Tensor
-  self: npu_binary_cross_entropy_with_logits_backward(grad, self, target, weight, pos_weight, reduction)
+  self: binary_cross_entropy_with_logits_backward(grad, self, target, weight, pos_weight, reduction)
