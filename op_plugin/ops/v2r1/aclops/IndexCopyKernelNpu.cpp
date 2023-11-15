@@ -42,11 +42,13 @@ at::Tensor& index_copy_npu_impl(
             src = at::native::select(source, dim, i);
             at_npu::native::NPUNativeFunctions::copy_(des, src, false);
         }
+    } else if (result.dim() == 0) {
+        result = source.dim() == 0 ? source : source[0];
     } else if (index.dim() == 0) {
         result[index.item<int64_t>()] = source.dim() == 0? source : source[0];
     } else {
         for (i = 0; i < num_indices; i++) {
-            result[index[i].item<int64_t>()] = source[i];
+            result[index[i].item<int64_t>()] = source.dim() == 0? source : source[i];
         }
     }
     return result;
