@@ -45,4 +45,31 @@ at::Tensor &scatter_update_(
     return self;
 }
 
+at::Tensor npu_scatter_list(
+    const at::TensorList &self,
+    const at::Tensor &indices,
+    const at::Tensor &updates,
+    const c10::optional<at::Tensor> mask,
+    int64_t axis)
+{
+    // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
+    DO_COMPATIBILITY(aclnnInplaceScatterList, acl_op::npu_scatter_list(self, indices, updates, mask, axis));
+    at::Tensor result = self.clone();
+    EXEC_NPU_CMD(aclnnInplaceScatterList, result, indices, updates, axis);
+    return result;
+}
+
+at::Tensor &npu_scatter_list_(
+    at::TensorList &self,
+    const at::Tensor &indices,
+    const at::Tensor &updates,
+    const c10::optional<at::Tensor> mask,
+    int64_t axis)
+{
+    // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
+    DO_COMPATIBILITY(aclnnInplaceScatterList, acl_op::npu_scatter_list_(self, indices, updates, mask, axis));
+    EXEC_NPU_CMD(aclnnInplaceScatterList, self, indices, updates, axis);
+    return self;
+}
+
 } // namespace op_api

@@ -62,4 +62,60 @@ at::Tensor &scatter_update_(
     return self;
 }
 
+at::Tensor npu_scatter_list(
+    const at::TensorList &self,
+    const at::Tensor &indices,
+    const at::Tensor &updates,
+    const c10::optional<at::Tensor> mask,
+    int64_t axis)
+{
+    at::Tensor result = self.clone();
+
+    // Note:
+    // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
+    at_npu::native::OpCommand cmd;
+    cmd.Name("ScatterList")
+        .Input(result)
+        .Input(indices)
+        .Input(updates);
+    if (mask.defined())
+    {
+        cmd.Input(mask)
+    }
+
+    cmd.Output(result)
+        .Attr("reduce", (string) "update")
+        .Attr("axis", axis)
+        .Run();
+
+    return result;
+}
+
+at::Tensor &npu_scatter_list_(
+    at::TensorList &self,
+    const at::Tensor &indices,
+    const at::Tensor &updates,
+    const c10::optional<at::Tensor> mask,
+    int64_t axis)
+{
+    // Note:
+    // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
+    at_npu::native::OpCommand cmd;
+    cmd.Name("ScatterList")
+        .Input(self)
+        .Input(indices)
+        .Input(updates);
+    if (mask.defined())
+    {
+        cmd.Input(mask)
+    }
+
+    cmd.Output(result)
+        .Attr("reduce", (string) "update")
+        .Attr("axis", axis)
+        .Run();
+
+    return self;
+}
+
 } // namespace acl_op
