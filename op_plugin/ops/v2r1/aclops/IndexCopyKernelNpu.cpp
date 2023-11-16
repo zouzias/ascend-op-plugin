@@ -59,10 +59,11 @@ at::Tensor& index_copy_npu_impl(
 at::Tensor index_copy(const at::Tensor& self, const int64_t dim, const at::Tensor& index, const at::Tensor& source)
 {
     at::Tensor contiguous_self(self.clone());
-    if (!npu_utils::check_match(&self)) {
-        contiguous_self = npu_utils::format_contiguous(contiguous_self);
-    }
-    return index_copy_npu_impl(dim, index, source, contiguous_self, "index_copy()");
+    // if (!npu_utils::check_match(&self)) {
+    //     contiguous_self = npu_utils::format_contiguous(contiguous_self);
+    // }
+    // return index_copy_npu_impl(dim, index, source, contiguous_self, "index_copy()");
+    return contiguous_self;
 }
 
 at::Tensor& index_copy_(at::Tensor& self, const int64_t dim, const at::Tensor& index, const at::Tensor& source)
