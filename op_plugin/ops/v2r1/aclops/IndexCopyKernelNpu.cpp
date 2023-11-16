@@ -43,15 +43,20 @@ at::Tensor& index_copy_npu_impl(
             src = at::native::select(source, dim, i);
             at_npu::native::NPUNativeFunctions::copy_(des, src, false);
         }
-    } else if (result.dim() == 0) {
-        result = source.dim() == 0 ? source : source[0];
-    } else if (index.dim() == 0) {
-        result[index.item<int64_t>()] = source.dim() == 0? source : source[0];
-    } else {
-        for (i = 0; i < num_indices; i++) {
-            result[index[i].item<int64_t>()] = source.dim() == 0? source : source[i];
+    } else{
+        if (index.dim() == 0) {
+            if (result.dim() == 0){
+                result = source.dim() == 0 ? source : source[0];
+            }else{
+                result[index.item<int64_t>()] = source.dim() == 0 ? source : source[0];
+            }
+        }else{
+            for (i = 0; i < num_indices; i++) {
+                result[index[i].item<int64_t>()] = source.dim() == 0 ? source : source[i];
+            }
         }
     }
+
     return result;
 }
 }  // namespace
@@ -63,7 +68,6 @@ at::Tensor index_copy(const at::Tensor& self, const int64_t dim, const at::Tenso
         contiguous_self = npu_utils::format_contiguous(contiguous_self);
     }
     return index_copy_npu_impl(dim, index, source, contiguous_self, "index_copy()");
-    return contiguous_self;
 }
 
 at::Tensor& index_copy_(at::Tensor& self, const int64_t dim, const at::Tensor& index, const at::Tensor& source)
