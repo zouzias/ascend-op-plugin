@@ -52,7 +52,11 @@ at::Tensor& index_copy_npu_impl(
             }
         } else {
             for (i = 0; i < num_indices; i++) {
-                result[index[i].item<int64_t>()] = source.dim() == 0 ? source : source[i];
+                if (result.dim() == 0) {
+                    result = source.dim() == 0 ? source : source[i];
+                }else{
+                    result[index[i].item<int64_t>()] = source.dim() == 0 ? source : source[i];
+                }
             }
         }
     }
