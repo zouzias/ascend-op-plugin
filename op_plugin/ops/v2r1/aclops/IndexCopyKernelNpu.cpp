@@ -38,7 +38,8 @@ at::Tensor& index_copy_npu_impl(
         at::Tensor des;
         at::Tensor src;
         for (i = 0; i < num_indices; i++) {
-            des = at::native::select(result, dim, index[i].item<int64_t>());
+            auto index_i = index.dim() == 0 ? index.item<int64_t>() : index[i].item<int64_t>();
+            des = at::native::select(result, dim, index_i);
             src = at::native::select(source, dim, i);
             at_npu::native::NPUNativeFunctions::copy_(des, src, false);
         }
