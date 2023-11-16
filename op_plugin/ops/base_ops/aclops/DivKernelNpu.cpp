@@ -51,7 +51,6 @@ at::Tensor &div_out_nocheck(at::Tensor &result, const at::Tensor &self, const at
         at_npu::native::OpCommand cmd;
         cmd.Name("RealDiv").Expect(unified_result).Input(self).Input(other).Output(result).Run();
     }
-
     return result;
 }
 
