@@ -63,7 +63,7 @@ void index_copy_npu_par_check(
   
     for (int64_t i = 0; i < num_indices; i++) {
         int64_t specifical_index = index.dim() == 0 ? index.item<int64_t>() : index[i].item<int64_t>();
-        TORCH_CHECK(specifical_index <= boundary_index, "index_copy_()", ": index ",specifical_index,
+        TORCH_CHECK_INDEX(specifical_index <= boundary_index, "index_copy_()", ": index ",specifical_index,
             " is out of bounds for dimension ",boundary_index, " with size ",boundary_index + 1);
     }
 }
