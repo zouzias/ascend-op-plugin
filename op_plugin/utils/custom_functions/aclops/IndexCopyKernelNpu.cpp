@@ -45,7 +45,7 @@ void index_copy_npu_par_check(
     auto self_sliced_sizes = result.sizes().vec();
     int64_t boundary_index = 0;
     if (self_sliced_sizes.size() > 0) {
-        boundary_index = self_sliced_sizes[new_dim];
+        boundary_index = self_sliced_sizes[new_dim] - 1;
         self_sliced_sizes.erase(self_sliced_sizes.begin() + new_dim);
     }
     auto source_sliced_sizes = source.sizes().vec();
