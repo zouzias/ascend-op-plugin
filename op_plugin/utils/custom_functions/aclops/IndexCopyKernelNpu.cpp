@@ -21,11 +21,8 @@
 
 namespace acl_op {
 
-void index_copy_npu_par_check(
-    const int64_t dim,
-    const at::Tensor& index,
-    const at::Tensor& source,
-    const at::Tensor& result) 
+void index_copy_npu_par_check(const int64_t dim, const at::Tensor& index,
+                              const at::Tensor& source, const at::Tensor& result)
 {
     int64_t new_dim = at::maybe_wrap_dim(dim, result.dim());
     TORCH_CHECK_INDEX(index.dim() < 2, "index_copy_()", ": Index should have dimension 1 or 0 (got ", index.dim(), ")");
@@ -63,8 +60,8 @@ void index_copy_npu_par_check(
   
     for (int64_t i = 0; i < num_indices; i++) {
         int64_t specifical_index = index.dim() == 0 ? index.item<int64_t>() : index[i].item<int64_t>();
-        TORCH_CHECK_INDEX(specifical_index <= boundary_index, "index_copy_()", ": index ",specifical_index,
-            " is out of bounds for dimension ",boundary_index, " with size ",boundary_index + 1);
+        TORCH_CHECK_INDEX(specifical_index <= boundary_index, "index_copy_()", ": index ", specifical_index,
+            " is out of bounds for dimension ", boundary_index, " with size ", boundary_index + 1);
     }
 }
 } // namespace acl_op
