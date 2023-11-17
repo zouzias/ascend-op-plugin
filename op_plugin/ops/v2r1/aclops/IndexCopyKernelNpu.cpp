@@ -45,12 +45,12 @@ at::Tensor& index_copy_npu_impl(
         }
     } else {
         if (index.dim() == 0) {
-            des = result.dim() == 0 ? result : result[index.item<int64_t>()]
+            des = result.dim() == 0 ? result : result[index.item<int64_t>()];
             src = source.dim() == 0 ? source : source[0];
             at_npu::native::NPUNativeFunctions::copy_(des, src, false);
         } else {
             for (i = 0; i < num_indices; i++) {
-                des = result.dim() == 0 ? result : result[index[i].item<int64_t>()]
+                des = result.dim() == 0 ? result : result[index[i].item<int64_t>()];
                 src = source.dim() == 0 ? source : source[i];
                 at_npu::native::NPUNativeFunctions::copy_(des, src, false);
             }
