@@ -62,7 +62,7 @@ at::Tensor &scatter_update_(
     return self;
 }
 
-at::Tensor npu_scatter_list(
+at::TensorList npu_scatter_list(
     const at::TensorList &self,
     const at::Tensor &indices,
     const at::Tensor &updates,
@@ -71,8 +71,7 @@ at::Tensor npu_scatter_list(
 {
     const at::Tensor &maskopt = c10::value_or_else(mask, []
                                                    { return at::Tensor(); });
-    std::vector<at::Tensor>
-        result;
+    at::TensorList result;
     for (const at::Tensor &tensor : self)
     {
         result.push_back(tensor.clone());
@@ -98,7 +97,7 @@ at::Tensor npu_scatter_list(
     return result;
 }
 
-at::Tensor &npu_scatter_list_(
+at::TensorList &npu_scatter_list_(
     at::TensorList &self,
     const at::Tensor &indices,
     const at::Tensor &updates,
