@@ -71,17 +71,18 @@ at::TensorList npu_scatter_list(
 {
     const at::Tensor &maskopt = c10::value_or_else(mask, []
                                                    { return at::Tensor(); });
-    at::TensorList result;
+    std::vector<at::Tensor> result;
     for (const at::Tensor &tensor : self)
     {
         result.push_back(tensor.clone());
     }
+    at::TensorList result_ = at::TensorList(result);
 
     // Note:
     // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
     at_npu::native::OpCommand cmd;
     cmd.Name("ScatterList")
-        .Input(result)
+        .Input(result_)
         .Input(indices)
         .Input(updates);
     if (maskopt.defined())
@@ -89,12 +90,12 @@ at::TensorList npu_scatter_list(
         cmd.Input(maskopt)
     }
 
-    cmd.Output(result)
+    cmd.Output(result_)
         .Attr("reduce", (string) "update")
         .Attr("axis", axis)
         .Run();
 
-    return result;
+    return result_;
 }
 
 at::TensorList &npu_scatter_list_(
