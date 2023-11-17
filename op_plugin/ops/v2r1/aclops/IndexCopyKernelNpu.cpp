@@ -34,9 +34,9 @@ at::Tensor& index_copy_npu_impl(
     index_copy_npu_par_check(dim, index, source, result);
     int64_t num_indices = index.numel();
     int64_t i;
+    at::Tensor des;
+    at::Tensor src;
     if (result.dim() > 1) {
-        at::Tensor des;
-        at::Tensor src;
         for (i = 0; i < num_indices; i++) {
             auto index_i = index.dim() == 0 ? index.item<int64_t>() : index[i].item<int64_t>();
             des = at::native::select(result, dim, index_i);
@@ -45,18 +45,14 @@ at::Tensor& index_copy_npu_impl(
         }
     } else {
         if (index.dim() == 0) {
-            if (result.dim() == 0) {
-                result = source.dim() == 0 ? source : source[0];
-            } else {
-                result[index.item<int64_t>()] = source.dim() == 0 ? source : source[0];
-            }
+            des = result.dim() == 0 ? result : result[index.item<int64_t>()]
+            src = source.dim() == 0 ? source : source[0];
+            at_npu::native::NPUNativeFunctions::copy_(des, src, false);
         } else {
             for (i = 0; i < num_indices; i++) {
-                if (result.dim() == 0) {
-                    result = source.dim() == 0 ? source : source[i];
-                } else {
-                    result[index[i].item<int64_t>()] = source.dim() == 0 ? source : source[i];
-                }
+                des = result.dim() == 0 ? result : result[index[i].item<int64_t>()]
+                src = source.dim() == 0 ? source : source[i];
+                at_npu::native::NPUNativeFunctions::copy_(des, src, false);
             }
         }
     }
