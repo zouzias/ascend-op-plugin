@@ -42,6 +42,7 @@ at::Tensor& upsample_bicubic2d_out_nocheck(
   if (scales_w.has_value()) {
     temp_w = (float)scales_w.value();
   }
+  
   c10::SmallVector<float, SIZE> scales = {temp_h, temp_w};
   c10::SmallVector<float, SIZE> roi = {};
   string coordinate_transformation_mode = "half_pixel";
