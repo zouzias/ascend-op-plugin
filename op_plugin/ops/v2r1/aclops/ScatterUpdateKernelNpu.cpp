@@ -69,7 +69,11 @@ at::Tensor npu_scatter_list(
     const c10::optional<at::Tensor> mask,
     int64_t axis)
 {
-    at::Tensor result = self.clone();
+    std::vector<at::Tensor> result;
+    for (const at::Tensor &tensor : self)
+    {
+        result.push_back(tensor.clone());
+    }
 
     // Note:
     // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
