@@ -119,7 +119,7 @@ at::TensorList &npu_scatter_list_(
         cmd.Input(maskopt);
     }
 
-    cmd.Output(result)
+    cmd.Output(self)
         .Attr("reduce", (string) "update")
         .Attr("axis", axis)
         .Run();
