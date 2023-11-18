@@ -87,7 +87,7 @@ at::TensorList npu_scatter_list(
         .Input(updates);
     if (maskopt.defined())
     {
-        cmd.Input(maskopt)
+        cmd.Input(maskopt);
     }
 
     cmd.Output(result_)
@@ -116,7 +116,7 @@ at::TensorList &npu_scatter_list_(
         .Input(updates);
     if (maskopt.defined())
     {
-        cmd.Input(maskopt)
+        cmd.Input(maskopt);
     }
 
     cmd.Output(result)
