@@ -37,4 +37,5 @@ at::Tensor& scatter_out(
     at::Tensor& result) {
   TORCH_CHECK(false, "scatter.value_reduce_out is not supported.");
 }
+
 } // namespace acl_op
