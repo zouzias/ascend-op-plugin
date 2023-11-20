@@ -116,7 +116,7 @@ at::TensorList npu_scatter_list(
         cmd.Input(maskopt);
     }
 
-    cmd.Name("ScatterList").DynamicOutputReg(scatter_list_output_func, {{dynamic_num, 0}});
+    cmd.DynamicOutputReg(scatter_list_output_func, {{dynamic_num, 0}});
     for (uint i = 0; i < dynamic_num; i++)
     {
         string output_name = "var" + std::to_string(i);
@@ -155,7 +155,7 @@ at::TensorList &npu_scatter_list_(
         cmd.Input(maskopt);
     }
 
-    cmd.Name("ScatterList").DynamicOutputReg(scatter_list_output_func, {{dynamic_num, 0}});
+    cmd.DynamicOutputReg(scatter_list_output_func, {{dynamic_num, 0}});
     for (uint i = 0; i < dynamic_num; i++)
     {
         string output_name = "var" + std::to_string(i);
