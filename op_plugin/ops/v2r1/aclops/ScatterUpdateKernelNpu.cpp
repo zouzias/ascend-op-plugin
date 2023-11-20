@@ -15,13 +15,25 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 
 namespace acl_op {
-    at_npu::native::DynamicInputRegFunc scatter_list_func = [](DyNumAndIndex num_and_index,
-                                                               std::string op_name) -> ge::OperatorPtr
+    using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
+    using npu_preparation = at_npu::native::OpPreparation;
+    using npu_utils = at_npu::native::NpuUtils;
+    at_npu::native::DynamicInputRegFunc scatter_list_input_func = [](DyNumAndIndex num_and_index,
+                                                                     std::string op_name) -> ge::OperatorPtr
     {
-        auto ge_op = std::make_shared<ge::op::Pack>(op_name.c_str());
+        auto ge_op = std::make_shared<ge::op::ScatterList>(op_name.c_str());
         ge_op->create_dynamic_input_byindex_x(num_and_index.front().first, num_and_index.front().second);
+        return ge_op;
+    };
+
+    at_npu::native::DynamicOutputRegFunc scatter_list_out_func = [](DyNumAndIndex num_and_index,
+                                                                    std::string op_name) -> ge::OperatorPtr
+    {
+        auto ge_op = std::make_shared<ge::op::ScatterList>(op_name.c_str());
+        ge_op->create_dynamic_output_byindex_x(num_and_index.front().first, num_and_index.front().second);
         return ge_op;
     };
 
@@ -88,10 +100,11 @@ at::TensorList npu_scatter_list(
     // Note:
     // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
     at_npu::native::OpCommand cmd;
-    cmd.Name("ScatterList").DynamicInputReg(scatter_list_func, {{dynamic_num, 0}});
+    auto dynamic_num = self.size();
+    cmd.Name("ScatterList").DynamicInputReg(scatter_list_input_func, {{dynamic_num, 0}});
     for (uint i = 0; i < dynamic_num; i++)
     {
-        string input_name = "x" + std::to_string(i);
+        string input_name = "var" + std::to_string(i);
         cmd.Input(self[i], input_name);
     }
     cmd.Input(indices)
@@ -101,8 +114,13 @@ at::TensorList npu_scatter_list(
         cmd.Input(maskopt);
     }
 
-    cmd.Output(result_)
-        .Attr("reduce", (string) "update")
+    cmd.Name("ScatterList").DynamicOutputReg(scatter_list_output_func, {{dynamic_num, 0}});
+    for (uint i = 0; i < dynamic_num; i++)
+    {
+        string output_name = "var" + std::to_string(i);
+        cmd.Output(result_[i], output_name);
+    }
+    cmd.Attr("reduce", (string) "update")
         .Attr("axis", axis)
         .Run();
 
@@ -121,7 +139,8 @@ at::TensorList &npu_scatter_list_(
     // Note:
     // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
     at_npu::native::OpCommand cmd;
-    cmd.Name("ScatterList").DynamicInputReg(scatter_list_func, {{dynamic_num, 0}});
+    auto dynamic_num = self.size();
+    cmd.Name("ScatterList").DynamicInputReg(scatter_list_input_func, {{dynamic_num, 0}});
     for (uint i = 0; i < dynamic_num; i++)
     {
         string input_name = "x" + std::to_string(i);
@@ -134,8 +153,13 @@ at::TensorList &npu_scatter_list_(
         cmd.Input(maskopt);
     }
 
-    cmd.Output(self)
-        .Attr("reduce", (string) "update")
+    cmd.Name("ScatterList").DynamicOutputReg(scatter_list_output_func, {{dynamic_num, 0}});
+    for (uint i = 0; i < dynamic_num; i++)
+    {
+        string output_name = "var" + std::to_string(i);
+        cmd.Output(self[i], output_name);
+    }
+    cmd.Attr("reduce", (string) "update")
         .Attr("axis", axis)
         .Run();
 
