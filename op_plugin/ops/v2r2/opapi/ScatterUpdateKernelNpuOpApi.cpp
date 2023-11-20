@@ -46,10 +46,10 @@ at::Tensor &scatter_update_(
 }
 
 at::TensorList npu_scatter_list(
-    at::TensorList &self,
+    at::TensorList self,
     const at::Tensor &indices,
     const at::Tensor &updates,
-    const c10::optional<at::Tensor> mask,
+    const c10::optional<at::Tensor> &mask,
     int64_t axis)
 {
     // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
@@ -65,10 +65,10 @@ at::TensorList npu_scatter_list(
 }
 
 at::TensorList &npu_scatter_list_(
-    at::TensorList &self,
+    at::TensorList self,
     const at::Tensor &indices,
     const at::Tensor &updates,
-    const c10::optional<at::Tensor> mask,
+    const c10::optional<at::Tensor> &mask,
     int64_t axis)
 {
     // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
