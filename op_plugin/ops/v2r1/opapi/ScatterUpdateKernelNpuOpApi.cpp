@@ -53,7 +53,6 @@ at::TensorList npu_scatter_list(
     int64_t axis)
 {
     // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
-    DO_COMPATIBILITY(aclnnScatterList, acl_op::npu_scatter_list(self, indices, updates, mask, axis));
     std::vector<at::Tensor> result;
     for (const at::Tensor &tensor : self)
     {
@@ -73,7 +72,6 @@ at::TensorList &npu_scatter_list_(
     int64_t axis)
 {
     // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
-    DO_COMPATIBILITY(aclnnScatterList, acl_op::npu_scatter_list_(self, indices, updates, mask, axis));
     EXEC_NPU_CMD(aclnnScatterList, self, indices, updates, axis);
     return self;
 }
