@@ -45,7 +45,7 @@ at::Tensor &scatter_update_(
     return self;
 }
 
-at::TensorList npu_scatter_list(
+std::vector<at::Tensor> npu_scatter_list(
     at::TensorList self,
     const at::Tensor &indices,
     const at::Tensor &updates,
@@ -64,7 +64,7 @@ at::TensorList npu_scatter_list(
     return result;
 }
 
-at::TensorList &npu_scatter_list_(
+void npu_scatter_list_(
     at::TensorList self,
     const at::Tensor &indices,
     const at::Tensor &updates,
