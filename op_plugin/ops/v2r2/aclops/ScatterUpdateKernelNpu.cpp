@@ -21,14 +21,13 @@ namespace acl_op {
     using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
     using npu_preparation = at_npu::native::OpPreparation;
     using npu_utils = at_npu::native::NpuUtils;
-
     namespace
     {
         at_npu::native::DynamicInputRegFunc scatter_list_input_func = [](DyNumAndIndex num_and_index,
                                                                          std::string op_name) -> ge::OperatorPtr
         {
             auto ge_op = std::make_shared<ge::op::ScatterList>(op_name.c_str());
-            ge_op->create_dynamic_input_byindex_x(num_and_index.front().first, num_and_index.front().second);
+            ge_op->create_dynamic_input_byindex_var(num_and_index.front().first, num_and_index.front().second);
             return ge_op;
         };
 
@@ -36,11 +35,10 @@ namespace acl_op {
                                                                         std::string op_name) -> ge::OperatorPtr
         {
             auto ge_op = std::make_shared<ge::op::ScatterList>(op_name.c_str());
-            ge_op->create_dynamic_output_byindex_x(num_and_index.front().first, num_and_index.front().second);
+            ge_op->create_dynamic_output_byindex_var(num_and_index.front().first, num_and_index.front().second);
             return ge_op;
         };
     }
-
     at::Tensor scatter_update(
         const at::Tensor &self,
         const at::Tensor &indices,
@@ -118,7 +116,7 @@ at::TensorList npu_scatter_list(
         cmd.Input(maskopt);
     }
 
-    cmd.DynamicOutputReg(scatter_list_output_func, {{dynamic_num, 0}});
+    cmd.DynamicOutputRegister(scatter_list_out_func, {{dynamic_num, 0}});
     for (uint i = 0; i < dynamic_num; i++)
     {
         string output_name = "var" + std::to_string(i);
@@ -157,7 +155,7 @@ at::TensorList &npu_scatter_list_(
         cmd.Input(maskopt);
     }
 
-    cmd.DynamicOutputReg(scatter_list_output_func, {{dynamic_num, 0}});
+    cmd.DynamicOutputRegister(scatter_list_out_func, {{dynamic_num, 0}});
     for (uint i = 0; i < dynamic_num; i++)
     {
         string output_name = "var" + std::to_string(i);
