@@ -59,5 +59,5 @@ REG_OP(ScatterList)
     .ATTR(reduce, String, "update")
     .ATTR(axis, Int, -2)
     .OP_END_FACTORY_REG(ScatterList)
-
+}
 #endif  // OPS_BUILT_IN_OP_PROTO_INC_MATRIX_CALCULATION_OPS_H_
