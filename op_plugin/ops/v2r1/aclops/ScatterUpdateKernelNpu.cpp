@@ -21,22 +21,24 @@ namespace acl_op {
     using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
     using npu_preparation = at_npu::native::OpPreparation;
     using npu_utils = at_npu::native::NpuUtils;
-    at_npu::native::DynamicInputRegFunc scatter_list_input_func = [](DyNumAndIndex num_and_index,
-                                                                     std::string op_name) -> ge::OperatorPtr
+    namespace
     {
-        auto ge_op = std::make_shared<ge::op::ScatterList>(op_name.c_str());
-        ge_op->create_dynamic_input_byindex_x(num_and_index.front().first, num_and_index.front().second);
-        return ge_op;
-    };
+        at_npu::native::DynamicInputRegFunc scatter_list_input_func = [](DyNumAndIndex num_and_index,
+                                                                         std::string op_name) -> ge::OperatorPtr
+        {
+            auto ge_op = std::make_shared<ge::op::ScatterList>(op_name.c_str());
+            ge_op->create_dynamic_input_byindex_x(num_and_index.front().first, num_and_index.front().second);
+            return ge_op;
+        };
 
-    at_npu::native::DynamicOutputRegFunc scatter_list_out_func = [](DyNumAndIndex num_and_index,
-                                                                    std::string op_name) -> ge::OperatorPtr
-    {
-        auto ge_op = std::make_shared<ge::op::ScatterList>(op_name.c_str());
-        ge_op->create_dynamic_output_byindex_x(num_and_index.front().first, num_and_index.front().second);
-        return ge_op;
-    };
-
+        at_npu::native::DynamicOutputRegFunc scatter_list_out_func = [](DyNumAndIndex num_and_index,
+                                                                        std::string op_name) -> ge::OperatorPtr
+        {
+            auto ge_op = std::make_shared<ge::op::ScatterList>(op_name.c_str());
+            ge_op->create_dynamic_output_byindex_x(num_and_index.front().first, num_and_index.front().second);
+            return ge_op;
+        };
+    }
     at::Tensor scatter_update(
         const at::Tensor &self,
         const at::Tensor &indices,
