@@ -15,30 +15,10 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
-#include "op_plugin/third_party/acl/inc/op_proto/all_ops.h"
 
-namespace acl_op {
-    using DyNumAndIndex = std::vector<std::pair<uint32_t, uint32_t>>;
-    using npu_preparation = at_npu::native::OpPreparation;
-    using npu_utils = at_npu::native::NpuUtils;
-    namespace
-    {
-        at_npu::native::DynamicInputRegFunc scatter_list_input_func = [](DyNumAndIndex num_and_index,
-                                                                         std::string op_name) -> ge::OperatorPtr
-        {
-            auto ge_op = std::make_shared<ge::op::ScatterList>(op_name.c_str());
-            ge_op->create_dynamic_input_byindex_var(num_and_index.front().first, num_and_index.front().second);
-            return ge_op;
-        };
+namespace acl_op
+{
 
-        at_npu::native::DynamicOutputRegFunc scatter_list_out_func = [](DyNumAndIndex num_and_index,
-                                                                        std::string op_name) -> ge::OperatorPtr
-        {
-            auto ge_op = std::make_shared<ge::op::ScatterList>(op_name.c_str());
-            ge_op->create_dynamic_output_byindex_var(num_and_index.front().first, num_and_index.front().second);
-            return ge_op;
-        };
-    }
     at::Tensor scatter_update(
         const at::Tensor &self,
         const at::Tensor &indices,
@@ -62,110 +42,25 @@ namespace acl_op {
         return result;
     }
 
-at::Tensor &scatter_update_(
-    at::Tensor &self,
-    const at::Tensor &indices,
-    const at::Tensor &updates,
-    int64_t axis)
-{
-    // Note:
-    // The attribute 'reduce' of Scatter only supports setting it to 'update'.
-    at_npu::native::OpCommand cmd;
-    cmd.Name("Scatter")
-        .Input(self)
-        .Input(indices)
-        .Input(updates)
-        .Output(self)
-        .Attr("reduce", (string) "update")
-        .Attr("axis", axis)
-        .Run();
-
-    return self;
-}
-
-at::TensorList npu_scatter_list(
-    const at::TensorList &self,
-    const at::Tensor &indices,
-    const at::Tensor &updates,
-    const c10::optional<at::Tensor> mask,
-    int64_t axis)
-{
-    const at::Tensor &maskopt = c10::value_or_else(mask, []
-                                                   { return at::Tensor(); });
-    std::vector<at::Tensor> result;
-    for (const at::Tensor &tensor : self)
+    at::Tensor &scatter_update_(
+        at::Tensor &self,
+        const at::Tensor &indices,
+        const at::Tensor &updates,
+        int64_t axis)
     {
-        result.push_back(tensor.clone());
-    }
-    at::TensorList result_ = at::TensorList(result);
+        // Note:
+        // The attribute 'reduce' of Scatter only supports setting it to 'update'.
+        at_npu::native::OpCommand cmd;
+        cmd.Name("Scatter")
+            .Input(self)
+            .Input(indices)
+            .Input(updates)
+            .Output(self)
+            .Attr("reduce", (string) "update")
+            .Attr("axis", axis)
+            .Run();
 
-    // Note:
-    // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
-    at_npu::native::OpCommand cmd;
-    auto dynamic_num = self.size();
-    cmd.Name("ScatterList").DynamicInputReg(scatter_list_input_func, {{dynamic_num, 0}});
-    for (uint i = 0; i < dynamic_num; i++)
-    {
-        string input_name = "var" + std::to_string(i);
-        cmd.Input(self[i], input_name);
+        return self;
     }
-    cmd.Input(indices)
-        .Input(updates);
-    if (maskopt.defined())
-    {
-        cmd.Input(maskopt);
-    }
-
-    cmd.DynamicOutputRegister(scatter_list_out_func, {{dynamic_num, 0}});
-    for (uint i = 0; i < dynamic_num; i++)
-    {
-        string output_name = "var" + std::to_string(i);
-        cmd.Output(result_[i], output_name);
-    }
-    cmd.Attr("reduce", (string) "update")
-        .Attr("axis", axis)
-        .Run();
-
-    return result_;
-}
-
-at::TensorList &npu_scatter_list_(
-    at::TensorList &self,
-    const at::Tensor &indices,
-    const at::Tensor &updates,
-    const c10::optional<at::Tensor> mask,
-    int64_t axis)
-{
-    const at::Tensor &maskopt = c10::value_or_else(mask, []
-                                                   { return at::Tensor(); });
-    // Note:
-    // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
-    at_npu::native::OpCommand cmd;
-    auto dynamic_num = self.size();
-    cmd.Name("ScatterList").DynamicInputReg(scatter_list_input_func, {{dynamic_num, 0}});
-    for (uint i = 0; i < dynamic_num; i++)
-    {
-        string input_name = "x" + std::to_string(i);
-        cmd.Input(self[i], input_name);
-    }
-    cmd.Input(indices)
-        .Input(updates);
-    if (maskopt.defined())
-    {
-        cmd.Input(maskopt);
-    }
-
-    cmd.DynamicOutputRegister(scatter_list_out_func, {{dynamic_num, 0}});
-    for (uint i = 0; i < dynamic_num; i++)
-    {
-        string output_name = "var" + std::to_string(i);
-        cmd.Output(self[i], output_name);
-    }
-    cmd.Attr("reduce", (string) "update")
-        .Attr("axis", axis)
-        .Run();
-
-    return self;
-}
 
 } // namespace acl_op
