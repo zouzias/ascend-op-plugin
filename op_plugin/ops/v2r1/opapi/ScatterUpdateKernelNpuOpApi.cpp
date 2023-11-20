@@ -46,7 +46,7 @@ at::Tensor &scatter_update_(
 }
 
 at::TensorList npu_scatter_list(
-    const at::TensorList &self,
+    at::TensorList &self,
     const at::Tensor &indices,
     const at::Tensor &updates,
     const c10::optional<at::Tensor> mask,
