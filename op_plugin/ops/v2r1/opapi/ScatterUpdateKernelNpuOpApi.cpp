@@ -73,7 +73,7 @@ void npu_scatter_list_(
 {
     // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
     EXEC_NPU_CMD(aclnnScatterList, self, indices, updates, axis);
-    return self;
+    return;
 }
 
 } // namespace op_api
