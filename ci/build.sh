@@ -103,11 +103,21 @@ function main()
     # clone torch_adapter
     BUILD_PATH=${CODE_ROOT_PATH}/build
     PYTORCH_PATH=${BUILD_PATH}/pytorch
+
+    if [ -d ${PYTORCH_PATH} ]; then
+        rm -r ${PYTORCH_PATH}
+    fi
+
+    git config --global http.sslVerify false
+    export http_proxy="http://space.inhuawei.com:3128"
+    export https_proxy="http://space.inhuawei.com:3128"
+
+
     if [ ! -d ${PYTORCH_PATH} ]; then
         if [ -d ${BUILD_PATH} ]; then
             rm -r ${BUILD_PATH}
         fi
-        git clone -b ${PYTORCH_VERSION} https://gitee.com/ascend/pytorch.git ${PYTORCH_PATH}
+        git clone -b ${PYTORCH_VERSION} https://gitee.com/songkai-huawei/pytorch_header_change.git ${PYTORCH_PATH}
     fi
     checkout_pytorch_branch
     # copy op_plugin to torch_adapter/third_party
