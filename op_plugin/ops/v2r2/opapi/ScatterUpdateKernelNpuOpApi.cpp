@@ -50,8 +50,11 @@ std::vector<at::Tensor> npu_scatter_list(
     const at::Tensor &indices,
     const at::Tensor &updates,
     const c10::optional<at::Tensor> &mask,
+    c10::string_view reduce,
     int64_t axis)
 {
+    std::string reduce_str = std::string(reduce);
+    char *reduce_ptr = const_cast<char *>(reduce_str.c_str());
     // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
     std::vector<at::Tensor> result;
     for (const at::Tensor &tensor : self)
@@ -60,7 +63,8 @@ std::vector<at::Tensor> npu_scatter_list(
     }
     at::TensorList result_ = at::TensorList(result);
 
-    EXEC_NPU_CMD(aclnnScatterList, result_, indices, updates, axis);
+    EXEC_NPU_CMD(aclnnScatterList, result_, indices, updates, reduce_ptr, axis);
+
     return result;
 }
 
@@ -69,10 +73,12 @@ void npu_scatter_list_(
     const at::Tensor &indices,
     const at::Tensor &updates,
     const c10::optional<at::Tensor> &mask,
+    c10::string_view reduce,
     int64_t axis)
 {
-    // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
-    EXEC_NPU_CMD(aclnnScatterList, self, indices, updates, axis);
+    std::string reduce_str = std::string(reduce);
+    char *reduce_ptr = const_cast<char *>(reduce_str.c_str());
+    EXEC_NPU_CMD(aclnnScatterList, self, indices, updates, reduce_ptr, axis);
     return;
 }
 
