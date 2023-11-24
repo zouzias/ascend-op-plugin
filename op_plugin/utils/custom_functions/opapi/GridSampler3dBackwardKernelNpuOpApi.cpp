@@ -14,19 +14,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef __TORCH_NPU_OP_PLUGIN_UTILS_INNER_COMPUTE_OP_API__
-#define __TORCH_NPU_OP_PLUGIN_UTILS_INNER_COMPUTE_OP_API__
+#include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/op_api_common.h"
 
-#include <ATen/ATen.h>
-#include <ATen/Tensor.h>
+namespace acl_op {
+using npu_preparation = at_npu::native::OpPreparation;
 
-namespace op_api {
-at::Tensor& sum_out_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
-                                   c10::optional<c10::ScalarType> dtype, at::Tensor& result);
-at::Tensor sum_common_nocheck(const at::Tensor& self, at::IntArrayRef dim, bool keepdim,
-                              c10::optional<c10::ScalarType> dtype);
 std::tuple<at::Tensor, at::Tensor> grid_sampler3d_backward_common(const at::Tensor& grad, const at::Tensor& input,
                                                                   const at::Tensor& grid, int64_t interpolation_mode,
-                                                                  int64_t padding_mode, bool align_corners);
+                                                                  int64_t padding_mode, bool align_corners)
+{
+  DO_COMPATIBILITY(aclnnGridSampler3DBackward, acl_op::grid_sampler_3d_backward(grad, input, grid, interpolation_mode,
+                                                                                padding_mode, align_corners));
+  at::Tensor dinput = npu_preparation::apply_tensor_without_format(input);
+  at::Tensor dgrid = npu_preparation::apply_tensor_without_format(grid);
+  EXEC_NPU_CMD(aclnnGridSampler3DBackward, grad, input, grid, interpolation_mode, padding_mode, align_corners,
+               dinput, dgrid);
+  return std::tuple<at::Tensor, at::Tensor>(dinput, dgrid);
+}
 } // namespace op_api
-#endif
