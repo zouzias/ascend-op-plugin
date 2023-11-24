@@ -151,6 +151,8 @@ bool is_transpose_inner_axis(const at::Tensor &self)
         (self.scalar_type() != at::ScalarType::Half && self.scalar_type() != at::ScalarType::Float)) {
         return false;
     }
+    // Add Line Empty
+    TORCH_CHECK(self.dim() != 0, "Error, zero division.");
     int64_t data_type = static_cast<int64_t>(elementSize(self.scalar_type()));
     int64_t self_inner_axis = self.size(self.dim() - 1);
     int64_t self_outer_axis = self.size(self.dim() - 2);
