@@ -498,6 +498,8 @@ official:
    impl_ns: acl_op, op_api
  - func: cumsum.out(Tensor self, int dim, *, ScalarType? dtype=None, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: dequantize.self(Tensor self) -> Tensor
+   impl_ns: acl_op, op_api
  - func: diag(Tensor self, int diagonal=0) -> Tensor
    impl_ns: acl_op, op_api
  - func: diag.out(Tensor self, int diagonal=0, *, Tensor(a!) out) -> Tensor(a!)
