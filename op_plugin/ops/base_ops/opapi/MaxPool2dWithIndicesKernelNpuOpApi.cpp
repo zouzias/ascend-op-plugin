@@ -45,78 +45,79 @@ std::tuple<at::Tensor, at::Tensor> exec_max_pool2d_with_indices(
     at::IntArrayRef padding,
     at::IntArrayRef dilation,
     bool ceil_mode,
-    bool isNpu) {
-  if (!isNpu) {
-    DO_COMPATIBILITY(aclnnMaxPool2dWithIndices, 
-                   acl_op::max_pool2d_with_indices(self, kernel_size, 
-                                                   stride, padding, dilation, ceil_mode));
-  }
-  max_pool2d_with_indices_parameter_check(self, kernel_size, stride, padding, dilation);
+    bool isNpu)
+{
+    if (!isNpu) {
+        DO_COMPATIBILITY(aclnnMaxPool2dWithIndices,
+                         acl_op::max_pool2d_with_indices(self, kernel_size,
+                                                         stride, padding, dilation, ceil_mode));
+    }
+    max_pool2d_with_indices_parameter_check(self, kernel_size, stride, padding, dilation);
 
-  const int k_H = at::native::safe_downcast<int, int64_t>(kernel_size[0]);
-  const int k_W = kernel_size.size() == 1 ? k_H : at::native::safe_downcast<int, int64_t>(kernel_size[1]);
-  c10::SmallVector<int64_t, SIZE> kernel_sizes = {k_H, k_W};
-  at::IntArrayRef kernel_sizess = at::IntArrayRef(kernel_sizes);
+    const int k_H = at::native::safe_downcast<int, int64_t>(kernel_size[0]);
+    const int k_W = kernel_size.size() == 1 ? k_H : at::native::safe_downcast<int, int64_t>(kernel_size[1]);
+    c10::SmallVector<int64_t, SIZE> kernel_sizes = {k_H, k_W};
+    at::IntArrayRef kernel_sizess = at::IntArrayRef(kernel_sizes);
 
-  // NB: stride default is not expressible as an integer constant, so we accept
-  // empty stride for this case
-  const int d_H = stride.empty() ? k_H : at::native::safe_downcast<int, int64_t>(stride[0]);
-  const int d_W = stride.empty()     ? k_W :
-                  stride.size() == 1 ? d_H :
-                                       at::native::safe_downcast<int, int64_t>(stride[1]);
-  c10::SmallVector<int64_t, SIZE> strides = {d_H, d_W};
-  at::IntArrayRef stridess = at::IntArrayRef(strides);
+    // NB: stride default is not expressible as an integer constant, so we accept
+    // empty stride for this case
+    const int d_H = stride.empty() ? k_H : at::native::safe_downcast<int, int64_t>(stride[0]);
+    const int d_W = stride.empty()     ? k_W :
+                    stride.size() == 1 ? d_H :
+                                         at::native::safe_downcast<int, int64_t>(stride[1]);
+    c10::SmallVector<int64_t, SIZE> strides = {d_H, d_W};
+    at::IntArrayRef stridess = at::IntArrayRef(strides);
 
-  const int pad_H = at::native::safe_downcast<int, int64_t>(padding[0]);
-  const int pad_W = padding.size() == 1 ? pad_H : at::native::safe_downcast<int, int64_t>(padding[1]);
-  c10::SmallVector<int64_t, SIZE> paddings = {pad_H, pad_W};
-  at::IntArrayRef padss = at::IntArrayRef(paddings);
+    const int pad_H = at::native::safe_downcast<int, int64_t>(padding[0]);
+    const int pad_W = padding.size() == 1 ? pad_H : at::native::safe_downcast<int, int64_t>(padding[1]);
+    c10::SmallVector<int64_t, SIZE> paddings = {pad_H, pad_W};
+    at::IntArrayRef padss = at::IntArrayRef(paddings);
 
-  const int dilation_H = at::native::safe_downcast<int, int64_t>(dilation[0]);
-  const int dilation_W = dilation.size() == 1 ? dilation_H : at::native::safe_downcast<int, int64_t>(dilation[1]);
-  c10::SmallVector<int64_t, SIZE> dilations = {dilation_H, dilation_W};
-  at::IntArrayRef dilationss = at::IntArrayRef(dilations);
+    const int dilation_H = at::native::safe_downcast<int, int64_t>(dilation[0]);
+    const int dilation_W = dilation.size() == 1 ? dilation_H : at::native::safe_downcast<int, int64_t>(dilation[1]);
+    c10::SmallVector<int64_t, SIZE> dilations = {dilation_H, dilation_W};
+    at::IntArrayRef dilationss = at::IntArrayRef(dilations);
 
-  const int64_t n_batch = self.ndimension() == 4 ? self.size(-4) : 1;
-  const int64_t n_input_plane = self.size(-3);
-  const int64_t input_height = self.size(-2);
-  const int64_t input_width = self.size(-1);
+    const int64_t n_batch = self.ndimension() == 4 ? self.size(-4) : 1;
+    const int64_t n_input_plane = self.size(-3);
+    const int64_t input_height = self.size(-2);
+    const int64_t input_width = self.size(-1);
 
-  const int64_t output_height =
-      at::native::pooling_output_shape<int64_t>(input_height, k_H, pad_H, d_H, dilation_H, ceil_mode);
-  const int64_t output_width =
-      at::native::pooling_output_shape<int64_t>(input_width, k_W, pad_W, d_W, dilation_W, ceil_mode);
+    const int64_t output_height =
+                  at::native::pooling_output_shape<int64_t>(input_height, k_H, pad_H, d_H, dilation_H, ceil_mode);
+    const int64_t output_width =
+                  at::native::pooling_output_shape<int64_t>(input_width, k_W, pad_W, d_W, dilation_W, ceil_mode);
 
-  at::native::pool2d_shape_check(self, k_H, k_W, d_H, d_W, pad_H, pad_W, dilation_H, dilation_W, n_input_plane,
-                                 input_height, input_width, output_height, output_width,
-                                 self.suggest_memory_format());
+    at::native::pool2d_shape_check(self, k_H, k_W, d_H, d_W, pad_H, pad_W, dilation_H, dilation_W, n_input_plane,
+                                   input_height, input_width, output_height, output_width,
+                                   self.suggest_memory_format());
 
-  c10::SmallVector<int64_t, SIZE> output_size = 
-      self.ndimension() ==4 ? 
+    c10::SmallVector<int64_t, SIZE> output_size =
+         self.ndimension() == 4 ?
                             c10::SmallVector<int64_t, SIZE>({n_batch, n_input_plane, output_height, output_width}) :
                             c10::SmallVector<int64_t, SIZE>({n_input_plane, output_height, output_width});
 
-  const int64_t BLOCKSIZE = 16;
-  int64_t mask_H = kernel_size[0] * kernel_size[1];
-  int64_t mask_W = (op_infer::CeilDiv(output_height * output_width, BLOCKSIZE) + 1);
-  c10::SmallVector<int64_t, SIZE> indices_size = 
-      isNpu ? output_size : self.ndimension() == 4 ? 
-              c10::SmallVector<int64_t, SIZE>({n_batch, n_input_plane, mask_H, mask_W}) : 
-              c10::SmallVector<int64_t, SIZE>({n_input_plane, mask_H, mask_W});
+    const int64_t BLOCKSIZE = 16;
+    int64_t mask_H = kernel_size[0] * kernel_size[1];
+    int64_t mask_W = (op_infer::CeilDiv(output_height * output_width, BLOCKSIZE) + 1);
+    c10::SmallVector<int64_t, SIZE> indices_size =
+        isNpu ? output_size : self.ndimension() == 4 ?
+                c10::SmallVector<int64_t, SIZE>({n_batch, n_input_plane, mask_H, mask_W}) :
+                c10::SmallVector<int64_t, SIZE>({n_input_plane, mask_H, mask_W});
 
-  at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, self.options());
-  at::Tensor indices = 
-      isNpu ? npu_preparation::apply_tensor_without_format(indices_size, self.options().dtype(at::kInt))
-            : npu_preparation::apply_tensor_without_format(indices_size, self.options().dtype(at::kChar));
-  if (isNpu) {
-    EXEC_NPU_CMD(aclnnNpuMaxPool2dWithIndices, self, kernel_size, 
-                 stride, padding, dilation, ceil_mode, output, indices);
-  } else {
-    EXEC_NPU_CMD(aclnnMaxPool2dWithIndices, self, kernel_size, 
-                 stride, padding, dilation, ceil_mode, output, indices);
-  }
+    at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, self.options());
+    at::Tensor indices =
+        isNpu ? npu_preparation::apply_tensor_without_format(indices_size, self.options().dtype(at::kInt))
+              : npu_preparation::apply_tensor_without_format(indices_size, self.options().dtype(at::kChar));
+    if (isNpu) {
+        EXEC_NPU_CMD(aclnnNpuMaxPool2dWithIndices, self, kernel_size,
+                     stride, padding, dilation, ceil_mode, output, indices);
+    } else {
+        EXEC_NPU_CMD(aclnnMaxPool2dWithIndices, self, kernel_size,
+                     stride, padding, dilation, ceil_mode, output, indices);
+    }
 
-  return std::tuple<at::Tensor, at::Tensor>(output, indices);
+    return std::tuple<at::Tensor, at::Tensor>(output, indices);
 }
 
 std::tuple<at::Tensor, at::Tensor> max_pool2d_with_indices(
@@ -125,8 +126,9 @@ std::tuple<at::Tensor, at::Tensor> max_pool2d_with_indices(
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::IntArrayRef dilation,
-    bool ceil_mode) {
-  return op_api::exec_max_pool2d_with_indices(self, kernel_size, stride, padding, dilation, ceil_mode, false);
+    bool ceil_mode)
+{
+    return op_api::exec_max_pool2d_with_indices(self, kernel_size, stride, padding, dilation, ceil_mode, false);
 }
 
 std::tuple<at::Tensor, at::Tensor> npu_max_pool2d_with_indices(
@@ -135,7 +137,8 @@ std::tuple<at::Tensor, at::Tensor> npu_max_pool2d_with_indices(
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::IntArrayRef dilation,
-    bool ceil_mode) {
-  return op_api::exec_max_pool2d_with_indices(self, kernel_size, stride, padding, dilation, ceil_mode, true);
+    bool ceil_mode)
+{
+    return op_api::exec_max_pool2d_with_indices(self, kernel_size, stride, padding, dilation, ceil_mode, true);
 }
 } // namespace op_api

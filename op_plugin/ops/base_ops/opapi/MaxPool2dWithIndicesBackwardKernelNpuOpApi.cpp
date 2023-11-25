@@ -29,15 +29,16 @@ at::Tensor max_pool2d_with_indices_backward(
     at::IntArrayRef padding,
     at::IntArrayRef dilation,
     bool ceil_mode,
-    const at::Tensor& indices) {
-  DO_COMPATIBILITY(aclnnMaxPool2dWithIndicesBackward, 
-                   acl_op::max_pool2d_with_indices_backward(grad_output, self, kernel_size, 
-                                                            stride, padding, dilation, ceil_mode, indices));
-  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(self);
+    const at::Tensor& indices)
+{
+    DO_COMPATIBILITY(aclnnMaxPool2dWithIndicesBackward,
+                     acl_op::max_pool2d_with_indices_backward(grad_output, self, kernel_size,
+                                                              stride, padding, dilation, ceil_mode, indices));
+    at::Tensor grad_input = npu_preparation::apply_tensor_without_format(self);
 
-  EXEC_NPU_CMD(aclnnMaxPool2dWithIndicesBackward, grad_output, self, indices, kernel_size, 
-               stride, padding, dilation, ceil_mode, grad_input);
-  return grad_input;
+    EXEC_NPU_CMD(aclnnMaxPool2dWithIndicesBackward, grad_output, self, indices, kernel_size,
+                 stride, padding, dilation, ceil_mode, grad_input);
+    return grad_input;
 }
 
 at::Tensor npu_max_pool2d_with_indices_backward(
@@ -48,12 +49,13 @@ at::Tensor npu_max_pool2d_with_indices_backward(
     at::IntArrayRef padding,
     at::IntArrayRef dilation,
     bool ceil_mode,
-    const at::Tensor& indices) {
-  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(self);
+    const at::Tensor& indices)
+{
+    at::Tensor grad_input = npu_preparation::apply_tensor_without_format(self);
 
-  EXEC_NPU_CMD(aclnnNpuMaxPool2dWithIndicesBackward, grad_output, self, indices, kernel_size, 
-               stride, padding, dilation, ceil_mode, grad_input);
-  return grad_input;
+    EXEC_NPU_CMD(aclnnNpuMaxPool2dWithIndicesBackward, grad_output, self, indices, kernel_size,
+                 stride, padding, dilation, ceil_mode, grad_input);
+    return grad_input;
 }
 
 } // namespace op_api
