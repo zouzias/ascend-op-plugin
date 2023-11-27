@@ -48,10 +48,10 @@ at::ScalarType get_output_type(bool return_complex, at::ScalarType input_type)
 c10::SmallVector<int64_t, SIZE> get_output_size(bool return_complex, int64_t batch, int64_t frames, int64_t n)
 {
   c10::SmallVector<int64_t, SIZE> output_size;
-  c10::SmallVector<int64_t, SIZE> output_complex_with_batch = {batch, frames, n};
-  c10::SmallVector<int64_t, SIZE> output_complex = {frames, n};
-  c10::SmallVector<int64_t, SIZE> output_real_with_batch = {batch, frames, n, 2};
-  c10::SmallVector<int64_t, SIZE> output_real = {frames, n, 2};
+  c10::SmallVector<int64_t, SIZE> output_complex_with_batch = {batch, n, frames};
+  c10::SmallVector<int64_t, SIZE> output_complex = {n, frames};
+  c10::SmallVector<int64_t, SIZE> output_real_with_batch = {batch, n, frames, 2};
+  c10::SmallVector<int64_t, SIZE> output_real = {n, frames, 2};
 
   if (return_complex) {
     output_size = batch > 0 ? output_complex_with_batch : output_complex;
@@ -93,7 +93,7 @@ at::Tensor stft(at::Tensor const &self,
 
   int64_t batch = self.dim() == 2 ? self.size(0) : 0;
   int64_t len = self.dim() == 2 ? self.size(1) : self.size(0);
-  int64_t frames = len / hop_length + 1;
+  int64_t frames = (len - n_fft) / hop_length + 1;
   int64_t n = onesided == true ? n_fft / 2 + 1 : n_fft;
   at::ScalarType output_type = get_output_type(return_complex, self.scalar_type());
   TORCH_CHECK(output_type == at::ScalarType::Float || output_type == at::ScalarType::Double ||
