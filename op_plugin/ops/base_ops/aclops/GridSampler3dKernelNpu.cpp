@@ -63,6 +63,7 @@ at::Tensor grid_sampler_3d(const at::Tensor &self, const at::Tensor &grid, int64
     if (format_cast_of_self.scalar_type() == at::ScalarType::Half) {
         format_cast_of_self = at_npu::native::custom_ops::npu_dtype_cast(format_cast_of_self, at::ScalarType::Float);
     }
+
     if (format_cast_of_grid.scalar_type() == at::ScalarType::Half) {
         format_cast_of_grid = at_npu::native::custom_ops::npu_dtype_cast(format_cast_of_grid, at::ScalarType::Float);
     }
