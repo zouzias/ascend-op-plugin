@@ -91,7 +91,6 @@ at::Tensor stft(at::Tensor const &self,
                         return_complex_opt.value() :
                         self.is_complex() || (window_opt.has_value() && window_opt.value().is_complex());
 
-
   int64_t batch = self.dim() == 2 ? self.size(0) : 0;
   int64_t len = self.dim() == 2 ? self.size(1) : self.size(0);
   int64_t frames = len / hop_length + 1;
