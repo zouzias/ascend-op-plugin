@@ -85,12 +85,11 @@ at::Tensor stft(at::Tensor const &self,
   int win_length = win_length_opt.has_value() ? win_length_opt.value() : n_fft;
   TORCH_CHECK(win_length > 0 && win_length <= n_fft, "expected: 0 < win_length <= n_fft");
 
-  const at::Tensor &window = c10::value_or_else(window_opt, [] {return at::Tensor(); });
+  const at::Tensor &window = c10::value_or_else(window_opt, [] { return at::Tensor(); });
   bool onesided = onesided_opt.has_value() ? onesided_opt.value() : !self.is_complex();
   bool return_complex = return_complex_opt.has_value() ?
                         return_complex_opt.value() :
                         self.is_complex() || (window_opt.has_value() && window_opt.value().is_complex());
-
 
   int64_t batch = self.dim() == 2 ? self.size(0) : 0;
   int64_t len = self.dim() == 2 ? self.size(1) : self.size(0);
