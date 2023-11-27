@@ -45,4 +45,41 @@ at::Tensor &scatter_update_(
     return self;
 }
 
+std::vector<at::Tensor> npu_scatter_list(
+    at::TensorList self,
+    const at::Tensor &indice,
+    const at::Tensor &updates,
+    const c10::optional<at::Tensor> &mask,
+    c10::string_view reduce,
+    int64_t axis)
+{
+    std::string reduce_str = std::string(reduce);
+    char *reduce_ptr = const_cast<char *>(reduce_str.c_str());
+    // The attribute 'reduce' of ScatterList only supports setting it to 'update'.
+    std::vector<at::Tensor> result;
+    for (const at::Tensor &tensor : self)
+    {
+        result.push_back(tensor.clone());
+    }
+    at::TensorList result_ = at::TensorList(result);
+
+    EXEC_NPU_CMD(aclnnScatterList, result_, indice, updates, mask, reduce_ptr, axis);
+
+    return result;
+}
+
+void npu_scatter_list_(
+    at::TensorList self,
+    const at::Tensor &indice,
+    const at::Tensor &updates,
+    const c10::optional<at::Tensor> &mask,
+    c10::string_view reduce,
+    int64_t axis)
+{
+    std::string reduce_str = std::string(reduce);
+    char *reduce_ptr = const_cast<char *>(reduce_str.c_str());
+    EXEC_NPU_CMD(aclnnScatterList, self, indice, updates, mask, reduce_ptr, axis);
+    return;
+}
+
 } // namespace op_api

@@ -16,50 +16,51 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
-namespace acl_op {
-
-at::Tensor scatter_update(
-    const at::Tensor &self,
-    const at::Tensor &indices,
-    const at::Tensor &updates,
-    int64_t axis)
+namespace acl_op
 {
-    at::Tensor result = self.clone();
 
-    // Note:
-    // The attribute 'reduce' of Scatter only supports setting it to 'update'.
-    at_npu::native::OpCommand cmd;
-    cmd.Name("Scatter")
-        .Input(result)
-        .Input(indices)
-        .Input(updates)
-        .Output(result)
-        .Attr("reduce", (string) "update")
-        .Attr("axis", axis)
-        .Run();
+    at::Tensor scatter_update(
+        const at::Tensor &self,
+        const at::Tensor &indices,
+        const at::Tensor &updates,
+        int64_t axis)
+    {
+        at::Tensor result = self.clone();
 
-    return result;
-}
+        // Note:
+        // The attribute 'reduce' of Scatter only supports setting it to 'update'.
+        at_npu::native::OpCommand cmd;
+        cmd.Name("Scatter")
+            .Input(result)
+            .Input(indices)
+            .Input(updates)
+            .Output(result)
+            .Attr("reduce", (string) "update")
+            .Attr("axis", axis)
+            .Run();
 
-at::Tensor &scatter_update_(
-    at::Tensor &self,
-    const at::Tensor &indices,
-    const at::Tensor &updates,
-    int64_t axis)
-{
-    // Note:
-    // The attribute 'reduce' of Scatter only supports setting it to 'update'.
-    at_npu::native::OpCommand cmd;
-    cmd.Name("Scatter")
-        .Input(self)
-        .Input(indices)
-        .Input(updates)
-        .Output(self)
-        .Attr("reduce", (string) "update")
-        .Attr("axis", axis)
-        .Run();
+        return result;
+    }
 
-    return self;
-}
+    at::Tensor &scatter_update_(
+        at::Tensor &self,
+        const at::Tensor &indices,
+        const at::Tensor &updates,
+        int64_t axis)
+    {
+        // Note:
+        // The attribute 'reduce' of Scatter only supports setting it to 'update'.
+        at_npu::native::OpCommand cmd;
+        cmd.Name("Scatter")
+            .Input(self)
+            .Input(indices)
+            .Input(updates)
+            .Output(self)
+            .Attr("reduce", (string) "update")
+            .Attr("axis", axis)
+            .Run();
+
+        return self;
+    }
 
 } // namespace acl_op
