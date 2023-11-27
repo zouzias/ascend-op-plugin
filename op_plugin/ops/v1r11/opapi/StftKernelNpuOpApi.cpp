@@ -91,6 +91,7 @@ at::Tensor stft(at::Tensor const &self,
                         return_complex_opt.value() :
                         self.is_complex() || (window_opt.has_value() && window_opt.value().is_complex());
 
+
   int64_t batch = self.dim() == 2 ? self.size(0) : 0;
   int64_t len = self.dim() == 2 ? self.size(1) : self.size(0);
   int64_t frames = len / hop_length + 1;
@@ -100,8 +101,7 @@ at::Tensor stft(at::Tensor const &self,
               output_type == at::ScalarType::ComplexFloat || output_type == at::ScalarType::ComplexDouble,
               "output type should be float, double, complex<float> or complex<double>");
   c10::SmallVector<int64_t, SIZE> output_size = get_output_size(return_complex, batch, frames, n);
-  at::Tensor output = npu_preparation::apply_tensor_with_format(output_size, self.options().dtype(output_type),
-                                                                ACL_FORMAT_ND);
+  at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(output_type));
 
   EXEC_NPU_CMD(aclStft, self, window, output, n_fft, hop_length, win_length, normalized, onesided, return_complex);
   return output;
