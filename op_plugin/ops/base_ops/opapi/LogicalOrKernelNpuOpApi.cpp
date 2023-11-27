@@ -29,18 +29,30 @@ at::Tensor& logical_or_out(const at::Tensor& self, const at::Tensor& other, at::
   return result;
 }
 
+static inline at::Tensor convert_2_npu_tensor(at::Tensor& other) {
+    if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
+        at::Scalar scalar = other.item();
+        return at_npu::native::OpPreparation::copy_scalar_to_device(scalar, other.scalar_type());
+    }
+    return nullptr;
+}
+
 at::Tensor logical_or(const at::Tensor& self, const at::Tensor& other) {
   DO_COMPATIBILITY(aclnnLogicalOr, acl_op::logical_or(self, other));
   auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
   at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(at::kBool));
-  EXEC_NPU_CMD(aclnnLogicalOr, self, other, result);
+  at::Tensor npu_other = convert_2_npu_tensor(other);
+  at::Tensor cp_other = npu_other == nullptr ? other : npu_other;
+  EXEC_NPU_CMD(aclnnLogicalOr, self, cp_other, result);
   return result;
 }
 
 at::Tensor& logical_or_(at::Tensor& self, const at::Tensor& other) {
   DO_COMPATIBILITY(aclnnInplaceLogicalOr, acl_op::logical_or_(self, other));
   npu_preparation::check_memory({self, other},{self});
-  EXEC_NPU_CMD(aclnnInplaceLogicalOr, self, other);
+  at::Tensor other_npu = convert_2_npu_tensor(other);
+  at::Tensor other_copy = other_npu == nullptr ? other : other_npu;
+  EXEC_NPU_CMD(aclnnInplaceLogicalOr, self, other_copy);
   return self;
 }
 
