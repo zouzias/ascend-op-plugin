@@ -147,6 +147,7 @@ bool is_transpose_inner_axis(const at::Tensor &self)
 {
     const static int64_t kInnerAxisMinBytes = 256;
     const static int64_t kInnerAxisMaxLimit = 65535;
+    // comment
     if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1 || self.dim() < 2 ||
         (self.scalar_type() != at::ScalarType::Half && self.scalar_type() != at::ScalarType::Float &&
          self.scalar_type() != at::ScalarType::BFloat16)) {
