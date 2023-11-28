@@ -2326,6 +2326,8 @@ custom:
     impl_ns: op_api
   - func: npu_masked_softmax_with_rel_pos_bias(Tensor x, Tensor? atten_mask, Tensor relative_pos_bias, float scale_value=1.0, int inner_precision_mode=0) -> Tensor
     impl_ns: op_api
+  - func: npu_dropout_add_layer_norm(Tensor x0, Tensor weight, Tensor? residual, Tensor? bias, Tensor? rowscale, Tensor? layerscale, float p=0.0, float eps=1e-5, bool prenorm=False, bool residual_in_fp32=False, bool is_rms_norm=False, bool return_dropout_mask=False) -> (Tensor, Tensor, Tensor)
+    impl_ns: acl_op
 
 quant:
  - func: q_scale(Tensor self) -> float
