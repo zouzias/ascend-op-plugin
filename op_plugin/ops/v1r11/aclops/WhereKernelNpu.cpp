@@ -26,7 +26,7 @@ at::Tensor _s_where(const at::Tensor &condition, const at::Tensor &self, const a
     at::Tensor result = npu_preparation::apply_tensor(self);
 
     at_npu::native::OpCommand cmd;
-    cmd.Name("Select").Input(condition).Input(self).Input(other).Output(result).Run();
+    cmd.Name("SelectV2").Input(condition).Input(self).Input(other).Output(result).Run();
 
     return result;
 }
