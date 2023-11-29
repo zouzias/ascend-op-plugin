@@ -36,6 +36,7 @@ std::tuple<at::Tensor, at::Tensor> grid_sampler3d_backward_common_nocheck(
   at::Tensor format_cast_of_grad = grad;
   at::Tensor format_cast_of_input = input;
   at::Tensor format_cast_of_grid = grid;
+
   if (format_cast_of_grad.scalar_type() == at::ScalarType::Half) {
     format_cast_of_grad = acl_op::npu_dtype_cast(format_cast_of_grad, at::ScalarType::Float);
   }
