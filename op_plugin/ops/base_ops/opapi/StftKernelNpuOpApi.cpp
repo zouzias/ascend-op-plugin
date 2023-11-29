@@ -34,13 +34,13 @@ at::ScalarType get_output_type(bool return_complex, at::ScalarType input_type)
             output_type = at::ScalarType::ComplexDouble;
         }
     } else {
-      if (input_type == at::ScalarType::Float || input_type == at::ScalarType::Double) {
-          output_type = input_type;
-      } else if (input_type == at::ScalarType::ComplexFloat) {
-          output_type = at::ScalarType::Float;
-      } else if (input_type == at::ScalarType::ComplexDouble) {
-          output_type = at::ScalarType::Double;
-      }
+        if (input_type == at::ScalarType::Float || input_type == at::ScalarType::Double) {
+            output_type = input_type;
+        } else if (input_type == at::ScalarType::ComplexFloat) {
+            output_type = at::ScalarType::Float;
+        } else if (input_type == at::ScalarType::ComplexDouble) {
+            output_type = at::ScalarType::Double;
+        }
     }
     return output_type;
 }
@@ -56,7 +56,7 @@ c10::SmallVector<int64_t, SIZE> get_output_size(bool return_complex, int64_t bat
     if (return_complex) {
         output_size = batch > 0 ? output_complex_with_batch : output_complex;
     } else {
-        output_size = batch > 0 ? output_real_with_batch : output_real;  
+        output_size = batch > 0 ? output_real_with_batch : output_real;
     }
     return output_size;
 }
