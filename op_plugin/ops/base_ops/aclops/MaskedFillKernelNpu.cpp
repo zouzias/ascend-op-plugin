@@ -85,7 +85,7 @@ at::Tensor& masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Ten
   }
 
   if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+    at::Tensor contiguous_self = npu_utils::format_contiguous_add_copy_optimize(self);
     masked_fill_out_npu_nocheck(contiguous_self, contiguous_self, mask, value);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
@@ -96,7 +96,7 @@ at::Tensor& masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Ten
 
 at::Tensor& masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Scalar& value) {
   if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+    at::Tensor contiguous_self = npu_utils::format_contiguous_add_copy_optimize(self);
     masked_fill_out_npu_nocheck(contiguous_self, contiguous_self, mask, value);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {

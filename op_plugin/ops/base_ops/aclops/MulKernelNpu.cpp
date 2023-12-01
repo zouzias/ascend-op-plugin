@@ -71,7 +71,7 @@ at::Tensor& mul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   at::Tensor result_cast = (result_type == calculate_type) ? result :
       at_npu::native::custom_ops::npu_dtype_cast(result, calculate_type);
   if (!npu_utils::check_match(&result_cast)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result_cast);
+    at::Tensor contiguous_result = npu_utils::format_contiguous_add_copy_optimize(result_cast);
     mul_out_npu_nocheck(contiguous_result, self_cast, other_cast);
     npu_utils::format_fresh_view(result_cast, contiguous_result);
   } else {
@@ -129,7 +129,7 @@ at::Tensor& mul_(at::Tensor& self, const at::Tensor& other) {
 
 at::Tensor& mul_(at::Tensor& self, const at::Scalar& other) {
   if (!npu_utils::check_match(&self)) {
-    at::Tensor contiguous_self = npu_utils::format_contiguous(self);
+    at::Tensor contiguous_self = npu_utils::format_contiguous_add_copy_optimize(self);
     mul_out_npu_nocheck(contiguous_self, contiguous_self, other);
     npu_utils::format_fresh_view(self, contiguous_self);
   } else {
