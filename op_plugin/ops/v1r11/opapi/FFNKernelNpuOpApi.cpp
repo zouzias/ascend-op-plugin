@@ -26,8 +26,8 @@ const static int MAX_EXPERT_NUM = 256;
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Tensor &weight2,
-    c10::string_view activation, c10::optional<at::IntArrayRef> expert_tokens,
-    const c10::optional<at::Tensor> &bias1, const c10::optional<at::Tensor> &bias2, int64_t inner_precise)
+    c10::string_view activation, c10::optional<at::IntArrayRef> expert_tokens, const c10::optional<at::Tensor> &bias1,
+    const c10::optional<at::Tensor> &bias2, c10::optional<int64_t> inner_precise)
 {
     auto weight1_dim_num = weight1.dim();
     auto weight2_dim_num = weight2.dim();
