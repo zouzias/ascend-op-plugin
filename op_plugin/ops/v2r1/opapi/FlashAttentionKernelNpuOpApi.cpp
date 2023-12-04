@@ -380,10 +380,10 @@ at::Tensor npu_prompt_flash_attention(
     return output;
 }
 
-at::Tensor npu_incre_flash_attention(
+at::Tensor npu_incre_flash_attention_symint(
     const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
     const c10::optional<at::Tensor> &padding_mask, const c10::optional<at::Tensor> &atten_mask,
-    c10::OptionalIntArrayRef actual_seq_lengths,
+    c10::OptionalArrayRef<c10::SymInt> actual_seq_lengths,
     int64_t num_heads, double scale_value, c10::string_view input_layout, int64_t num_key_value_heads)
 {
     // construct the output tensor of the NPU
@@ -396,7 +396,8 @@ at::Tensor npu_incre_flash_attention(
     at::TensorList keyTensors = key;
     at::TensorList valueTensors = value;
 
-    auto actSeqLen = actual_seq_lengths.value_or(at::IntArrayRef{});
+    auto actSeqLenMiddle = actual_seq_lengths.value_or(at::ArrayRef<c10::SymInt>{});
+    auto actSeqLen = c10::asIntArrayRefUnchecked(actSeqLenMiddle);
 
     // dispatch hostAPI
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnIncreFlashAttention, query, keyTensors, valueTensors, padding_mask, atten_mask, actSeqLen,
