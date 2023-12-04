@@ -26,6 +26,21 @@ using tuple_vectors =
 using small_vector = c10::SmallVector<int64_t, SIZE>;
 using int_array_ref_list = std::tuple<c10::IntArrayRef, c10::IntArrayRef, c10::IntArrayRef>;
 
+// Integer division rounding to -Infinity
+template <typename T>
+static inline T div_rtn(T x, T y)
+{
+    if (y == 0) {
+        AT_ERROR("div_rtn: Division by zero!");
+    }
+    int q = x / y;
+    int r = x % y;
+    if ((r != 0) && ((r < 0) != (y < 0))) {
+        --q;
+    }
+    return q;
+}
+
 int64_t CeilDiv(int64_t value, int64_t factor)
 {
     int64_t value_num = 0;
@@ -1138,6 +1153,21 @@ c10::SmallVector<int64_t, 3> upsample_infershape_with_scale(c10::IntArrayRef inp
     TORCH_CHECK(false, "Must specify exactly one of output_size and scale_factors");
 }
 
+c10::SmallVector<int64_t, SIZE> upsample_bicubic2d_npu_output_size(const at::Tensor &self,
+                                                                   c10::IntArrayRef output_size)
+{
+    TORCH_CHECK(self.dim() == 4, "It is expected input_size equals to 4, but got size ", self.dim());
+    TORCH_CHECK(output_size.size() == 2, "It is expected output_size equals to 2, but got size ", output_size.size());
+
+    int64_t N = self.size(0);
+    int64_t C = self.size(1);
+    int64_t H = output_size[0];
+    int64_t W = output_size[1];
+
+    c10::SmallVector<int64_t, SIZE> outputSize = {N, C, H, W};
+    return outputSize;
+}
+
 c10::IntArrayRef upsample_bicubic2d_backward_npu_output_size(c10::IntArrayRef input_size)
 {
     return input_size;
@@ -1369,9 +1399,19 @@ c10::SmallVector<int64_t, SIZE> image_to_col_npu_output_size(const at::Tensor &s
         pads = at::IntArrayRef(pad_sizes);
     }
 
-    int64_t out_h = (self.size(2) + 2 * pads[0] - (dilations[0] * (ksizes[0] - 1) + 1)) / strides[0] + 1;
-    int64_t out_w = (self.size(3) + 2 * pads[1] - (dilations[1] * (ksizes[1] - 1) + 1)) / strides[1] + 1;
-    return {self.size(0), self.size(1) * ksizes[0] * ksizes[1], out_h * out_w};
+    bool need_squeeze = self.dim() == 3 ? true : false;
+    size_t index = need_squeeze ? 1 : 2;
+    int64_t out_h = div_rtn<int64_t>((self.size(index) + 2 * pads[0] - (dilations[0] * (ksizes[0] - 1) + 1)),
+                                     strides[0]) + 1;
+    int64_t out_w = div_rtn<int64_t>((self.size(index + 1) + 2 * pads[1] - (dilations[1] * (ksizes[1] - 1) + 1)),
+                                     strides[1]) + 1;
+    if (out_h < 1 || out_w < 1) {
+        AT_ERROR("The shape (",out_h, ",", out_w, ") of the array calculated by other parameters "
+                "must be at least one.");
+    }
+    small_vector output_size = need_squeeze ? small_vector({self.size(0) * ksizes[0] * ksizes[1], out_h * out_w}):
+                            small_vector({self.size(0), self.size(1) * ksizes[0] * ksizes[1], out_h * out_w});
+    return output_size;
 }
 
 c10::SmallVector<int64_t, SIZE> clamp_npu_output_size(const at::Tensor &self, const c10::optional<at::Tensor> &min,
