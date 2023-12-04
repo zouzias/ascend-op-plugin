@@ -403,4 +403,31 @@ at::Tensor npu_incre_flash_attention(
                                  num_heads, scale_value, input_layout_ptr, num_key_value_heads, output);
     return output;
 }
+
+at::Tensor npu_fused_infer_attention_score(
+    const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
+    const c10::optional<at::Tensor> &pse_shift,
+    const c10::optional<at::Tensor> &atten_mask,
+    c10::OptionalIntArrayRef actual_seq_lengths,
+    int64_t num_heads, double scale,
+    int64_t pre_tokens, int64_t next_tokens,
+    c10::string_view input_layout, int64_t num_key_value_head)
+{
+    // construct the output tensor of the NPU
+    auto output = npu_preparation::apply_tensor_without_format(query);
+
+    // convert str
+    std::string input_layout_str = std::string(input_layout);
+    char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
+
+    auto actSeqLen = actual_seq_lengths.value_or(at::IntArrayRef{});
+    auto actSeqLen = actual_seq_lengths.value_or(at::IntArrayRef{});
+
+    // dispatch hostAPI
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScore, query, key, value, pse_shift, atten_mask, actSeqLen, 
+                                 num_heads, scale, pre_tokens, next_tokens, input_layout_ptr, num_key_value_head, 
+                                 output);
+    return output;
+}
+
 } // namespace op_api
