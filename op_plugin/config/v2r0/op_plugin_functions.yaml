@@ -1941,8 +1941,6 @@ tocpu:
   - poisson
   - polar.out
   - real
-  - replication_pad3d_backward.grad_input
-  - replication_pad3d_backward
   - repeat_interleave.Tensor
   - slow_conv_dilated3d
   - slow_conv_transpose3d.out
