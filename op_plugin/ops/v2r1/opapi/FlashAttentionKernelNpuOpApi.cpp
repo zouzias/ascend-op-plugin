@@ -375,7 +375,7 @@ at::Tensor npu_prompt_flash_attention(
     auto actSeqLen = actual_seq_lengths.value_or(at::IntArrayRef{});
 
     // dispatch hostAPI
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttention, query, key, value, padding_mask, atten_mask, actSeqLen,
+    EXEC_NPU_CMD(aclnnPromptFlashAttention, query, key, value, padding_mask, atten_mask, actSeqLen,
                                  num_heads, scale_value, pre_tokens, next_tokens, input_layout_ptr, num_key_value_heads, output);
     return output;
 }
