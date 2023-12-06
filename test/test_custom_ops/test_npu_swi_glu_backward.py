@@ -7,6 +7,7 @@ from torch_npu.testing.testcase import TestCase, run_tests
 
 torch.npu.config.allow_internal_format = False
 
+
 class TestSwiGluBackward(TestCase):
 
     def swish(self, beta, x):
@@ -25,7 +26,7 @@ class TestSwiGluBackward(TestCase):
             tensor_other_float = inTensors[1].type(torch.float)
             tensor_gradout_float = tensor_gradout.type(torch.float)
             torch.mul(torch.relu(tensor_self_float), tensor_other_float)
-            tensor_out1 = torch.mul(torch.mul(tensor_other_float, self.swish_grad(beta_value, tensor_self_float)),
+            tensor_out1 = torch.mul(torch.mul(tensor_other_float, self.swish_backward(beta_value, tensor_self_float)),
                                     tensor_gradout_float)
             tensor_out2 = torch.mul(tensor_gradout_float, self.swish(beta_value, tensor_self_float))
             tensor_out_float = torch.cat((tensor_out1, tensor_out2), dim=-1)
