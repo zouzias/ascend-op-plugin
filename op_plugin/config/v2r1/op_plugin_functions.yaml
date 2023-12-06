@@ -2372,3 +2372,7 @@ custom:
     impl_ns: op_api
   - func: npu_ffn(Tensor x, Tensor weight1, Tensor weight2, str activation, int[]? expert_tokens=None, Tensor? bias1=None, Tensor? bias2=None, int? inner_precise=None) -> Tensor
     impl_ns: op_api
+  - func: leaky_relu_custom(Tensor self, float negative_slope=0.01) -> Tensor
+    impl_ns: op_api
+  - func: leaky_relu_custom.out(Tensor self, float negative_slope=0.01, *, Tensor(a!) out) -> Tensor(a!)
+    impl_ns: op_api
