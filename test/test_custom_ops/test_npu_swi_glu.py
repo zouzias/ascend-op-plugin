@@ -29,21 +29,14 @@ class TestSwiGlu(TestCase):
     def test_swiglu(self):
         shape = [8192, 1, 3904 * 2]
         dim = -1
-        input_self_tensor = torch.rand(shape, device='cpu', dtype=torch.float32).npu()
-        print("input:", input_self_tensor)
 
-        prof_path = "./prof_total"
-        with torch_npu.npu.profile(prof_path) as prof:
-            # for i in range(100):
-            input_self_tensor = torch.rand(shape, device='cpu', dtype=torch.bfloat16).npu()
-            torch.npu.synchronize()
-            output = torch_npu.npu_swiglu(input_self_tensor, dim)
-            torch.npu.synchronize()
+        input_self_tensor = torch.rand(shape, device='cpu', dtype=torch.bfloat16).npu()
+        torch.npu.synchronize()
+        output = torch_npu.npu_swiglu(input_self_tensor, dim)
+        torch.npu.synchronize()
 
-            golden = self.get_golden(input_self_tensor, dim)
-            print("golden:", golden)
-            print("output:", output)
-            self.assertRtolEqual(output.type(torch.float32), golden.type(torch.float32))
+        golden = self.get_golden(input_self_tensor, dim)
+        self.assertRtolEqual(output.type(torch.float32), golden.type(torch.float32))
 
 if __name__ == "__main__":
     run_tests()

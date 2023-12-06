@@ -82,19 +82,17 @@ class TestSwiGluBackward(TestCase):
         input_self_tensor = torch.rand(shape, device='cpu', dtype=torch.bfloat16)
 
         golden = self.get_golden(grad_out, input_self_tensor, dim)
-        prof_path = "./prof_total_backward"
-        with torch.npu.profile(prof_path) as prof:
-            torch.npu.synchronize()
+        torch.npu.synchronize()
 
-            input_self_tensor_npu = input_self_tensor.npu()
-            input_self_tensor_npu.requires_grad_(True)
-            input_self_tensor_npu.retain_grad()
-            grad_out_npu = grad_out.npu()
+        input_self_tensor_npu = input_self_tensor.npu()
+        input_self_tensor_npu.requires_grad_(True)
+        input_self_tensor_npu.retain_grad()
+        grad_out_npu = grad_out.npu()
 
-            output_forward = torch_npu.npu_swiglu(input_self_tensor_npu, dim)
-            output_forward.backward([grad_out_npu])
-            result = input_self_tensor_npu.grad.cpu()
-            torch.npu.synchronize()
+        output_forward = torch_npu.npu_swiglu(input_self_tensor_npu, dim)
+        output_forward.backward([grad_out_npu])
+        result = input_self_tensor_npu.grad.cpu()
+        torch.npu.synchronize()
 
         self.assertRtolEqual(golden.type(torch.float32), result.type(torch.float32))
 
