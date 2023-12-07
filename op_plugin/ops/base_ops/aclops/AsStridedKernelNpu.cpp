@@ -21,6 +21,7 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
+using npu_compile_type = at_npu::native::CompileType;
 
 namespace {
 at::Tensor& stride_copy_out_npu_nocheck(
