@@ -21,6 +21,7 @@
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
+using npu_compile_type = at_npu::native::CompileType;
 
 namespace {
 at::Tensor& stride_copy_out_npu_nocheck(
@@ -75,7 +76,7 @@ at::Tensor& stride_copy_out_npu_nocheck(
     // (Ascend) Fix multi-compiling of asstrided op by wrapping attr storage_offset as a NPU Tensor instead of GE Const node.
     // If GE Data node can pass vaule of storage_offset to op, we can switch storage_offset to Data node finally.
     cmd.Name("AsStrided")
-      .InputWithoutContiguous(self) 
+      .InputWithoutContiguous(self)
       .Input(shape)
       .Input(stride)
       .Input(at::Scalar(0), at::kLong)
