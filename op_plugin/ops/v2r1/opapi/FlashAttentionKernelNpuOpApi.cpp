@@ -384,8 +384,8 @@ at::Tensor npu_prompt_flash_attention(
     const at::Tensor quant_offset2;
 
     // dispatch hostAPI
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttentionV2, query, key, value, padding_mask, atten_mask, actSeqLen, actSeqLenKv, deq_scale1, quant_scale1, deq_scale2, quant_scale2, quant_offset2,
-                                 num_heads, scale_value, pre_tokens, next_tokens, input_layout_ptr, num_key_value_heads, sparse_mode, output);
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttention, query, key, value, padding_mask, atten_mask, actSeqLen,
+                                 num_heads, scale_value, pre_tokens, next_tokens, input_layout_ptr, num_key_value_heads, output);
     return output;
 }
 
