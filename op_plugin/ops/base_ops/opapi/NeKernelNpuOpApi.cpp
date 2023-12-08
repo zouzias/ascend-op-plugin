@@ -21,7 +21,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& ne_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
+at::Tensor& ne_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result)
+{
   DO_COMPATIBILITY(aclnnNeTensor, acl_op::ne_out(self, other, result));
   auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
   npu_preparation::check_tensor({self, other}, result, result.scalar_type(), at::IntArrayRef(outputSize));
