@@ -88,9 +88,18 @@ at::Tensor &add_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, cons
                 cmd.Expect(unified_result);
                 real_type = "uint8";
             }
-            cmd.Name("Add").Input(self).Input(other).Output(result, "", c10::nullopt, real_type).Run();
+            cmd.Name("Add")
+                .Input(self)
+                .Input(other)
+                .Output(result, "", c10::nullopt, real_type)
+                .Run();
         } else {
-            cmd.Name("AxpyV2").Input(self).Input(other).Input(alpha, self.scalar_type()).Output(result).Run();
+            cmd.Name("AxpyV2")
+                .Input(self)
+                .Input(other)
+                .Input(alpha, self.scalar_type())
+                .Output(result)
+                .Run();
         }
     }
     return result;
