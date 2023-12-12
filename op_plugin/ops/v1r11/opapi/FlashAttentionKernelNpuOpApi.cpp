@@ -182,7 +182,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_flash_attention_b
         dpse = at::empty({0}, query.options());
     }
 
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(
+    EXEC_NPU_CMD(
         aclnnFlashAttentionScoreGrad, format_query, format_key, format_value, format_dy,
         format_pse, format_drop_mask, format_padding_mask, format_atten_mask, format_softmax_max,
         format_softmax_sum, format_softmax, format_attention, prefixN, scale_value, keep_prob, pre_tockens,
