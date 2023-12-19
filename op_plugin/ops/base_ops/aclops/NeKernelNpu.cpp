@@ -57,9 +57,9 @@ at::Tensor& ne_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at::S
 } // namespace
 
 at::Tensor& ne_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-if (npu_preparation::IsCPUScalar(other)) {
+if (op_plugin::utils::is_cpu_scalar(other)) {
     return acl_op::ne_out(self, other.item(), result);
-  } else if (npu_preparation::IsCPUScalar(self)) {
+  } else if (op_plugin::utils::is_cpu_scalar(self)) {
     return acl_op::ne_out(other, self.item(), result);
   } else {
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
@@ -124,9 +124,9 @@ at::Tensor& ne_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& 
 }
 
 at::Tensor ne(const at::Tensor& self, const at::Tensor& other) {
-  if (npu_preparation::IsCPUScalar(other)) {
+  if (op_plugin::utils::is_cpu_scalar(other)) {
     return acl_op::ne(self, other.item());
-  } else if (npu_preparation::IsCPUScalar(self)) {
+  } else if (op_plugin::utils::is_cpu_scalar(self)) {
     return acl_op::ne(other, self.item());
   } else {
     TORCH_CHECK(self.device() == other.device(),

@@ -71,9 +71,9 @@ at::Tensor& eq_out(
     const at::Tensor& self,
     const at::Tensor& other,
     at::Tensor& result) {
-  if (npu_preparation::IsCPUScalar(other)) {
+  if (op_plugin::utils::is_cpu_scalar(other)) {
     return acl_op::eq_out(self, other.item(), result);
-  } else if (npu_preparation::IsCPUScalar(self)) {
+  } else if (op_plugin::utils::is_cpu_scalar(self)) {
     return acl_op::eq_out(other, self.item(), result);
   } else {
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
@@ -143,9 +143,9 @@ at::Tensor& eq_out(
 at::Tensor eq(
     const at::Tensor& self,
     const at::Tensor& other) {
-  if (npu_preparation::IsCPUScalar(other)) {
+  if (op_plugin::utils::is_cpu_scalar(other)) {
     return acl_op::eq(self, other.item());
-  } else if (npu_preparation::IsCPUScalar(self)) {
+  } else if (op_plugin::utils::is_cpu_scalar(self)) {
     return acl_op::eq(other, self.item());
   } else {
     TORCH_CHECK(self.device() == other.device(),

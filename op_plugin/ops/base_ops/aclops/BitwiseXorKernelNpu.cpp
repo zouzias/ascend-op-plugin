@@ -32,9 +32,9 @@ at::Tensor &bitwise_xor_out_npu_nocheck(at::Tensor &result, const at::Tensor &se
 at::Tensor &bitwise_xor_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &other)
 {
     auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
-    if (npu_preparation::IsCPUScalar(other)) {
+    if (op_plugin::utils::is_cpu_scalar(other)) {
         acl_op::bitwise_xor_out(self, other.item(), result);
-    } else if (npu_preparation::IsCPUScalar(self)) {
+    } else if (op_plugin::utils::is_cpu_scalar(self)) {
         acl_op::bitwise_xor_out(other, self.item(), result);
     } else {
         at_npu::native::OpCommand cmd;

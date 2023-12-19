@@ -19,7 +19,6 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& fill_(at::Tensor& self, const at::Scalar& value) {
   DO_COMPATIBILITY(aclnnInplaceFillScalar, acl_op::fill_(self, value));
@@ -31,7 +30,7 @@ at::Tensor& fill_(at::Tensor& self, const at::Tensor& other) {
   DO_COMPATIBILITY(aclnnInplaceFillScalar, acl_op::fill_(self, other));
   DO_COMPATIBILITY(aclnnInplaceFillTensor, acl_op::fill_(self, other));
 
-  if (npu_preparation::IsCPUScalar(other)) {
+  if (op_plugin::utils::is_cpu_scalar(other)) {
     const at::Scalar other_value = other.item();
     EXEC_NPU_CMD(aclnnInplaceFillScalar, self, other_value);
   } else {

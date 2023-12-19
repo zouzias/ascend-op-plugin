@@ -140,9 +140,9 @@ at::Tensor& remainder_out(
     const at::Tensor& self,
     const at::Tensor& other,
     at::Tensor& result) {
-  if (npu_preparation::IsCPUScalar(other)) {
+  if (op_plugin::utils::is_cpu_scalar(other)) {
     return acl_op::remainder_out(self, other.item(), result);
-  } else if (npu_preparation::IsCPUScalar(self)) {
+  } else if (op_plugin::utils::is_cpu_scalar(self)) {
     return remainder_out_scalar(result, self.item(), other);
   } else {
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
@@ -184,9 +184,9 @@ at::Tensor& remainder_out(
 }
 
 at::Tensor remainder(const at::Tensor& self, const at::Tensor& other) {
-  if (npu_preparation::IsCPUScalar(other)) {
+  if (op_plugin::utils::is_cpu_scalar(other)) {
     return acl_op::remainder(self, other.item());
-  } else if (npu_preparation::IsCPUScalar(self)) {
+  } else if (op_plugin::utils::is_cpu_scalar(self)) {
     return acl_op::remainder(self.item(), other);
   } else {
     TORCH_CHECK(self.device() == other.device(),

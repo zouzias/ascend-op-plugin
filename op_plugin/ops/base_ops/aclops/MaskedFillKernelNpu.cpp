@@ -19,7 +19,6 @@
 
 namespace acl_op {
 using npu_utils = at_npu::native::NpuUtils;
-using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
 at::Tensor& masked_fill_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& mask, const at::Tensor& value) {
@@ -80,7 +79,7 @@ at::Tensor& masked_fill_out_npu_nocheck(at::Tensor& result, const at::Tensor& se
 } // namespace
 
 at::Tensor& masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Tensor& value) {
-  if (npu_preparation::IsCPUScalar(value)) {
+  if (op_plugin::utils::is_cpu_scalar(value)) {
     return acl_op::masked_fill_(self, mask, value.item());
   }
 

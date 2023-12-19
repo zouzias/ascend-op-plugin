@@ -40,9 +40,9 @@ at::Tensor &true_div_scalar_out_nocheck(at::Tensor &result, const at::Scalar &se
 
 at::Tensor &true_div_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &other)
 {
-    if (npu_preparation::IsCPUScalar(other)) {
+    if (op_plugin::utils::is_cpu_scalar(other)) {
         true_div_scalar_out_nocheck(result, self, other.item());
-    } else if (npu_preparation::IsCPUScalar(self)) {
+    } else if (op_plugin::utils::is_cpu_scalar(self)) {
         true_div_scalar_out_nocheck(result, self.item(), other);
     } else {
         auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
@@ -91,7 +91,7 @@ at::Tensor true_divide(const at::Tensor &self, const at::Tensor &other)
     at::Tensor other_temp = (other.scalar_type() == calculate_type) ? other : other.to(calculate_type);
 
     bool is_self_wrapped =
-        npu_preparation::is_scalar_wrapped_to_tensor(self_temp) || npu_preparation::IsCPUScalar(self_temp);
+        npu_preparation::is_scalar_wrapped_to_tensor(self_temp) || op_plugin::utils::is_cpu_scalar(self_temp);
     at::Tensor output_tensor = is_self_wrapped ? other_temp : self_temp;
     auto output_size = op_infer::broadcast_ops_npu_output_size(self_temp, other_temp);
     at::Tensor result = npu_preparation::apply_tensor(output_tensor, output_size);
