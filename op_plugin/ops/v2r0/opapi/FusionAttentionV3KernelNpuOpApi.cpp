@@ -123,7 +123,7 @@ at::Tensor dropout_gen_mask(const at::Tensor &self, double keep_prob, int64_t he
     return drop_mask;
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_backward_v3(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_backward_v3(
     // required input
     const at::Tensor &x,
     const at::Tensor &weight,
@@ -185,24 +185,23 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     } else {
         dbias = at::empty({0}, qkv.options());
     }
-    at::Tensor dqkv = OpPreparation::apply_tensor_without_format(format_qkv);
 
     char* input_layout_ptr = const_cast<char *>(input_layout.c_str());
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnAscendAttentionGrad, format_x, format_wgt, format_qkv,
         format_dy, format_pse, format_atten_mask, prefix_n, format_drop_mask, format_softmax_max,
         format_softmax_sum, format_attention, format_bias, scale_qk, scale_q, scale_k,
         keep_prob, pre_tokens, next_tokens, sparse_mode, head_num, input_layout_ptr, pse_type,
-        head_size, dx, dwgt, dpse, dqkv);
+        head_size, dx, dwgt, dpse, dbias);
 
     if (!format_pse.defined()) {
         at::Tensor dpse_required;
         dpse = dpse_required;
     }
 
-    return std::make_tuple(dx, dwgt, dpse, dqkv, dbias);
+    return std::make_tuple(dx, dwgt, dpse, dbias);
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_grad_v3(
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_grad_v3(
     // required input
     const at::Tensor &x,
     const at::Tensor &weight,
@@ -215,6 +214,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     // required attrs
     int64_t head_num,
     c10::string_view input_layout,
+    int64_t head_size,
 
     // optional input
     const c10::optional<at::Tensor> &bias,
@@ -231,7 +231,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     int64_t next_tokens,
     int64_t sparse_mode,
     int64_t pse_type,
-    int64_t head_size,
     int64_t seed,
     int64_t offset,
     int64_t numels,
@@ -278,6 +277,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     const at::Tensor &weight,
     int64_t head_num,
     c10::string_view input_layout,
+    int64_t head_size,
     // optional input
     const c10::optional<at::Tensor> &bias_opt,
     const c10::optional<at::Tensor> &pse_opt,
@@ -292,7 +292,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     int64_t next_tokens,
     int64_t sparse_mode,
     int64_t pse_type,
-    int64_t head_size,
     bool gen_mask_parallel,
     bool sync)
 {
