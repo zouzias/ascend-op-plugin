@@ -197,7 +197,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
         at::Tensor dpse_required;
         dpse = dpse_required;
     }
-
     return std::make_tuple(dx, dwgt, dpse, dbias);
 }
 
@@ -267,7 +266,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
         npu_event.record(c10_npu::getCurrentNPUStream());
         npu_event.block(c10_npu::getCurrentSecondaryStream());
     }
-
     return result;
 }
 
@@ -313,26 +311,34 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     int64_t B = 0;
     int64_t S0 = 0; // S for query
     int64_t S1 = 0; // S for key & value
-    int64_t H = 0;
+    int64_t D = head_size;
+    int64_t N1 = head_num;
+    int64_t H1 = N1 * D;
+    int64_t H2 = 0;
+    int64_t N2 = 0;
+    int64_t G = 1;
 
     if (input_layout_str == "BSH") {
         B = x.size(0);
         S0 = x.size(1);
         S1 = x.size(1);
-        H = weight.size(1) / 3;
+        H2 = (weight.size(1) - H1) / 2;
+        N2 = H2 / D;
     } else if (input_layout_str == "SBH") {
         B = x.size(1);
         S0 = x.size(0);
         S1 = x.size(0);
-        H = weight.size(1) / 3;
+        H2 = (weight.size(1) - H1) / 2;
+        N2 = H2 / D;
     }
+    G = N1 / N2;
 
     double scale_qk_value = scale_qk;
     double scale_q_value = scale_q;
     double scale_k_value = scale_k;
 
     at::Tensor format_x = format_trans(x);
-    at::Tensor attention_score = OpPreparation::apply_tensor_without_format({B, S0, H}, x.options());
+    at::Tensor attention_score = OpPreparation::apply_tensor_without_format({B, S0, H1}, x.options());
     at::Tensor format_weight = format_trans(weight);
     at::Tensor format_bias = format_trans(bias);
 
@@ -354,21 +360,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     softmax_sum = OpPreparation::apply_tensor_without_format({B, head_num, S0, 8},
         x.options().dtype(at::kFloat)); // [B, N, S0, 8]
 
-    qkv = OpPreparation::apply_tensor_without_format({B, S0, 3 * H},
-        x.options()); // [B, S0, 3 * H]
+    qkv = OpPreparation::apply_tensor_without_format({B * N2 * (G + 2), S1, D},
+        x.options());
 
     char* input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnAscendAttention, format_x, format_weight,
         format_bias, format_pse, format_drop_mask, prefix_n, format_atten_mask,
         scale_qk_value, scale_q_value, scale_k_value, keep_prob, pre_tokens, next_tokens, sparse_mode,
         head_num, input_layout_ptr, pse_type, head_size, softmax_max, softmax_sum, qkv, attention_score);
-
     if (!sync) {
         c10_npu::NPUEvent npu_event;
         npu_event.record(c10_npu::getCurrentNPUStream());
         npu_event.block(c10_npu::getCurrentSecondaryStream());
     }
-
     return std::make_tuple(attention_score, softmax_max, softmax_sum, qkv,
         seed, offset, numels);
 }
