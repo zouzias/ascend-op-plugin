@@ -24,7 +24,7 @@ at::Tensor &maximum_out(const at::Tensor &self, const at::Tensor &other, at::Ten
 {
     DO_COMPATIBILITY(aclnnMaximum, acl_op::maximum_out(self, other, result));
     at::Tensor cp_other = other;
-    if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
+    if (op_plugin::utils::is_cpu_scalar(other)) {
         at::Scalar scalar = other.item();
         cp_other = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, other.scalar_type());
     }
@@ -38,7 +38,7 @@ at::Tensor maximum(const at::Tensor &self, const at::Tensor &other)
 {
     DO_COMPATIBILITY(aclnnMaximum, acl_op::maximum(self, other));
     at::Tensor cp_other = other;
-    if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
+    if (op_plugin::utils::is_cpu_scalar(other)) {
         at::Scalar scalar = other.item();
         cp_other = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, other.scalar_type());
     }

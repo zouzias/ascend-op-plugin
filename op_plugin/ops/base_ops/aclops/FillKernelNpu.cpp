@@ -53,7 +53,7 @@ at::Tensor& fill_out_nocheck(at::Tensor& result, at::Tensor& self, at::Scalar ot
 }
 
 at::Tensor& fill_out_nocheck(at::Tensor& self, const at::Tensor& other) {
-  if (npu_preparation::IsCPUScalar(other)) {
+  if (op_plugin::utils::is_cpu_scalar(other)) {
     fill_out_nocheck(self, self, other.item());
   } else {
     fill_out_nocheck(self, self, other);

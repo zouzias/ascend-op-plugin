@@ -33,9 +33,9 @@ at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, cons
 }
 
 at::Tensor& mul_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& other) {
-  if (npu_preparation::IsCPUScalar(other)) {
+  if (op_plugin::utils::is_cpu_scalar(other)) {
     mul_out_npu_nocheck(result, self, other.item());
-  } else if (npu_preparation::IsCPUScalar(self)) {
+  } else if (op_plugin::utils::is_cpu_scalar(self)) {
     mul_out_npu_nocheck(result, other, self.item());
   } else {
     at_npu::native::OpCommand cmd;
@@ -95,17 +95,17 @@ at::Tensor mul(const at::Tensor& self, const at::Tensor& other) {
     at::Tensor self_cast = self;
     at::Tensor other_cast = other;
     if (self.scalar_type() != calculate_type) {
-        self_cast = npu_preparation::IsCPUScalar(self) ?
+        self_cast = op_plugin::utils::is_cpu_scalar(self) ?
                         self.to(calculate_type) :
                         at_npu::native::custom_ops::npu_dtype_cast(self, calculate_type);
     }
     if (other.scalar_type() != calculate_type) {
-        other_cast = npu_preparation::IsCPUScalar(other) ?
+        other_cast = op_plugin::utils::is_cpu_scalar(other) ?
                          other.to(calculate_type) :
                          at_npu::native::custom_ops::npu_dtype_cast(other, calculate_type);
     }
 
-  bool is_self_wrapped = npu_preparation::is_scalar_wrapped_to_tensor(self_cast) || npu_preparation::IsCPUScalar(self_cast);
+  bool is_self_wrapped = npu_preparation::is_scalar_wrapped_to_tensor(self_cast) || op_plugin::utils::is_cpu_scalar(self_cast);
   at::Tensor output_tensor = is_self_wrapped ? other_cast : self_cast;
   auto output_size = op_infer::broadcast_ops_npu_output_size(self_cast, other_cast);
   at::Tensor result = npu_preparation::apply_tensor(output_tensor, output_size);

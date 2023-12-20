@@ -38,9 +38,9 @@ at::Tensor &floor_divide_scalar_out_nocheck(at::Tensor &result, at::Scalar self,
 
 at::Tensor &floor_divide_out_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &other)
 {
-    if (npu_preparation::IsCPUScalar(other)) {
+    if (op_plugin::utils::is_cpu_scalar(other)) {
         floor_divide_scalar_out_nocheck(result, self, other.item());
-    } else if (npu_preparation::IsCPUScalar(self)) {
+    } else if (op_plugin::utils::is_cpu_scalar(self)) {
         floor_divide_scalar_out_nocheck(result, self.item(), other);
     } else {
         at_npu::native::OpCommand cmd;
@@ -97,7 +97,7 @@ at::Tensor floor_divide(const at::Tensor &self, const at::Tensor &other)
     at::Tensor other_cast = other.scalar_type() != cal_type ? other.to(cal_type) : other;
 
     bool is_self_wrapped =
-        npu_preparation::is_scalar_wrapped_to_tensor(self_cast) || npu_preparation::IsCPUScalar(self_cast);
+        npu_preparation::is_scalar_wrapped_to_tensor(self_cast) || op_plugin::utils::is_cpu_scalar(self_cast);
     at::Tensor output_tensor = is_self_wrapped ? other_cast : self_cast;
     auto output_size = op_infer::broadcast_ops_npu_output_size(self_cast, other_cast);
     at::Tensor result = npu_preparation::apply_tensor(output_tensor, output_size);

@@ -31,9 +31,9 @@ at::Tensor &logical_or_out_npu_nocheck(at::Tensor &result, const at::Tensor &sel
 
 at::Tensor &logical_or_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &other)
 {
-    if (npu_preparation::IsCPUScalar(self)) {
+    if (op_plugin::utils::is_cpu_scalar(self)) {
         logical_or_out_npu_nocheck(result, other, self.item());
-    } else if (npu_preparation::IsCPUScalar(other)) {
+    } else if (op_plugin::utils::is_cpu_scalar(other)) {
         logical_or_out_npu_nocheck(result, self, other.item());
     } else {
         at_npu::native::OpCommand cmd;

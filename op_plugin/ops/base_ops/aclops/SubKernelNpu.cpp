@@ -48,9 +48,9 @@ at::Tensor &sub_self_scalar_out_npu(at::Tensor &result, at::Scalar self, const a
 at::Tensor &sub_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &other, at::Scalar alpha)
 {
     auto unified_result = npu_preparation::binary_op_check(result, self, other, true);
-    if (npu_preparation::IsCPUScalar(other)) {
+    if (op_plugin::utils::is_cpu_scalar(other)) {
         sub_scalar_out_npu(result, self, other.item(), alpha);
-    } else if (npu_preparation::IsCPUScalar(self)) {
+    } else if (op_plugin::utils::is_cpu_scalar(self)) {
         sub_self_scalar_out_npu(result, self.item(), other, alpha);
     } else {
         at::Tensor other_mul_result = other;

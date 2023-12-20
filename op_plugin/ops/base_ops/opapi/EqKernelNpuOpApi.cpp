@@ -24,9 +24,9 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor& eq_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnEqTensor, acl_op::eq_out(self, other, result));
 
-  if (npu_preparation::IsCPUScalar(other)) {
+  if (op_plugin::utils::is_cpu_scalar(other)) {
     return op_api::eq_out(self, other.item(), result);
-  } else if (npu_preparation::IsCPUScalar(self)) {
+  } else if (op_plugin::utils::is_cpu_scalar(self)) {
     return op_api::eq_out(other, self.item(), result);
   }
 
@@ -39,9 +39,9 @@ at::Tensor& eq_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& 
 at::Tensor eq(const at::Tensor& self, const at::Tensor& other) {
   DO_COMPATIBILITY(aclnnEqTensor, acl_op::eq(self, other));
 
-  if (npu_preparation::IsCPUScalar(other)) {
+  if (op_plugin::utils::is_cpu_scalar(other)) {
     return op_api::eq(self, other.item());
-  } else if (npu_preparation::IsCPUScalar(self)) {
+  } else if (op_plugin::utils::is_cpu_scalar(self)) {
     return op_api::eq(other, self.item());
   }
 

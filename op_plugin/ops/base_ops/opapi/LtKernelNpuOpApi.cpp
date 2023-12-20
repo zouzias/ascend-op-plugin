@@ -19,7 +19,6 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor& lt_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnLtTensor, acl_op::lt_out(self, other, result));
   auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
@@ -40,7 +39,7 @@ at::Tensor lt(const at::Tensor& self, const at::Tensor& other) {
                                                                                    self.options().dtype(at::kBool));
 
     // calculate the output result of the NPU
-    if (npu_preparation::IsCPUScalar(other)) {
+    if (op_plugin::utils::is_cpu_scalar(other)) {
         const at::Scalar other_scalar = other.item();
         EXEC_NPU_CMD(aclnnLtScalar, self, other_scalar, result);
     } else {

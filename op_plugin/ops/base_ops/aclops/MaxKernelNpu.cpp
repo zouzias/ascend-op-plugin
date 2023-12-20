@@ -175,7 +175,7 @@ at::Tensor maximum(const at::Tensor &self, const at::Tensor &other)
 {
     auto output_size_diff = self.sizes();
     at::Tensor result_diff = npu_preparation::apply_tensor(self, output_size_diff);
-    if (npu_preparation::IsCPUScalar(other)) {
+    if (op_plugin::utils::is_cpu_scalar(other)) {
         max_out_npu_nocheck(result_diff, self, other.item());
         return result_diff;
     }

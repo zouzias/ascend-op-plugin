@@ -31,7 +31,7 @@ static at::Tensor &sub_out_npu_nocheck(
     const at::Tensor &other,
     const at::Scalar alpha,
     at::Tensor &result) {
-  if (npu_preparation::IsCPUScalar(other)) {
+  if (op_plugin::utils::is_cpu_scalar(other)) {
     c10::Scalar other_scalar = other.item();
     EXEC_NPU_CMD(aclnnSubs, self, other_scalar, alpha, result);
   } else {
@@ -44,7 +44,7 @@ static at::Tensor& inplace_sub_out_npu_no_check(
     at::Tensor& self,
     const at::Tensor& other,
     const at::Scalar& alpha) {
-  if (npu_preparation::IsCPUScalar(other)) {
+  if (op_plugin::utils::is_cpu_scalar(other)) {
     c10::Scalar other_scalar = other.item();
     EXEC_NPU_CMD(aclnnInplaceSubs, self, other_scalar, alpha);
   } else {

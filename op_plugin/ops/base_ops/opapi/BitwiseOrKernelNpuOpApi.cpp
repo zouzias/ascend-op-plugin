@@ -23,10 +23,10 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
 at::Tensor& bitwise_or_out_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& other) {
-  if (npu_preparation::IsCPUScalar(other)) {
+  if (op_plugin::utils::is_cpu_scalar(other)) {
     const at::Scalar other_value = other.item();
     EXEC_NPU_CMD(aclnnBitwiseOrScalar, self, other_value, result);
-  } else if (npu_preparation::IsCPUScalar(self)) {
+  } else if (op_plugin::utils::is_cpu_scalar(self)) {
     const at::Scalar self_value = self.item();
     EXEC_NPU_CMD(aclnnBitwiseOrScalar, other, self_value, result);
   } else {

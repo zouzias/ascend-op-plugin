@@ -66,7 +66,7 @@ at::Tensor gt(const at::Tensor& self, const at::Tensor& other) {
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kBool));
 
     // calculate the output result of the NPU
-    if (npu_preparation::IsCPUScalar(other)) {
+    if (op_plugin::utils::is_cpu_scalar(other)) {
         const at::Scalar other_scalar = other.item();
         EXEC_NPU_CMD(aclnnGtScalar, self, other_scalar, result);
     } else {
