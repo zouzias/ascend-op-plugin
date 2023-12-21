@@ -2382,6 +2382,14 @@ custom:
     impl_ns: op_api
   - func: npu_dropout_gen_mask(int[] size, float p, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     impl_ns: acl_op
+  - func: npu_huber_loss(Tensor self, Tensor target, int reduction=Mean, float delta=1.0) -> Tensor
+    impl_ns: acl_op, op_api
+  - func: npu_huber_loss.out(Tensor self, Tensor target, int reduction=Mean, float delta=1.0, *, Tensor(a!) out) -> Tensor(a!)
+    impl_ns: acl_op, op_api
+  - func: npu_huber_loss_backward(Tensor grad, Tensor self, Tensor target, int reduction=Mean, float delta=1.0) -> Tensor
+    impl_ns: acl_op, op_api
+  - func: npu_huber_loss_backward.out(Tensor grad, Tensor self, Tensor target, int reduction=Mean, float delta=1.0, *, Tensor(a!) grad_input) -> Tensor(a!)
+    impl_ns: acl_op, op_api
     tags: nondeterministic_seeded
     dispatch:
      CompositeExplicitAutograd: npu_dropout_gen_mask
