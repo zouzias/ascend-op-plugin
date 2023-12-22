@@ -339,6 +339,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
 
     at::Tensor format_x = format_trans(x);
     at::Tensor attention_score = OpPreparation::apply_tensor_without_format({B, S0, H1}, x.options());
+    if (input_layout_str == "SBH") {
+        attention_score = OpPreparation::apply_tensor_without_format({S0, B, H1}, x.options());
+    }
     at::Tensor format_weight = format_trans(weight);
     at::Tensor format_bias = format_trans(bias);
 
