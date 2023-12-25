@@ -263,12 +263,15 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     const c10::optional<at::Tensor> &pse_opt, const c10::optional<at::Tensor> &padding_mask_opt,
     const c10::optional<at::Tensor> &atten_mask_opt, double scale, double keep_prob,
     int64_t pre_tockens, int64_t next_tockens, int64_t inner_precise,
-    at::OptionalIntArrayRef prefix_opt, int64_t sparse_mode, bool gen_mask_parallel, bool sync)
+    at::OptionalIntArrayRef prefix_opt, at::OptionalIntArrayRef actual_seq_qlen,
+    at::OptionalIntArrayRef actual_seq_kvlen, int64_t sparse_mode, bool gen_mask_parallel, bool sync)
 {
     const at::Tensor &pse = pse_opt.value_or(at::Tensor());
     const at::Tensor &padding_mask = padding_mask_opt.value_or(at::Tensor());
     const at::Tensor &atten_mask = atten_mask_opt.value_or(at::Tensor());
     auto prefixN = prefix_opt.value_or(at::IntArrayRef{});
+    auto ac_seq_qlen = actual_seq_qlen.value_or(at::IntArrayRef{});
+    auto ac_seq_kvlen = actual_seq_kvlen.value_or(at::IntArrayRef{});
 
     TORCH_CHECK(query.dim() == 3 || query.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ", query.dim(), "-dimensional");
     TORCH_CHECK(key.dim() == 3 || key.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ", key.dim(), "-dimensional");
@@ -288,6 +291,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     int64_t N = 0;
     int64_t D = 0;
     int64_t H = 0;
+    int64_t T = 0;
     if (input_layout_str == "BSH") {
         B = query.size(0);
         S0 = query.size(1);
@@ -310,6 +314,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
         S0 = query.size(1);
         S1 = key.size(1);
         D = query.size(3);
+    } else if (input_layout_str == "TND") {
+      T = query.size(0);
+      N = query.size(1);
+      D = query.size(2);
     }
 
     double scale_value = scale;
@@ -326,6 +334,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     int64_t seed;
     int64_t offset;
     int64_t numels;
+    if (input_layout_str == "TND" && ac_seq_qlen.size() == ac_seq_kvlen.size()) {
+      numels = N;
+      int64_t accum = 0;
+      for (int64_t i = 0; i < ac_seq_qlen.size(); i++) {
+        accum += (ac_seq_qlen[i] * ac_seq_kvlen[i]);
+      }
+      numels *= accum;
+    }
     at::Tensor format_drop_mask = dropout_gen_mask(format_query, format_key, keep_prob, head_num, input_layout_str,
         gen_mask_parallel, sync, seed, offset, numels);
 
@@ -333,17 +349,32 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     at::Tensor softmax_sum;
     at::Tensor softmax_out;
 
-    softmax_max = OpPreparation::apply_tensor_without_format({B, head_num, S0, 8},
-        query.options().dtype(at::kFloat)); // [B, N, S0, 8]
-    softmax_sum = OpPreparation::apply_tensor_without_format({B, head_num, S0, 8},
-        query.options().dtype(at::kFloat)); // [B, N, S0, 8]
-    softmax_out = at::empty({0}, query.options());
-
+    if (input_layout_str != "TND") {
+      softmax_max = OpPreparation::apply_tensor_without_format({B, head_num, S0, 8},
+                                                               query.options().dtype(at::kFloat)); // [B, N, S0, 8]
+      softmax_sum = OpPreparation::apply_tensor_without_format({B, head_num, S0, 8},
+                                                               query.options().dtype(at::kFloat)); // [B, N, S0, 8]
+    } else {
+      softmax_max = OpPreparation::apply_tensor_without_format({T, N, 8},
+                                                               query.options().dtype(at::kFloat)); // [T, N, 8]
+      softmax_sum = OpPreparation::apply_tensor_without_format({T, N, 8},
+                                                               query.options().dtype(at::kFloat)); // [T, N, 8]
+    }
     char* input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionScore, format_query, format_key, format_value,
-        format_pse, format_drop_mask, format_padding_mask, format_atten_mask, prefixN,
-        scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_ptr, inner_precise,
-        sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
+
+    if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
+      EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionVarLenScore, format_query, format_key, format_value,
+                                   format_pse, format_drop_mask, format_padding_mask, format_atten_mask, prefixN,
+                                   ac_seq_qlen, ac_seq_kvlen, scale, keep_prob, pre_tockens, next_tockens, head_num,
+                                   input_layout_ptr, inner_precise, sparse_mode, softmax_max, softmax_sum,
+                                   softmax_out, attention_score);
+    } else {
+      EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFlashAttentionScore, format_query, format_key, format_value,
+                                   format_pse, format_drop_mask, format_padding_mask, format_atten_mask, prefixN,
+                                   scale, keep_prob, pre_tockens, next_tockens, head_num, input_layout_ptr, inner_precise,
+                                   sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
+    }
+
 
     if (!sync) {
         c10_npu::NPUEvent npu_event;
