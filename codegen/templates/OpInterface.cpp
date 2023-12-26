@@ -19,7 +19,6 @@
 #include "op_plugin/OpInterface.h"
 #include "torch_npu/csrc/framework/interface/EnvVariables.h"
 #include "torch_npu/csrc/framework/FormatHelper.h"
-#include "torch_npu/csrc/framework/utils/ForceAclnnList.h"
 
 namespace ${namespace} {
 ${declarations}
