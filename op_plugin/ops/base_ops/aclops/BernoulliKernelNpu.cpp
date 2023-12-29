@@ -65,7 +65,7 @@ at::Tensor& bernoulli_npu_nocheck(at::Tensor& result, const at::Tensor& p, c10::
 } // namespace
 
 at::Tensor& bernoulli_(at::Tensor& self, double p, c10::optional<at::Generator> gen) {
-  if (!npu_utils::check_match(&self)) {
+  if (!self.is_contiguous()) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
     bernoulli_npu_nocheck(contiguous_self, p, gen);
     npu_utils::format_fresh_view(self, contiguous_self);
@@ -79,7 +79,7 @@ at::Tensor& bernoulli_(at::Tensor& self, const at::Tensor& p, c10::optional<at::
   at::Tensor p_ori_format = npu_preparation::CastBackToOriFormat(p);
   npu_preparation::CheckMemory({self, p}, {self});
 
-  if (!npu_utils::check_match(&self)) {
+  if (!self.is_contiguous()) {
     at::Tensor contiguous_self = npu_utils::format_contiguous(self);
     bernoulli_npu_nocheck(contiguous_self, p_ori_format, gen);
     npu_utils::format_fresh_view(self, contiguous_self);

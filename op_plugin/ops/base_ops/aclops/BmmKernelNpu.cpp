@@ -57,7 +57,7 @@ at::Tensor& bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& 
       self,
       output_size);
 
-  if (!npu_utils::check_match(&result)) {
+  if (!result.is_contiguous()) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     bmm_out_nocheck(contiguous_result, self, mat2);
     npu_utils::format_fresh_view(result, contiguous_result);

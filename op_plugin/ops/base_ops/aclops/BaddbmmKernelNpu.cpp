@@ -63,7 +63,7 @@ at::Tensor& baddbmm_out(
       {self, tensor1, tensor2},
       result,
       self);
-  if (!npu_utils::check_match(&result)) {
+  if (!result.is_contiguous()) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     baddbmm_nocheck(contiguous_result, self, tensor1, tensor2, beta, alpha);
     npu_utils::format_fresh_view(result, contiguous_result);
