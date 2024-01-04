@@ -42,4 +42,5 @@ at::Tensor smooth_l1_loss(const at::Tensor &self, const at::Tensor &target, int6
     EXEC_NPU_CMD(aclnnSmoothL1Loss, self, target, reduction, sigma, result);
     return result;
 }
+
 } // namespace op_api
