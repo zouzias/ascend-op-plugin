@@ -2390,3 +2390,5 @@ custom:
     impl_ns: op_api
   - func: npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, Tensor? offset=None, Tensor? bias=None) -> Tensor
     impl_ns: op_api
+  - func: npu_anti_quant(Tensor x, Tensor scale, Tensor offset, *, ScalarType? dstDtype=None) -> Tensor
+    impl_ns: op_api
