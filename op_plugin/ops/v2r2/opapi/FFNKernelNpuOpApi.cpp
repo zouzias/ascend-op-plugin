@@ -55,7 +55,10 @@ at::Tensor npu_ffn(const at::Tensor &x, const at::Tensor &weight1, const at::Ten
     const at::Tensor &antiquant_offset2_real = antiquant_offset2.value_or(at::Tensor());
     auto output_size = op_infer::array_to_small_vector(x.sizes());
     output_size[x.dim() - 1] = weight2.size(weight2.dim() - 1);
-    at::Tensor result = npu_preparation::apply_tensor_without_format(x, output_size);
+    c10::TensorOptions options =
+        deq_scale1.has_value() ? x.options().dtype(at::kHalf) : x.options().dtype(x.scalar_type());
+    // at::Tensor result = npu_preparation::apply_tensor_without_format(x, output_size);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
     int64_t inner_precise_val = inner_precise.has_value() ? inner_precise.value() : 0;
     if (expert_tokens.has_value()) {
         auto expert_tokens_real = expert_tokens.value();
