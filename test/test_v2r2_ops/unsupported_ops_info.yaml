@@ -756,6 +756,8 @@ histc:
   test_variant_consistency_eager:
   - float32
 index_fill:
+  test_out__refs:
+  - float32
   test_backward:
   - float32
   test_compare_cpu:
