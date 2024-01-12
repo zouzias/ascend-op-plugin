@@ -73,13 +73,13 @@ std::tuple<at::Tensor, at::Tensor> _ctc_loss(const at::Tensor &log_probs, const 
 at::Tensor ctc_loss(const at::Tensor &log_probs, const at::Tensor &targets, at::IntArrayRef input_lengths_list,
                     at::IntArrayRef target_lengths_list, int64_t blank, int64_t reduction, bool zero_infinity)
 {
-    // Implementation of synchronous logic reference CUDA.
-    auto executed_targets = targets;
-    if (targets.device() != log_probs.device()) {
-        executed_targets = targets.to(log_probs.device());
-    }
     at::Tensor res = std::get<0>(
-        at::_ctc_loss(log_probs, executed_targets, input_lengths_list, target_lengths_list, blank, zero_infinity));
+        at::_ctc_loss(log_probs,
+                      targets.to(log_probs.device(), at::kLong),
+                      input_lengths_list,
+                      target_lengths_list,
+                      blank,
+                      zero_infinity));
 
     if (zero_infinity) {
         res = at::where(res == at::Scalar(std::numeric_limits<double>::infinity()), at::zeros({}, res.options()), res);
