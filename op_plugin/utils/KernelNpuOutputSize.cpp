@@ -1093,6 +1093,7 @@ c10::IntArrayRef smooth_l1_loss_npu_output_size(const at::Tensor &self, const at
     if (reduction == at::Reduction::None) {
         outputSize = input_same_output_size(self);
     }
+
     return outputSize;
 }
 
