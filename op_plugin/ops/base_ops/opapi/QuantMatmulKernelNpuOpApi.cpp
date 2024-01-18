@@ -14,6 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include <vector>
+
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
@@ -36,8 +37,8 @@ uint64_t infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::
         auto short_dim = i < vaild_offset ? 1 : shape_short.size(i - vaild_offset);
         auto long_dim = shape_long.size(i);
         TORCH_CHECK(!(short_dim > 1 && long_dim > 1 && short_dim != long_dim),
-                    "the x1 shape and x2 shape not supported for broadcast, the short_dim is ",
-                    short_dim, " and  the long_dim is ", long_dim);
+                    "the x1 shape and x2 shape not supported for broadcast, the short_dim is ", short_dim,
+                    " and  the long_dim is ", long_dim);
         uint64_t cur_batch_value = static_cast<uint64_t>(std::max(short_dim, long_dim));
         batch_val = batch_val * cur_batch_value;
         batch_record.push_back(cur_batch_value);
@@ -51,9 +52,8 @@ void bias_shape_check(const at::Tensor &x1, const at::Tensor &x2, const at::Tens
     auto x2_n_dim = x2.size(x2_dim_num - 1);
     auto bias_first_dim = bias.size(0);
     if (bias.dim() == 1) {
-        TORCH_CHECK(bias_first_dim == x2_n_dim,
-                    "bias_first_dim should be equal to x2 n dim . bias_first_dim is ", bias_first_dim,
-                    " and x2_n_dim is ", x2_n_dim);
+        TORCH_CHECK(bias_first_dim == x2_n_dim, "bias_first_dim should be equal to x2 n dim . bias_first_dim is ",
+                    bias_first_dim, " and x2_n_dim is ", x2_n_dim);
         return;
     }
     auto bias_second_dim = bias.size(1);
@@ -62,12 +62,12 @@ void bias_shape_check(const at::Tensor &x1, const at::Tensor &x2, const at::Tens
                 "infered batch value should be equal to bias batch dim value. batch infered value is ", batch_val,
                 " and bias batch dim value is ", bias_first_dim);
     TORCH_CHECK(bias_second_dim == 1, "second dim of bias should be 1, but bias_second_dim is ", bias_second_dim);
-    TORCH_CHECK(bias_third_dim == x2_n_dim, "third dim should be equal to n, but bias_third_dim is ",
-                bias_third_dim, " and n dim is ", x2_n_dim);
+    TORCH_CHECK(bias_third_dim == x2_n_dim, "third dim should be equal to n, but bias_third_dim is ", bias_third_dim,
+                " and n dim is ", x2_n_dim);
 }
 
-at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at::Tensor& scale,
-                            const c10::optional<at::Tensor>& offset, const c10::optional<at::Tensor>& bias,
+at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at::Tensor &scale,
+                            const c10::optional<at::Tensor> &offset, const c10::optional<at::Tensor> &bias,
                             c10::optional<c10::string_view> output_dtype)
 {
     auto x1_dim_num = x1.dim();
@@ -81,8 +81,8 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
     auto x1_k_dim = x1.size(x1_dim_num - 1);
     auto x2_n_dim = x2.size(x2_dim_num - 1);
     auto x2_k_dim = x2.size(x2_dim_num - 2);
-    TORCH_CHECK(x1_k_dim == x2_k_dim, "The k of x1 and x2 should be equal. but x1_k_dim is ",
-                x1_k_dim, ", x2_k_dim is ", x2_k_dim);
+    TORCH_CHECK(x1_k_dim == x2_k_dim, "The k of x1 and x2 should be equal. but x1_k_dim is ", x1_k_dim,
+                ", x2_k_dim is ", x2_k_dim);
 
     std::vector<uint64_t> batch_record;
     uint64_t batch_val = infer_out_batch_shape(x1, x2, batch_record);
@@ -94,7 +94,7 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
         output_size[i] = batch_record[i];
     }
     c10::TensorOptions options;
-    if (!output_dtype.has_value() ||  *output_dtype == "int8") {
+    if (!output_dtype.has_value() || *output_dtype == "int8") {
         options = x1.options().dtype(at::kChar);
     } else if (*output_dtype == "float16") {
         options = x1.options().dtype(at::kHalf);
@@ -126,11 +126,11 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
         bias_shape_check(x1, x2, bias_real, batch_val);
     }
 
-    if (scale.dtype() == at::kFloat) {
+    if (*output_dtype == "bfloat16" || scale.dtype() != at::kFloat) {
+        EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, scale, offset_real, bias_real, transpose1, transpose2, result);
+    } else {
         const at::Tensor quant_param = op_api::npu_trans_quant_param(scale, offset);
         EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, quant_param, offset_real, bias_real, transpose1, transpose2, result);
-    } else {
-        EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, scale, offset_real, bias_real, transpose1, transpose2, result);
     }
     return result;
 }
