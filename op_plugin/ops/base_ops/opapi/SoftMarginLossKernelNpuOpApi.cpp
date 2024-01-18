@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2023, Facebook CORPORATION.
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -22,28 +22,30 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& soft_margin_loss_out(const at::Tensor& self, const at::Tensor& target, int64_t reduction,
-                                 at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnSoftMarginLoss, acl_op::soft_margin_loss_out(self, target, reduction, result));
-  at::IntArrayRef output_size;
-  if (reduction == at::Reduction::None) {
-    output_size = op_infer::broadcast_ops_npu_output_size(self, target);
-  }
-  if (result.sizes() != output_size) {
-    result.resize_(output_size);
-  }
-  npu_preparation::check_tensor({self, target}, result, result.scalar_type(), output_size);
-  EXEC_NPU_CMD(aclnnSoftMarginLoss, self, target, reduction, result);
-  return result;
+                                 at::Tensor& result)
+{
+    DO_COMPATIBILITY(aclnnSoftMarginLoss, acl_op::soft_margin_loss_out(self, target, reduction, result));
+    at::IntArrayRef output_size;
+    if (reduction == at::Reduction::None) {
+        output_size = op_infer::broadcast_ops_npu_output_size(self, target);
+    }
+    if (result.sizes() != output_size) {
+        result.resize_(output_size);
+    }
+    npu_preparation::check_tensor({self, target}, result, self.scalar_type(), output_size);
+    EXEC_NPU_CMD(aclnnSoftMarginLoss, self, target, reduction, result);
+    return result;
 }
 
-at::Tensor soft_margin_loss(const at::Tensor& self, const at::Tensor& target, int64_t reduction) {
-  DO_COMPATIBILITY(aclnnSoftMarginLoss, acl_op::soft_margin_loss(self, target, reduction));
-  at::IntArrayRef output_size;
-  if (reduction == at::Reduction::None) {
-    output_size = op_infer::broadcast_ops_npu_output_size(self, target);
-  }
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
-  EXEC_NPU_CMD(aclnnSoftMarginLoss, self, target, reduction, result);
-  return result;
+at::Tensor soft_margin_loss(const at::Tensor& self, const at::Tensor& target, int64_t reduction)
+{
+    DO_COMPATIBILITY(aclnnSoftMarginLoss, acl_op::soft_margin_loss(self, target, reduction));
+    at::IntArrayRef output_size;
+    if (reduction == at::Reduction::None) {
+        output_size = op_infer::broadcast_ops_npu_output_size(self, target);
+    }
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_size);
+    EXEC_NPU_CMD(aclnnSoftMarginLoss, self, target, reduction, result);
+    return result;
 }
 } // namespace op_api
