@@ -61,7 +61,8 @@ at::Tensor dropout_gen_mask_impl(const at::Tensor &self, const at::Scalar &keep_
 {
     int64_t length = (numels + DROPOUT_GEN_LEN - 1) / DROPOUT_GEN_LEN * DROPOUT_GEN_LEN / BYTE_BIT;
     c10::TensorOptions options = self.options();
-    at::Tensor mask = OpPreparation::apply_tensor_without_format(at::IntArrayRef{length + 32},
+    c10::SmallVector<int64_t, SIZE> mask_sizes = {length + 32};
+    at::Tensor mask = OpPreparation::apply_tensor_without_format(mask_sizes,
         options.dtype(at::kByte));
     at::SmallVector<int64_t, ::N> offsetList = {0, offset};
     const int64_t seed1 = 0;
@@ -342,9 +343,11 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     double scale_k_value = scale_k;
 
     at::Tensor format_x = format_trans(x);
-    at::Tensor attention_score = OpPreparation::apply_tensor_without_format({B, S0, H1}, x.options());
+    c10::SmallVector<int64_t, SIZE> attention_sizes_bsh = {B, S0, H1};
+    at::Tensor attention_score = OpPreparation::apply_tensor_without_format(attention_sizes_bsh, x.options());
     if (input_layout_str == "SBH") {
-        attention_score = OpPreparation::apply_tensor_without_format({S0, B, H1}, x.options());
+        c10::SmallVector<int64_t, SIZE> attention_sizes_sbh = {S0, B, H1};
+        attention_score = OpPreparation::apply_tensor_without_format(attention_sizes_sbh, x.options());
     }
     at::Tensor format_weight = format_trans(weight);
     at::Tensor format_bias = format_trans(bias);
@@ -362,12 +365,15 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     at::Tensor softmax_sum;
     at::Tensor qkv;
 
-    softmax_max = OpPreparation::apply_tensor_without_format({B, head_num, S0, 8},
+    c10::SmallVector<int64_t, SIZE> softmax_max_sizes = {B, head_num, S0, 8};
+    c10::SmallVector<int64_t, SIZE> qkv_sizes = {B * N2 * (G + 2), S1, D};
+
+    softmax_max = OpPreparation::apply_tensor_without_format(softmax_max_sizes,
         x.options().dtype(at::kFloat)); // [B, N, S0, 8]
-    softmax_sum = OpPreparation::apply_tensor_without_format({B, head_num, S0, 8},
+    softmax_sum = OpPreparation::apply_tensor_without_format(softmax_max_sizes,
         x.options().dtype(at::kFloat)); // [B, N, S0, 8]
 
-    qkv = OpPreparation::apply_tensor_without_format({B * N2 * (G + 2), S1, D},
+    qkv = OpPreparation::apply_tensor_without_format(qkv_sizes,
         x.options());
 
     char* input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
