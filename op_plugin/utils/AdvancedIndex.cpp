@@ -66,8 +66,25 @@ at::Tensor npu_nonzero_transpose(const at::Tensor &self)
 
 at::Tensor npu_nonzero_notranspose(const at::Tensor &self)
 {
-    at::Tensor result = op_plugin::where(self);
-    return result;
+    DO_COMPATIBILITY(aclnnNonzero, acl_op::nonzero(self));
+    auto out_size = op_infer::nonzero_npu_max_output_size(self);
+    at::Tensor out = 
+        at_npu::native::OpPreparation::apply_tensor_without_format(out_size, self.options().dtype(at::kLong));
+    static auto opApiFuncAddr = [](){
+        auto ret = GetOpApiFuncAddr("aclGetViewShape");
+        TORCH_CHECK(ret != nullptr);
+        return ret;
+    }();
+    using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** view_dims, uint64_t* view_dims_num);
+    auto aclGetViewShape = reinterpret_cast<aclGetViewShapeFunc>(opApiFuncAddr);
+    auto npuAclParams = EXEC_NPU_CMD_SYNC(aclnnNonzeroV2, self, out);
+    int64_t* view_dims = nullptr;
+    uint64_t view_dim_num = 0;
+    auto ret = aclGetViewShape(npuAclParams.Get<1>(), &view_dims, &view_dim_num);
+    TORCH_CHECK(ret == 0, "aclGetViewShape failed.");
+    c10::SmallVector<int64_t, op_infer::SIZE> output_size(view_dims, view_dims + view_dim_num);
+    out = out.resize_(output_size);
+    return out;
 }
 } // namespace
 
