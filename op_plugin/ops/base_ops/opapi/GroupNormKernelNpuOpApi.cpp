@@ -33,10 +33,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm(
 {
     DO_COMPATIBILITY(aclnnGroupNorm,
                      acl_op::native_group_norm(X, gamma_opt, beta_opt, N, C, HxW, group, eps));
-
+    c10::SmallVector<int64_t, SIZE> group_norm_out_sizes = {N, group};
     at::Tensor y = npu_preparation::apply_tensor_without_format(X);
-    at::Tensor mean = npu_preparation::apply_tensor_without_format(X, {N, group});
-    at::Tensor rstd = npu_preparation::apply_tensor_without_format(X, {N, group});
+    at::Tensor mean = npu_preparation::apply_tensor_without_format(X, group_norm_out_sizes);
+    at::Tensor rstd = npu_preparation::apply_tensor_without_format(X, group_norm_out_sizes);
 
     EXEC_NPU_CMD(aclnnGroupNorm, X, gamma_opt, beta_opt, N, C, HxW, group, eps, y, mean, rstd);
     return std::make_tuple(y, mean, rstd);

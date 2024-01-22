@@ -14,7 +14,7 @@ class TestGroupNormSilu(TestCase):
 
     def supported_op_exec(self, x, gama, beta, group, eps):
         res = torch.ops.aten.native_group_norm(x, gama, beta, x.shape[0], x.shape[1], x.shape[2] * x.shape[3], group, eps)
-        res[0]=torch.nn.functional.silu(res[0])
+        res[0] = torch.nn.functional.silu(res[0])
         return res
 
     def custom_op_exec(self, x, gama, beta, group, eps):
@@ -23,7 +23,7 @@ class TestGroupNormSilu(TestCase):
     @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
         "OP `GroupNormSilu` is only supported on 910B, skip this ut for this device type!")
     def test_npu_(self, device="npu"):
-        x = torch.randn(24, 320, 48, 48 dtype=torch.float32).npu()
+        x = torch.randn(24, 320, 48, 48, dtype=torch.float32).npu()
         gama = torch.randn(320, dtype=torch.float32).npu()
         beta = torch.randn(320, dtype=torch.float32).npu()
 

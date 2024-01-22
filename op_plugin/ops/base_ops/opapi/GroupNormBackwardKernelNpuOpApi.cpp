@@ -39,14 +39,15 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_group_norm_backward(
     at::Tensor grad_x;
     at::Tensor grad_gamma;
     at::Tensor grad_beta;
+    c10::SmallVector<int64_t, SIZE> grad_sizes = {C};
     if (grad_input_mask[0]) {
         grad_x = npu_preparation::apply_tensor_without_format(dY);
     }
     if (grad_input_mask[1]) {
-        grad_gamma = npu_preparation::apply_tensor_without_format(X, {C});
+        grad_gamma = npu_preparation::apply_tensor_without_format(X, grad_sizes);
     }
     if (grad_input_mask[2]) {
-        grad_beta = npu_preparation::apply_tensor_without_format(X, {C});
+        grad_beta = npu_preparation::apply_tensor_without_format(X, grad_sizes);
     }
 
     EXEC_NPU_CMD(aclnnGroupNormBackward, dY, X, mean, rstd, gamma_opt, N, C, HxW, group, grad_input_mask,
