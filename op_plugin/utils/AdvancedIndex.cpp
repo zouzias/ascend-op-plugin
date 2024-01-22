@@ -66,8 +66,9 @@ at::Tensor npu_nonzero_transpose(const at::Tensor &self)
 
 at::Tensor npu_nonzero_notranspose(const at::Tensor &self)
 {
-    at::Tensor result = op_plugin::nonzero(self);
-    result = result.transpose(1, 0);
+    auto output_size = op_infer::nonzero_npu_max_output_size(self);
+    at::Tensor result = npu_preparation::apply_tensor(output_size, self.options().dtype(at::kLong), self);
+    EXEC_NPU_CMD(aclnnNonzeroV3, self, result, true);
     return result;
 }
 } // namespace
