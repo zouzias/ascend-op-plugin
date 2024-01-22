@@ -41,12 +41,12 @@ at::Tensor index_high_dims_op_api(const at::Tensor& self, std::vector<at::Tensor
   return result;
 }
 
+// aaa
 at::Tensor index(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& orig) {
   DO_COMPATIBILITY(aclnnIndex, acl_op::index(self, orig));
   at::native::checkIndexTensorTypes(orig);
   auto indices = op_plugin::AdvanceIndex::npu_expand_tensors(self, orig, true);
   return index_high_dims_op_api(self, indices);
-  
 }
 
 } // namespace op_api
