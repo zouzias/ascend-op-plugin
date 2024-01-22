@@ -66,8 +66,7 @@ at::Tensor npu_nonzero_transpose(const at::Tensor &self)
 
 at::Tensor npu_nonzero_notranspose(const at::Tensor &self)
 {
-    at::Tensor result = op_plugin::nonzero(self);
-    result = result.transpose(1, 0);
+    at::Tensor result = op_plugin::where(self);
     return result;
 }
 } // namespace
