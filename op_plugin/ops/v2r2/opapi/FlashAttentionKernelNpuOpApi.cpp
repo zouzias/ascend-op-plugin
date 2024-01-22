@@ -56,7 +56,8 @@ at::Tensor dropout_gen_mask_impl(const at::Tensor &query, const at::Scalar &keep
 {
     int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
     c10::TensorOptions options = query.options();
-    at::Tensor mask = OpPreparation::apply_tensor_without_format(at::IntArrayRef{length + 32}, options.dtype(at::kByte));
+    c10::SmallVector<int64_t, SIZE> mask_sizes = {length + 32};
+    at::Tensor mask = OpPreparation::apply_tensor_without_format(mask_sizes, options.dtype(at::kByte));
     at::SmallVector<int64_t, ::N> offsetList = {0, offset};
     const int64_t seed1 = 0;
     OpCommand cmd;
@@ -424,7 +425,7 @@ at::Tensor npu_prompt_flash_attention(
     // convert str
     std::string input_layout_str = std::string(input_layout);
     char *input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
-    
+
     auto actSeqLen = (actual_seq_lengths.has_value()) ? actual_seq_lengths.value().vec() : std::vector<at::IntArrayRef::value_type>{};
 
     // dispatch hostAPI
