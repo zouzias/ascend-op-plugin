@@ -210,6 +210,7 @@ at::Tensor &mm_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const
 {
     const auto &self_desc = torch_npu::NPUBridge::GetNpuStorageImplDesc(self);
     const auto &mat2_desc = torch_npu::NPUBridge::GetNpuStorageImplDesc(mat2);
+    
     bool is_self_t_flex = is_transpose_last_two_dims_flex(self);
     bool is_mat2_t_flex = is_transpose_last_two_dims_flex(mat2);
     bool is_self_t_strict = is_transpose_last_two_dims_strict(self, is_self_t_flex);
