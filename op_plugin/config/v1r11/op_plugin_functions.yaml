@@ -2557,6 +2557,8 @@ custom:
     impl_ns: acl_op
   - func: npu_bmm_v2_mat2_backward(Tensor grad, Tensor mat1, Tensor mat2, int[] size) -> Tensor
     impl_ns: acl_op
+  - func: npu_moe_gating_top_k_softmax(Tensor gating, Tensor? finished_opt=None, int k=1) -> (Tensor, Tensor, Tensor)
+    impl_ns: op_api
   - func: selu_backward(Tensor grad_output, Tensor result) -> Tensor
     impl_ns: acl_op, op_api
   - func: matmul_backward(Tensor grad, Tensor self, Tensor other, bool[2] mask) -> (Tensor, Tensor)
