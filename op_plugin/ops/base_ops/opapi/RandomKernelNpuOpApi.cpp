@@ -44,8 +44,12 @@ static std::map<at::ScalarType, int64_t> DTYPE_MAX_VALUE_MAP = {
 
 int64_t get_dtype_max_value(at::ScalarType dtype) {
   auto iter = DTYPE_MAX_VALUE_MAP.find(dtype);
-  TORCH_CHECK(iter != DTYPE_MAX_VALUE_MAP.end(), "self scalar_type:", dtype, "is not surpported.");
-  return iter->second;
+  if (iter != DTYPE_MAX_VALUE_MAP.end()) {
+    return iter->second;
+  } else {
+    TORCH_CHECK(iter != DTYPE_MAX_VALUE_MAP.end(), "self scalar_type:", dtype, "is not surpported.");
+    return std::numeric_limits<long>::min();
+  }
 }
 
 at::Tensor& random_op_api_(at::Tensor& self, int64_t from, int64_t to, c10::optional<at::Generator> gen_) {
