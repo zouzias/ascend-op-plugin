@@ -50,7 +50,15 @@ at::Tensor& _index_put_impl_(
   if (self.device().type() == at::kCPU) {
     return at::native::_index_put_impl_(self, indices, value, accumulate, unsafe);
   }
+  bool needCast = op_plugin::AdvanceIndex::checkIndexTensorTypes(indices);
   auto indices_after = op_plugin::AdvanceIndex::npu_expand_tensors(self, indices, true);
+  if (needCast) {
+    for (size_t i = 0; i < indices_after.size(); i++) {
+      if (indices_after[i].defined() && indices_after[i].dtype() == at::kInt) {
+        indices_after[i] = indices_after[i].to(at::kLong);
+      }
+    }
+  }
   std::vector<at::Tensor> all_defined_indices;
   at::SmallVector<int64_t, op_infer::N> zeroSize = {0};
   at::Tensor emptyTensor = npu_preparation::apply_tensor_without_format(self, zeroSize);
