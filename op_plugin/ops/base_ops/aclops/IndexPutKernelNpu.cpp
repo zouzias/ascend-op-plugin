@@ -235,7 +235,7 @@ at::Tensor &_index_put_impl_(at::Tensor &self, const c10::List<c10::optional<at:
     if (self.device().type() == at::kCPU) {
         return at::native::_index_put_impl_(self, indices, value, accumulate, unsafe);
     }
-    at::native::checkIndexTensorTypes(indices);
+    op_plugin::AdvanceIndex::checkIndexTensorTypes(indices);
     at::SmallVector<int64_t, N> masks;
     std::vector<at::Tensor> all_defined_indices;
     std::vector<at::Tensor> indices_expand;
