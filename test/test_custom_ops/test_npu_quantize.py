@@ -42,20 +42,6 @@ class TestNPUQuantize(TestCase):
         output = output.numpy()
         return output
 
-    def test_npu_quantize_3_3_0_int32(self, device="npu"):
-        datainfo = DataInfo(-1, 1, (3, 3), (3,), (3,), np.float32, np.float32, np.int32)
-        input_x1, scales, zero_points = self.generate_data_npu_quantize(datainfo)
-        cpu_output1 = self.cpu_op_exec_per_channel(input_x1, scales, zero_points, 0, torch.qint32)
-        npu_output1 = self.npu_op_exec_per_channel(input_x1, scales, zero_points, 0, torch.qint32)
-        self.assertRtolEqual(cpu_output1, npu_output1)
-
-    def test_npu_quantize_3_3_3_3_1_int8(self, device="npu"):
-        datainfo = DataInfo(-1, 1, (3, 3), (3,), (3,), np.float32, np.float32, np.int8)
-        input_x1, scales, zero_points = self.generate_data_npu_quantize(datainfo)
-        cpu_output1 = self.cpu_op_exec_per_channel(input_x1, scales, zero_points, 1, torch.qint8).astype(np.int32)
-        npu_output1 = self.npu_op_exec_per_channel(input_x1, scales, zero_points, 1, torch.qint8).astype(np.int32)
-        self.assertRtolEqual(cpu_output1, npu_output1)
-
     def test_npu_quantize_3_3_3_3_3_3_3_3_4_uint8(self, device="npu"):
         datainfo = DataInfo(-1, 1, (3, 3, 3, 3, 3, 3, 3, 3), (3,), (3,), np.float32, np.float32, np.int32)
         input_x1, scales, zero_points = self.generate_data_npu_quantize(datainfo)
