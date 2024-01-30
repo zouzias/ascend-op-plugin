@@ -87,6 +87,9 @@ at::Tensor &col2im_out(const at::Tensor &grad_output, at::IntArrayRef input_size
 {
     check_func(grad_output, input_size, kernel_size, dilation, padding, stride);
     at::Tensor grad_output_cp = grad_output.dim() == 2 ? at::unsqueeze(grad_output, 0) : grad_output;
+    if (grad_output.dtype() == at::kHalf && padding[0] == 0 && padding[1] == 0) {
+        grad_output_cp = at_npu::native::custom_ops::npu_dtype_cast(grad_output_cp, at::kFloat);
+    }
     c10::SmallVector<int64_t, SIZE> output_size = {grad_output_cp.size(0),
                                                    grad_output_cp.size(1) / (kernel_size[0] * kernel_size[1]),
                                                    input_size[0], input_size[1]};
@@ -100,6 +103,9 @@ at::Tensor &col2im_out(const at::Tensor &grad_output, at::IntArrayRef input_size
     } else {
         col2im_out_nocheck(grad_input, grad_output_cp, input_size, kernel_size, dilation, padding, stride);
     }
+    if (grad_output.dtype() == at::kHalf && padding[0] == 0 && padding[1] == 0) {
+        grad_input = at_npu::native::custom_ops::npu_dtype_cast(grad_input, at::kHalf);
+    }
 
     if (grad_output.dim() == 2) {
         grad_input = at::squeeze(grad_input, 0);
@@ -112,12 +118,18 @@ at::Tensor col2im(const at::Tensor &grad_output, at::IntArrayRef input_size, at:
 {
     check_func(grad_output, input_size, kernel_size, dilation, padding, stride);
     at::Tensor grad_output_cp = grad_output.dim() == 2 ? at::unsqueeze(grad_output, 0) : grad_output;
+    if (grad_output.dtype() == at::kHalf && padding[0] == 0 && padding[1] == 0) {
+        grad_output_cp = at_npu::native::custom_ops::npu_dtype_cast(grad_output_cp, at::kFloat);
+    }
     c10::SmallVector<int64_t, SIZE> output_size = {grad_output_cp.size(0),
                                                    grad_output_cp.size(1) / (kernel_size[0] * kernel_size[1]),
                                                    input_size[0], input_size[1]};
 
     at::Tensor grad_input = npu_preparation::apply_tensor(grad_output_cp, output_size);
     col2im_out_nocheck(grad_input, grad_output_cp, input_size, kernel_size, dilation, padding, stride);
+    if (grad_output.dtype() == at::kHalf && padding[0] == 0 && padding[1] == 0) {
+        grad_input = at_npu::native::custom_ops::npu_dtype_cast(grad_input, at::kHalf);
+    }
 
     if (grad_output.dim() == 2) {
         grad_input = at::squeeze(grad_input, 0);
