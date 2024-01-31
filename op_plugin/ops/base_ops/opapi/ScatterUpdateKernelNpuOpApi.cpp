@@ -18,7 +18,6 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor scatter_update(
     const at::Tensor &self,
@@ -27,7 +26,6 @@ at::Tensor scatter_update(
     int64_t axis)
 {
     // The attribute 'reduce' of Scatter only supports setting it to 'update'.
-    DO_COMPATIBILITY(aclnnInplaceScatterUpdate, acl_op::scatter_update(self, indices, updates, axis));
     at::Tensor result = self.clone();
     EXEC_NPU_CMD(aclnnInplaceScatterUpdate, result, indices, updates, axis);
     return result;
@@ -40,7 +38,6 @@ at::Tensor &scatter_update_(
     int64_t axis)
 {
     // The attribute 'reduce' of Scatter only supports setting it to 'update'.
-    DO_COMPATIBILITY(aclnnInplaceScatterUpdate, acl_op::scatter_update_(self, indices, updates, axis));
     EXEC_NPU_CMD(aclnnInplaceScatterUpdate, self, indices, updates, axis);
     return self;
 }
