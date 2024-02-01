@@ -81,7 +81,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_apply_adam_w(
     const c10::optional<at::Tensor>& max_grad_norm,
     c10::optional<bool> amsgrad,
     c10::optional<bool> maximize) {
-  TORCH_CHECK(false, "npu_apply_adam_w is not implemented for Tensor");
+  TORCH_CHECK(false, "npu_apply_adam_w is not implemented for Tensor"
+      + PTA_ERROR(ErrCode::PARAM),
+      " curpid: ", op_plugin::utils::GetPid(),
+      " curtime: ", op_plugin::utils::GetTime());
 }
 
 std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> npu_apply_adam_w_out(
@@ -104,7 +107,10 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> npu_apply_adam_w_out(
   bool v_match = npu_utils::check_match(&v);
 
   if ((amsgrad.has_value()) && (amsgrad.value())) {
-    TORCH_CHECK(max_grad_norm.has_value(), "if amsgrad is true, max_grad_norm input must be entered");
+    TORCH_CHECK(max_grad_norm.has_value(), "if amsgrad is true, max_grad_norm input must be entered"
+        + PTA_ERROR(ErrCode::VALUE),
+        " curpid: ", op_plugin::utils::GetPid(),
+        " curtime: ", op_plugin::utils::GetTime());
   }
   if (!(var_match && m_match && v_match)) {
     at::Tensor contiguous_var = var_match ? var : npu_utils::format_contiguous(var);

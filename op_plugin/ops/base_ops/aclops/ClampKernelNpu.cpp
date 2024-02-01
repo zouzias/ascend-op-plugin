@@ -166,7 +166,10 @@ at::Tensor& clamp_out(
     const c10::optional<at::Scalar>& min,
     const c10::optional<at::Scalar>& max,
     at::Tensor& result) {
-  TORCH_CHECK(min.has_value() || max.has_value(), "torch.clamp: At least one of 'min' or 'max' must not be None");
+  TORCH_CHECK(min.has_value() || max.has_value(), "torch.clamp: At least one of 'min' or 'max' must not be None"
+      + PTA_ERROR(ErrCode::VALUE),
+      " curpid: ", op_plugin::utils::GetPid(),
+      " curtime: ", op_plugin::utils::GetTime());
   if (!min.has_value()) {
     at::Scalar max_value = max.value();
     return acl_op::clamp_max_out(self, max_value, result);
@@ -231,8 +234,13 @@ at::Tensor& clamp_min_out(
   auto high_dtype = at::native::result_type(self, min);
   auto result_dtype = result.scalar_type();
   TORCH_CHECK(canCast(high_dtype, result_dtype),
-      "result type ", high_dtype, " can't be cast to the desired output type ", result_dtype);
-  TORCH_CHECK(result_dtype != at::kBool, "'clamp_npu' not implemented for 'Bool'");
+      "result type ", high_dtype, " can't be cast to the desired output type ", result_dtype,
+      PTA_ERROR(ErrCode::TYPE),
+      " curpid: ", op_plugin::utils::GetPid(),
+      " curtime: ", op_plugin::utils::GetTime());
+  TORCH_CHECK(result_dtype != at::kBool, "'clamp_npu' not implemented for 'Bool'" + PTA_ERROR(ErrCode::TYPE),
+      " curpid: ", op_plugin::utils::GetPid(),
+      " curtime: ", op_plugin::utils::GetTime());
 
   at::Tensor self_cp = self.scalar_type() == result_dtype ? self : at_npu::native::custom_ops::npu_dtype_cast(self, result_dtype);
   at::Tensor min_cp = min.scalar_type() == result_dtype ? min : at_npu::native::custom_ops::npu_dtype_cast(min, result_dtype);
@@ -260,8 +268,14 @@ at::Tensor& clamp_max_out(
   auto high_dtype = at::native::result_type(self, max);
   auto result_dtype = result.scalar_type();
   TORCH_CHECK(canCast(high_dtype, result_dtype),
-      "result type ", high_dtype, " can't be cast to the desired output type ", result_dtype);
-  TORCH_CHECK(result_dtype != at::kBool, "'clamp_npu' not implemented for 'Bool'");
+      "result type ", high_dtype, " can't be cast to the desired output type ", result_dtype,
+      PTA_ERROR(ErrCode::TYPE),
+      " curpid: ", op_plugin::utils::GetPid(),
+      " curtime: ", op_plugin::utils::GetTime());
+  TORCH_CHECK(result_dtype != at::kBool, "'clamp_npu' not implemented for 'Bool'"
+      + PTA_ERROR(ErrCode::TYPE),
+      " curpid: ", op_plugin::utils::GetPid(),
+      " curtime: ", op_plugin::utils::GetTime());
 
   at::Tensor self_cp = self.scalar_type() == result_dtype ? self : at_npu::native::custom_ops::npu_dtype_cast(self, result_dtype);
   at::Tensor max_cp = max.scalar_type() == result_dtype ? max : at_npu::native::custom_ops::npu_dtype_cast(max, result_dtype);
@@ -287,7 +301,10 @@ at::Tensor& clamp_out(
     const c10::optional<at::Tensor>& min,
     const c10::optional<at::Tensor>& max,
     at::Tensor& result) {
-  TORCH_CHECK(min.has_value() || max.has_value(), "torch.clamp: At least one of 'min' or 'max' must not be None");
+  TORCH_CHECK(min.has_value() || max.has_value(), "torch.clamp: At least one of 'min' or 'max' must not be None"
+      + PTA_ERROR(ErrCode::VALUE),
+      " curpid: ", op_plugin::utils::GetPid(),
+      " curtime: ", op_plugin::utils::GetTime());
   if (!min.has_value()) {
     const at::Tensor& max_value = max.value();
     return acl_op::clamp_max_out(self, max_value, result);
@@ -301,8 +318,14 @@ at::Tensor& clamp_out(
     auto high_dtype = at::native::result_type(tensors);
     auto result_dtype = result.scalar_type();
     TORCH_CHECK(canCast(high_dtype, result_dtype),
-        "result type ", high_dtype, " can't be cast to the desired output type ", result_dtype);
-    TORCH_CHECK(result_dtype != at::kBool, "'clamp_npu' not implemented for 'Bool'");
+        "result type ", high_dtype, " can't be cast to the desired output type ", result_dtype,
+        PTA_ERROR(ErrCode::TYPE),
+        " curpid: ", op_plugin::utils::GetPid(),
+        " curtime: ", op_plugin::utils::GetTime());
+    TORCH_CHECK(result_dtype != at::kBool, "'clamp_npu' not implemented for 'Bool'"
+        + PTA_ERROR(ErrCode::TYPE),
+        " curpid: ", op_plugin::utils::GetPid(),
+        " curtime: ", op_plugin::utils::GetTime());
 
     at::Tensor self_cp = self.scalar_type() == result_dtype ? self :
         at_npu::native::custom_ops::npu_dtype_cast(self, result_dtype);

@@ -41,7 +41,9 @@ at::Tensor& adaptive_avg_pool3d_backward_out_nocheck(
     const at::Tensor& self) {
   TORCH_CHECK(grad_output.size(grad_output.dim() - 3) == 1 && grad_output.size(grad_output.dim() - 2) == 1 &&
       grad_output.size(grad_output.dim() - 1) == 1,
-      "adaptive_avg_pool3d_backward only support D=1 && H=1 && W=1 current!");
+      "adaptive_avg_pool3d_backward only support D=1 && H=1 && W=1 current!" + PTA_ERROR(ErrCode::PARAM),
+      " curpid: ", op_plugin::utils::GetPid(),
+      " curtime: ", op_plugin::utils::GetTime());
   acl_op::fill_(result, 1.0 / adaptive_avg_pool3d_backward_safe_size(self));
   acl_op::mul_(result, grad_output);
 

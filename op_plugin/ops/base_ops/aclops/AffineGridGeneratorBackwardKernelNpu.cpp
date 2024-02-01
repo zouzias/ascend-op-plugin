@@ -65,7 +65,10 @@ at::Tensor affine_grid_generator_backward(
     const at::Tensor& grad,
     at::IntArrayRef size,
     bool align_corners) {
-  TORCH_CHECK(size.size() == 4, "AffineGridGeneratorBackward needs 4d (spatial) input.")
+  TORCH_CHECK(size.size() == 4, "AffineGridGeneratorBackward needs 4d (spatial) input."
+      + PTA_ERROR(ErrCode::PARAM),
+      " curpid: ", op_plugin::utils::GetPid(),
+      " curtime: ", op_plugin::utils::GetTime());
 
   c10::SmallVector<int64_t, SIZE> output_size = {size[0], 3, 2};
   at::Tensor result = npu_preparation::apply_tensor_with_format(grad, output_size, ACL_FORMAT_ND);

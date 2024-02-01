@@ -25,7 +25,9 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_stats(const at::Tensor& self, doub
       self.ndimension() >= 2,
       "Expected 2D+ Tensor, but got tensor with ",
       self.ndimension(),
-      " Dimension");
+      " Dimension" + PTA_ERROR(ErrCode::PARAM),
+      " curpid: ", op_plugin::utils::GetPid(),
+      " curtime: ", op_plugin::utils::GetTime());
   auto output_size = {self.size(1)};
   at::Tensor mean = npu_preparation::apply_tensor(output_size, self.options().dtype(at::kFloat), self);
   at::Tensor invstd = npu_preparation::apply_tensor(output_size, self.options().dtype(at::kFloat), self);

@@ -42,7 +42,10 @@ at::Tensor affine_grid_generator(
     at::IntArrayRef size,
     bool align_corners) {
   TORCH_CHECK(size.size() == 4 || size.size() == 5,
-      "AffineGridGenerator needs 4d or 5d size(input).");
+      "AffineGridGenerator needs 4d or 5d size(input)."
+      + PTA_ERROR(ErrCode::PARAM),
+      " curpid: ", op_plugin::utils::GetPid(),
+      " curtime: ", op_plugin::utils::GetTime());
   auto output_size = op_infer::infersize_affine_grid_generator(size);
   at::Tensor result = npu_preparation::apply_tensor(theta, output_size);
   affine_grid_generator_npu_nocheck(

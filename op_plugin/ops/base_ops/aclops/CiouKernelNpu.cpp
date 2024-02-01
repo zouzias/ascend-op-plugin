@@ -28,11 +28,15 @@ c10::SmallVector<int64_t, N> ciou_output_size(
     const at::Tensor& gtboxes,
     bool is_cross) {
     TORCH_CHECK(self.dim() == 2, "ciou expected input in 2D, "
-                                 "but input self has sizes ",
-                self.dim());
+        "but input self has sizes ", self.dim(),
+        PTA_ERROR(ErrCode::PARAM),
+        " curpid: ", op_plugin::utils::GetPid(),
+        " curtime: ", op_plugin::utils::GetTime());
     TORCH_CHECK(gtboxes.dim() == 2, "ciou expected input in 2D, "
-                                    "but input gtboxes has sizes ",
-                gtboxes.dim());
+        "but input gtboxes has sizes ", gtboxes.dim(),
+        PTA_ERROR(ErrCode::PARAM),
+        " curpid: ", op_plugin::utils::GetPid(),
+        " curtime: ", op_plugin::utils::GetTime());
   c10::SmallVector<int64_t, N> output_size;
   if (is_cross) {
     output_size = {gtboxes.size(1), self.size(1)};
