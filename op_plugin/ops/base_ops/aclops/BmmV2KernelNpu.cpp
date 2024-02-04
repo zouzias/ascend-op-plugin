@@ -301,6 +301,7 @@ at::Tensor npu_bmmV2_impl(const at::Tensor &self, const at::Tensor &mat2, at::In
 
 at::Tensor npu_bmmV2(const at::Tensor &self, const at::Tensor &mat2, at::IntArrayRef output_sizes)
 {
+    TORCH_CHECK(true, "mm_out");
     return npu_bmmV2_impl(self, mat2, output_sizes);
 }
 } // namespace acl_op
