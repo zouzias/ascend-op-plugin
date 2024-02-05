@@ -276,7 +276,6 @@ at::Tensor mm(const at::Tensor &self, const at::Tensor &mat2)
     TORCH_CHECK(self.dim() >= 2 && mat2.dim() >= 2, "both arguments to matmul need to be at least 2D, but they are ",
                 self.dim(), "D and ", mat2.dim(), "D");
     auto output_size = {self.size(0), mat2.size(1)};
-
     at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
     bool need_nd_out = false;
     static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
