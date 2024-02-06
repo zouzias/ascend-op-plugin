@@ -17,6 +17,8 @@
 #ifndef OP_PULGIN_UTILS_CALCULATE_OP_UTILS
 #define OP_PULGIN_UTILS_CALCULATE_OP_UTILS
 
+#include <unistd.h>
+#include <ctime>
 #include <ATen/ATen.h>
 #include "op_plugin/utils/OpConstants.h"
 #include "op_plugin/utils/Export.h"
@@ -36,6 +38,8 @@ OP_PLUGIN_HIDDEN c10::optional<double> get_scale_value(c10::optional<c10::ArrayR
 OP_PLUGIN_HIDDEN at::ScalarType get_divide_result_type(const at::Tensor& self, const at::Tensor& other);
 OP_PLUGIN_HIDDEN at::ScalarType get_divide_calculate_type(const at::Tensor& self, const at::Tensor& other);
 OP_PLUGIN_HIDDEN at::Tensor get_cast_input(const at::Tensor& self, at::ScalarType calculate_type);
+OP_PLUGIN_HIDDEN std::string GetTime();
+OP_PLUGIN_HIDDEN uint64_t GetPid();
 }  // namespace utils
 }  // namespace op_plugin
 

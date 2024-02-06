@@ -69,7 +69,9 @@ at::Tensor& all_out(
     bool keepdim,
     at::Tensor& result) {
   TORCH_CHECK((result.scalar_type() == at::ScalarType::Bool || result.scalar_type() == at::ScalarType::Byte),
-      "all only supports bool tensor for result, got: ", result.scalar_type());
+      "all only supports bool tensor for result, got: ", result.scalar_type(), PTA_ERROR(ErrCode::TYPE),
+      " curpid: ", op_plugin::utils::GetPid(),
+      " curtime: ", op_plugin::utils::GetTime());
   c10::SmallVector<int64_t, N> dim_list = {dim};
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dim_list, keepdim);
   npu_preparation::CheckOut(
@@ -83,7 +85,9 @@ at::Tensor& all_out(
 
 at::Tensor& all_out(const at::Tensor& self, at::Tensor& result) {
   TORCH_CHECK((result.scalar_type() == at::ScalarType::Bool || result.scalar_type() == at::ScalarType::Byte),
-      "all only supports bool tensor for result, got: ", result.scalar_type());
+      "all only supports bool tensor for result, got: ", result.scalar_type(), PTA_ERROR(ErrCode::TYPE),
+      " curpid: ", op_plugin::utils::GetPid(),
+      " curtime: ", op_plugin::utils::GetTime());
   at::IntArrayRef dims;
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, false);
   npu_preparation::CheckOut(
@@ -102,10 +106,16 @@ at::Tensor all(const at::Tensor& self, int64_t dim, bool keepdim) {
 
   if (self.dim() != 0) {
     TORCH_CHECK((dim >= -(self.dim()) && dim < self.dim()),
-        "The value of dim must be greater than or equal to -self.dim() and less than self.dim()");
+        "The value of dim must be greater than or equal to -self.dim() and less than self.dim()"
+        + PTA_ERROR(ErrCode::PARAM),
+        " curpid: ", op_plugin::utils::GetPid(),
+        " curtime: ", op_plugin::utils::GetTime());
   } else {
     TORCH_CHECK_INDEX((self.dim() == dim || dim == -1),
-        "Dimension out of range (expected to be in range of [-1, 0], but got ", dim, ")");
+        "Dimension out of range (expected to be in range of [-1, 0], but got ", dim, ")"
+        + PTA_ERROR(ErrCode::PARAM),
+        " curpid: ", op_plugin::utils::GetPid(),
+        " curtime: ", op_plugin::utils::GetTime());
   }
 
   if (self.numel() == 0) {

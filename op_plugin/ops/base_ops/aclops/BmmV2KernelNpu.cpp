@@ -34,9 +34,12 @@ bool is_transpose_last_two_dims_v2(const at::Tensor &Tensors)
     int64_t dim1 = Tensors.dim() - 1;
     int64_t dim2 = Tensors.dim() - TENSORS_DIMS_LOWER_LIMIT;
     TORCH_CHECK(Tensors.element_size() > 0,
-                "expected Tensors valid, "
-                "but input Tensors has element_size ",
-                Tensors.element_size());
+        "expected Tensors valid, "
+        "but input Tensors has element_size ",
+        Tensors.element_size(),
+        PTA_ERROR(ErrCode::PARAM),
+        " curpid: ", op_plugin::utils::GetPid(),
+        " curtime: ", op_plugin::utils::GetTime());
     int64_t tensor_size = static_cast<int64_t>(Tensors.storage().nbytes()) / Tensors.element_size();
     auto tensor_desc = torch_npu::NPUBridge::GetNpuStorageImpl(Tensors)->get_npu_desc();
     if (tensor_desc.base_sizes_.size() == static_cast<uint64_t>(Tensors.dim()) && Tensors.stride(dim2) == 1 &&

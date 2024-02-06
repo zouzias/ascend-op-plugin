@@ -46,10 +46,13 @@ namespace {
 
 at::Tensor &bmm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &result) {
     TORCH_CHECK(self.device() == mat2.device(),
-                "Expected all tensors to be on the same device, but found at least two devices, ",
-                (torch_npu::utils::is_npu(self) ? "npu" : "cpu"),
-                " and ",
-                (torch_npu::utils::is_npu(mat2) ? "npu! " : "cpu! "));
+        "Expected all tensors to be on the same device, but found at least two devices, ",
+        (torch_npu::utils::is_npu(self) ? "npu" : "cpu"),
+        " and ",
+        (torch_npu::utils::is_npu(mat2) ? "npu! " : "cpu! "),
+        PTA_ERROR(ErrCode::PARAM),
+        " curpid: ", op_plugin::utils::GetPid(),
+        " curtime: ", op_plugin::utils::GetTime());
     auto output_size = {self.size(0), self.size(1), mat2.size(2)};
     npu_preparation::CheckOut(
         {self, mat2},
@@ -69,12 +72,21 @@ at::Tensor &bmm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &
 
 at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2) {
     TORCH_CHECK(self.device() == mat2.device(),
-                "Expected all tensors to be on the same device, but found at least two devices, ",
-                (torch_npu::utils::is_npu(self) ? "npu" : "cpu"),
-                " and ",
-                (torch_npu::utils::is_npu(mat2) ? "npu! " : "cpu! "));
-    TORCH_CHECK(self.dim() >= 2, "bmm expect self at least 2D tensors, but got: ", self.dim());
-    TORCH_CHECK(mat2.dim() >= 3, "bmm expect mat2 at least 3D tensors, but got: ", mat2.dim());
+        "Expected all tensors to be on the same device, but found at least two devices, ",
+        (torch_npu::utils::is_npu(self) ? "npu" : "cpu"),
+        " and ",
+        (torch_npu::utils::is_npu(mat2) ? "npu! " : "cpu! "),
+        PTA_ERROR(ErrCode::PARAM),
+        " curpid: ", op_plugin::utils::GetPid(),
+        " curtime: ", op_plugin::utils::GetTime());
+    TORCH_CHECK(self.dim() >= 2, "bmm expect self at least 2D tensors, but got: ", self.dim(),
+        PTA_ERROR(ErrCode::PARAM),
+        " curpid: ", op_plugin::utils::GetPid(),
+        " curtime: ", op_plugin::utils::GetTime());
+    TORCH_CHECK(mat2.dim() >= 3, "bmm expect mat2 at least 3D tensors, but got: ", mat2.dim(),
+        PTA_ERROR(ErrCode::PARAM),
+        " curpid: ", op_plugin::utils::GetPid(),
+        " curtime: ", op_plugin::utils::GetTime());
     auto output_size = {self.size(0), self.size(1), mat2.size(2)};
 
     at::Tensor result;

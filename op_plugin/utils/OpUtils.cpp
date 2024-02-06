@@ -182,5 +182,21 @@ at::Tensor get_cast_input(const at::Tensor& self, at::ScalarType calculate_type)
   self_cast = at_npu::native::OpPreparation::CastBackToOriFormat(self_cast);
   return self_cast;
 }
+
+std::string GetTime()
+{
+    time_t timep;
+    time (&timep);
+    char tmp[64];
+    strftime(tmp, sizeof(tmp), "%Y-%m-%d %H:%M:%S", localtime(&timep));
+    return tmp;
+}
+
+uint64_t GetPid()
+{
+    uint64_t pid = static_cast<uint64_t>(getpid());
+    return pid;
+}
+
 }  // namespace utils
 }  // namespace op_plugin
