@@ -139,6 +139,8 @@ at::Tensor matmul_opt_nocheck(c10::optional<at::Tensor> out_opt, const at::Tenso
 } // namespace
 
 at::Tensor matmul(const at::Tensor& tensor1, const at::Tensor& tensor2) {
+    TORCH_CHECK(tensor1.scalar_type() !=  at::ScalarType::Char && tensor2.scalar_type() !=  at::ScalarType::Char,
+                "matmul is not support int8 dtype")
   auto maybe_outnames = at::namedinference::compute_matmul_outnames(tensor1, tensor2);
   auto result = matmul_opt_nocheck(c10::nullopt, tensor1, tensor2);
   at::namedinference::propagate_names_if_nonempty(result, maybe_outnames);
@@ -146,6 +148,8 @@ at::Tensor matmul(const at::Tensor& tensor1, const at::Tensor& tensor2) {
 }
 
 at::Tensor& matmul_out(const at::Tensor& tensor1, const at::Tensor& tensor2, at::Tensor& result) {
+    TORCH_CHECK(tensor1.scalar_type() !=  at::ScalarType::Char && tensor2.scalar_type() !=  at::ScalarType::Char,
+                "matmul is not support int8 dtype")
   auto maybe_outnames = at::namedinference::compute_matmul_outnames(tensor1, tensor2);
   if (!result.is_contiguous()) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
