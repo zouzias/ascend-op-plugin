@@ -620,13 +620,6 @@ torch.Tensor (Tensor) - mask操作的结果。
 
 
 _add_torch_npu_docstr(
-    "npu_dropout_gen_mask",
-    """
-"""
-)
-
-
-_add_torch_npu_docstr(
     "npu_dropout_with_add_softmax",
     """
 torch_npu.npu_dropout_with_add_softmax(Tensor self, Tensor x1, Scalar alpha, float prob, int dim) -> (Tensor, Tensor, Tensor)
