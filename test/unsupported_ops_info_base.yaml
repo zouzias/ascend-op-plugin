@@ -9062,8 +9062,6 @@ _refs.index_fill:
   - complex128
   test_neg_view:
   - float64
-  test_out:
-  - float32
 _refs.index_select:
   test_conj_view:
   - complex64
