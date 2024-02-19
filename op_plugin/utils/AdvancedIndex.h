@@ -48,6 +48,7 @@ public:
       bool flag_aclnn = false);
   static std::vector<at::Tensor> npu_broadcast_tensors(std::vector<at::Tensor> to_broadcast);
   static bool is_expandable_to(c10::IntArrayRef shape, c10::IntArrayRef desired);
+  static void checkIndexTensorTypes(const torch::List<c10::optional<at::Tensor>> &indices);
 };
 
 } // namespace op_plugin
