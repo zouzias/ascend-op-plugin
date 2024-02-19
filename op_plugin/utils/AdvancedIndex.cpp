@@ -176,14 +176,17 @@ bool AdvanceIndex::checkIndexTensorTypes(const torch::List<c10::optional<at::Ten
     c10::optional<at::ScalarType> indicesDtype;
     for (c10::optional<at::Tensor> tensor : indices) {
         if (tensor.has_value() && tensor->defined()) {
+            std::cout << "1" << std::endl;
             auto scalarType = tensor->scalar_type();
             if (scalarType != at::kLong && scalarType != at::kByte &&
                 scalarType != at::kBool && scalarType != at::kInt) {
                 TORCH_CHECK_INDEX(false, "tensors used as indices must be long, int, byte, or bool tensors");
             }
             if (!indicesDtype.has_value()) {
+                std::cout << "2" << std::endl;
                 indicesDtype = scalarType;
             } else if (indicesDtype.value() != scalarType) {
+                std::cout << "3" << std::endl;
                 std::cout << "needCast = true" << std::endl;
                 needCast = true;
             }
@@ -221,12 +224,15 @@ AdvancedIndex AdvanceIndex::make_info(at::Tensor self, const torch::List<c10::op
             indices[i] = indices[i].to(self.device());
         }
     }
+    std::cout << "4" << std::endl;
     std::cout << "needCast = " << needCast << std::endl;
-    if (needCast == true) {
+    if (needCast) {
+        std::cout << "5" << std::endl;
         std::cout << "needCast = true" << std::endl;
         for (size_t i = 0; i < indices.size(); i++) {
-            std::cout << "index type = " << indices[i].dtype() << std::endl;
-            if (indices[i].defined() && indices[i].dtype() == at::kInt) {
+            std::cout << "6" << std::endl;
+            std::cout << "index type = " << indices[i].scalar_type() << std::endl;
+            if (indices[i].defined() && indices[i].scalar_type() == at::kInt) {
                 indices[i] = indices[i].to(at::kLong);
             }
         }
