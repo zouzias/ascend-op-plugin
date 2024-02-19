@@ -196,7 +196,7 @@ void AdvanceIndex::checkIndexTensorTypes(const torch::List<c10::optional<at::Ten
     if (needCast) {
         for (size_t i = 0; i < indices.size(); i++) {
             if (indices[i].has_value() && indices[i]->defined() && indices[i]->scalar_type() == at::kInt) {
-                indices[i] = indices[i].to(at::kLong);
+                indices[i] = indices[i]->to(at::kLong);
             }
         }
     }
