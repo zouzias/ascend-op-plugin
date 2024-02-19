@@ -444,6 +444,11 @@ at::Tensor npu_prompt_flash_attention(
 
     int64_t inner_precise = 1;
 
+    if (sparse_mode >= 10 && sparse_mode <= 14) {  // 10: min  14: max 
+        inner_precise = 0;
+        sparse_mode -= 10;  // subtract 10 to modify sparse_mode
+    }
+
     // dispatch hostAPI
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttentionV3, query, key, value, pse_shift, atten_mask, actSeqLen, actSeqLenKv, deq_scale1, quant_scale1, deq_scale2, quant_scale2, quant_offset2,
                                  num_heads, scale_value, pre_tokens, next_tokens, input_layout_ptr, num_key_value_heads, sparse_mode, inner_precise, output);
