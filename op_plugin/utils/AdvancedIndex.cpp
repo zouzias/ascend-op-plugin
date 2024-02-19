@@ -174,7 +174,7 @@ std::string AdvanceIndex::shapes_as_str(at::TensorList tensors)
 void AdvanceIndex::checkIndexTensorTypes(const torch::List<c10::optional<at::Tensor>> &indices) {
     bool needCast = false;
     c10::optional<at::ScalarType> indicesDtype;
-    for (const auto& tensor : indices) {
+    for (c10::optional<at::Tensor> tensor : indices) {
         if (tensor.has_value() && tensor->defined()) {
             std::cout << "1" << std::endl;
             auto scalarType = tensor->scalar_type();
@@ -194,9 +194,9 @@ void AdvanceIndex::checkIndexTensorTypes(const torch::List<c10::optional<at::Ten
     }
 
     if (needCast) {
-        for (auto &tensor : indices) {
-            if (tensor.has_value() && tensor->defined() && tensor->scalar_type() == at::kInt) {
-                *tensor = tensor->to(at::kLong);
+        for (size_t i = 0; i < indices.size(); i++) {
+            if (indices[i].has_value() && indices[i]->defined() && indices[i]->scalar_type() == at::kInt) {
+                indices[i] = indices[i].to(at::kLong);
             }
         }
     }
@@ -204,7 +204,7 @@ void AdvanceIndex::checkIndexTensorTypes(const torch::List<c10::optional<at::Ten
 
 AdvancedIndex AdvanceIndex::make_info(at::Tensor self, const torch::List<c10::optional<at::Tensor>> &orig)
 {
-    bool needCast = AdvanceIndex::checkIndexTensorTypes(orig);
+    AdvanceIndex::checkIndexTensorTypes(orig);
     // first expand BoolTensor (masks) or ByteTensor (masks) into 1 or more LongTensors
     auto indices = at::native::expandTensors(self, orig);
     // next broadcast all index tensors together
@@ -232,7 +232,6 @@ AdvancedIndex AdvanceIndex::make_info(at::Tensor self, const torch::List<c10::op
         }
     }
     std::cout << "4" << std::endl;
-
     return AdvancedIndex(self, indices);
 }
 
