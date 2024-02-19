@@ -171,10 +171,10 @@ std::string AdvanceIndex::shapes_as_str(at::TensorList tensors)
     return os.str();
 }
 
-bool AdvanceIndex::checkIndexTensorTypes(const torch::List<c10::optional<at::Tensor>> &indices) {
+void AdvanceIndex::checkIndexTensorTypes(const torch::List<c10::optional<at::Tensor>> &indices) {
     bool needCast = false;
     c10::optional<at::ScalarType> indicesDtype;
-    for (c10::optional<at::Tensor> tensor : indices) {
+    for (const auto& tensor : indices) {
         if (tensor.has_value() && tensor->defined()) {
             std::cout << "1" << std::endl;
             auto scalarType = tensor->scalar_type();
@@ -192,7 +192,14 @@ bool AdvanceIndex::checkIndexTensorTypes(const torch::List<c10::optional<at::Ten
             }
         }
     }
-    return needCast;
+
+    if (needCast) {
+        for (auto &tensor : indices) {
+            if (tensor.has_value() && tensor->defined() && tensor->scalar_type() == at::kInt) {
+                *tensor = tensor->to(at::kLong);
+            }
+        }
+    }
 }
 
 AdvancedIndex AdvanceIndex::make_info(at::Tensor self, const torch::List<c10::optional<at::Tensor>> &orig)
@@ -225,18 +232,6 @@ AdvancedIndex AdvanceIndex::make_info(at::Tensor self, const torch::List<c10::op
         }
     }
     std::cout << "4" << std::endl;
-    std::cout << "needCast = " << needCast << std::endl;
-    if (needCast) {
-        std::cout << "5" << std::endl;
-        std::cout << "needCast = true" << std::endl;
-        for (size_t i = 0; i < indices.size(); i++) {
-            std::cout << "6" << std::endl;
-            std::cout << "index type = " << indices[i].scalar_type() << std::endl;
-            if (indices[i].defined() && indices[i].scalar_type() == at::kInt) {
-                indices[i] = indices[i].to(at::kLong);
-            }
-        }
-    }
 
     return AdvancedIndex(self, indices);
 }
