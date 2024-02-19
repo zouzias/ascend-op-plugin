@@ -184,6 +184,7 @@ bool AdvanceIndex::checkIndexTensorTypes(const torch::List<c10::optional<at::Ten
             if (!indicesDtype.has_value()) {
                 indicesDtype = scalarType;
             } else if (indicesDtype.value() != scalarType) {
+                std::cout << "needCast = true" << std::endl;
                 needCast = true;
             }
         }
@@ -220,11 +221,13 @@ AdvancedIndex AdvanceIndex::make_info(at::Tensor self, const torch::List<c10::op
             indices[i] = indices[i].to(self.device());
         }
     }
-
+    std::cout << "needCast = " << needCast << std::endl;
     if (needCast == true) {
-        for (auto &indice : indices) {
-            if (indice.defined() && indice.dtype() == at::kInt) {
-                indice = indice.to(at::kLong);
+        std::cout << "needCast = true" << std::endl;
+        for (size_t i = 0; i < indices.size(); i++) {
+            std::cout << "index type = " << indices[i].dtype() << std::endl;
+            if (indices[i].defined() && indices[i].dtype() == at::kInt) {
+                indices[i] = indices[i].to(at::kLong);
             }
         }
     }
