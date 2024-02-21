@@ -40,10 +40,12 @@ static at::Tensor& div_out_npu_opapi_nocheck(const at::Tensor& self, const at::T
   return result;
 }
 
-static at::Tensor self_tensor_to_device(const at::Tensor& tensor, const at::ScalarType result_type) {
+static at::Tensor self_tensor_to_device(const at::Tensor& tensor, const at::ScalarType result_type,
+                                        const c10::Device device)
+{
   if (npu_preparation::is_scalar_wrapped_to_tensor(tensor)) {
     at::Scalar scalar = tensor.item();
-    return npu_preparation::copy_scalar_to_device(scalar, result_type);
+    return npu_preparation::copy_scalar_to_device(scalar, result_type, device);
   }
   return tensor;
 }
@@ -60,7 +62,7 @@ at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   if (isFloatingType(result.scalar_type())) {
     result_type = result.scalar_type();
   }
-  at::Tensor self_cp = self_tensor_to_device(self, result_type);
+  at::Tensor self_cp = self_tensor_to_device(self, result_type, result.device());
   npu_preparation::check_tensor({self}, result, result_type, output_size);
 
   // calculate the output result of the NPU
@@ -81,7 +83,7 @@ at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, c10::option
 
   auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
   at::ScalarType result_type = at::native::result_type(self, other);
-  at::Tensor self_cp = self_tensor_to_device(self, result_type);
+  at::Tensor self_cp = self_tensor_to_device(self, result_type, result.device());
   npu_preparation::check_tensor({self}, result, result.scalar_type(), outputSize);
 
   int mode = 0;
@@ -109,7 +111,7 @@ at::Tensor div(const at::Tensor& self, const at::Tensor& other) {
   at::Tensor outputTensor = isSelfWrapped ? other : self;
   auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
   at::ScalarType high_type = at::native::result_type(self, other);
-  at::Tensor self_cp = self_tensor_to_device(self, high_type);
+  at::Tensor self_cp = self_tensor_to_device(self, high_type, outputTensor.device());
 
   if (!isFloatingType(high_type)) {
     high_type = at::ScalarType::Float;
@@ -138,7 +140,7 @@ at::Tensor div(const at::Tensor& self, const at::Tensor& other, c10::optional<c1
 
   auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
   at::ScalarType high_type = at::native::result_type(self, other);
-  at::Tensor self_cp = self_tensor_to_device(self, high_type);
+  at::Tensor self_cp = self_tensor_to_device(self, high_type, outputTensor.device());
 
   // construct the output tensor of the NPU
   int mode = 0;
