@@ -27,6 +27,7 @@ at::Tensor softmax(const at::Tensor& self, int64_t dim, c10::optional<at::Scalar
     at::Tensor converted = dtype.has_value() ? at_npu::native::custom_ops::npu_dtype_cast(self, dtype.value()) : self;
     return at::_softmax(converted, dim, false);
   }();
+  
   at::namedinference::propagate_names(result, self);
   return result;
 }
