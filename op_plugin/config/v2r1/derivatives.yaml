@@ -8,7 +8,7 @@
 
 - name: npu_fusion_attention(Tensor query, Tensor key, Tensor value, int head_num, str input_layout, Tensor? pse=None, Tensor? padding_mask=None, Tensor? atten_mask=None, float scale=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int inner_precise=0, int[]? prefix=None, int[]? actual_seq_qlen=None, int[]? actual_seq_kvlen=None, int sparse_mode=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
   output_differentiability: [True, True, True, True, False, False, False]
-  query, key, value, pse: npu_fusion_attention_grad(query, key, value, grad, head_num, input_layout, pse, padding_mask, atten_mask, result1, result2, result3, result0, scale, keep_prob, pre_tockens, next_tockens, inner_precise, result4, result5, result6, prefix, actual_seq_qlen, actual_seq_kvlen, sparse_mode, gen_mask_parallel, sync)
+  query, key, value, pse: npu_fusion_attention_grad(query, key, value, grad, head_num, input_layout, pse, padding_mask, atten_mask, result1, result2, result3, result3, scale, keep_prob, pre_tockens, next_tockens, inner_precise, result4, result5, result6, prefix, actual_seq_qlen, actual_seq_kvlen, sparse_mode, gen_mask_parallel, sync)
 
 - name: npu_fusion_attention_v3(Tensor x, Tensor weight, int head_num, str input_layout, int head_size, Tensor? bias=None, Tensor? pse=None, Tensor? atten_mask=None, int[]? prefix=None, float scale_qk=1., float scale_q=1., float scale_k=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int sparse_mode=0, int pse_type=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
   output_differentiability: [True, True, True, True, False, False, False]
