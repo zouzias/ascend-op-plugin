@@ -17,6 +17,9 @@
 #include "op_plugin/OpInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/utils/AdvancedIndex.h"
+#include <chrono>
+#include <string>
+#include <torch/torch.h>
 
 namespace op_plugin {
 
@@ -218,6 +221,7 @@ std::vector<at::Tensor> AdvanceIndex::npu_expand_tensors(const at::Tensor &self,
     // If indices come in as ByteTensor or BoolTensor (masks), expand them into the equivalent indexing by LongTensors
     std::vector<at::Tensor> result;
     int64_t count = 0;
+    int64_t timestamp = flag_aclnn ? std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() : 0;
     for (c10::optional<at::Tensor> index_opt : indices) {
         if (!index_opt.has_value()) {
             result.emplace_back();
@@ -241,7 +245,8 @@ std::vector<at::Tensor> AdvanceIndex::npu_expand_tensors(const at::Tensor &self,
                 }
                 at::Tensor nonzero;
                 // Replace with nonzeros
-                nonzero = flag_aclnn ? npu_nonzero_notranspose(index, count) : npu_nonzero_transpose(index);
+                nonzero = flag_aclnn ? npu_nonzero_notranspose(index, count, timestamp) : npu_nonzero_transpose(index);
+                std::cout << "nonzero input sizes: " << index.sizes() <<  "; output sizes: " <<nonzero.sizes() << std::endl;
                 for (int64_t j = 0; j < index.dim(); j++) {
                     result.emplace_back(nonzero.select(0, j));
                 }
@@ -249,6 +254,7 @@ std::vector<at::Tensor> AdvanceIndex::npu_expand_tensors(const at::Tensor &self,
                 result.emplace_back(std::move(index));
             }
         }
+        count++;
     }
     return result;
 }
