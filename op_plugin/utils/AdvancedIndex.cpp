@@ -75,8 +75,8 @@ at::Tensor npu_nonzero_notranspose(const at::Tensor &self, int64_t count, int64_
     at::Tensor result = op_plugin::nonzero(self);
 
     int size2 = (!(result.sizes().empty()))? result.sizes()[0] : 0;
-    std::string name = "nonzero_output_" + std::to_string(count) + "_size" + std::to_string(size2) + "_" + std::to_string(timestamp) + ".pt";
-    torch::save(result, name);
+    std::string name1 = "nonzero_output_" + std::to_string(count) + "_size" + std::to_string(size2) + "_" + std::to_string(timestamp) + ".pt";
+    torch::save(result, name1);
 
     result = result.transpose(1, 0);
     return result;

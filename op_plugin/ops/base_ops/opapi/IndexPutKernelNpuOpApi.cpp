@@ -56,7 +56,7 @@ at::Tensor& _index_put_impl_(
 
   auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
   for (uint64_t i = 0; i < indices.size(); i++) {
-    int size = (indices[i].defined() && !(indices[i].sizes().empty()))? indices[i].sizes()[0] : 0;
+    int size = (indices[i].has_value())? indices[i].size(0) : 0;
       std::string name = "indexput_ori_idx_" + std::to_string(i) + "_size" + std::to_string(size) + "_" + std::to_string(timestamp) + ".pt";
       torch::save(indices[i], name);
   }
