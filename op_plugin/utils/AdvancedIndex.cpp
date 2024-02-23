@@ -64,9 +64,17 @@ at::Tensor npu_nonzero_transpose(const at::Tensor &self)
     return result;
 }
 
-at::Tensor npu_nonzero_notranspose(const at::Tensor &self)
+at::Tensor npu_nonzero_notranspose(const at::Tensor &self, int64_t count, int64_t timestamp)
 {
+    int size = (!(self.sizes().empty()))? self.sizes()[0] : 0;
+    std::string name = "nonzero_input_" + std::to_string(count) + "_size" + std::to_string(size) + "_" + std::to_string(timestamp) + ".pt";
+    torch::save(self, name);
     at::Tensor result = op_plugin::nonzero(self);
+
+    int size2 = (!(result.sizes().empty()))? result.sizes()[0] : 0;
+    std::string name = "nonzero_output_" + std::to_string(count) + "_size" + std::to_string(size2) + "_" + std::to_string(timestamp) + ".pt";
+    torch::save(result, name);
+
     result = result.transpose(1, 0);
     return result;
 }
@@ -209,6 +217,7 @@ std::vector<at::Tensor> AdvanceIndex::npu_expand_tensors(const at::Tensor &self,
 {
     // If indices come in as ByteTensor or BoolTensor (masks), expand them into the equivalent indexing by LongTensors
     std::vector<at::Tensor> result;
+    int64_t count = 0;
     for (c10::optional<at::Tensor> index_opt : indices) {
         if (!index_opt.has_value()) {
             result.emplace_back();
@@ -232,7 +241,7 @@ std::vector<at::Tensor> AdvanceIndex::npu_expand_tensors(const at::Tensor &self,
                 }
                 at::Tensor nonzero;
                 // Replace with nonzeros
-                nonzero = flag_aclnn ? npu_nonzero_notranspose(index) : npu_nonzero_transpose(index);
+                nonzero = flag_aclnn ? npu_nonzero_notranspose(index, count) : npu_nonzero_transpose(index);
                 for (int64_t j = 0; j < index.dim(); j++) {
                     result.emplace_back(nonzero.select(0, j));
                 }

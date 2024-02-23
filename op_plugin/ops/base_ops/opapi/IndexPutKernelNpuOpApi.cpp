@@ -18,6 +18,9 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/AdvancedIndex.h"
+#include <chrono>
+#include <string>
+#include <torch/torch.h>
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -50,6 +53,14 @@ at::Tensor& _index_put_impl_(
   if (self.device().type() == at::kCPU) {
     return at::native::_index_put_impl_(self, indices, value, accumulate, unsafe);
   }
+
+  auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+  for (uint64_t i = 0; i < indices.size(); i++) {
+    int size = (indices[i].defined() && !(indices[i].sizes().empty()))? indices[i].sizes()[0] : 0;
+      std::string name = "indexput_ori_idx_" + std::to_string(i) + "_size" + std::to_string(size) + "_" + std::to_string(timestamp) + ".pt";
+      torch::save(indices[i], name);
+  }
+
   auto indices_after = op_plugin::AdvanceIndex::npu_expand_tensors(self, indices, true);
   std::vector<at::Tensor> all_defined_indices;
   at::SmallVector<int64_t, op_infer::N> zeroSize = {0};
