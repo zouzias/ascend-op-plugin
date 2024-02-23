@@ -20,6 +20,7 @@
 #include <chrono>
 #include <string>
 #include <torch/torch.h>
+#include <fstream>
 
 namespace op_plugin {
 
@@ -67,16 +68,23 @@ at::Tensor npu_nonzero_transpose(const at::Tensor &self)
     return result;
 }
 
+void save_file(const at::Tensor &self, std::string& name){
+auto pickled = torch::pickle_save(self);
+std::ofstream fout(name, std::ios::out|std::ios::binary);
+fout.write(pickled.data(), pickled.size());
+fout.close();
+}
+
 at::Tensor npu_nonzero_notranspose(const at::Tensor &self, int64_t count, int64_t timestamp)
 {
     int size = (!(self.sizes().empty()))? self.sizes()[0] : 0;
     std::string name = "nonzero_input_" + std::to_string(count) + "_size" + std::to_string(size) + "_" + std::to_string(timestamp) + ".pt";
-    torch::save(self, name);
+    save_file(self, name);
     at::Tensor result = op_plugin::nonzero(self);
 
     int size2 = (!(result.sizes().empty()))? result.sizes()[0] : 0;
     std::string name1 = "nonzero_output_" + std::to_string(count) + "_size" + std::to_string(size2) + "_" + std::to_string(timestamp) + ".pt";
-    torch::save(result, name1);
+    save_file(result, name1);
 
     result = result.transpose(1, 0);
     return result;
