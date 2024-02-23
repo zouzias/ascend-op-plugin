@@ -54,12 +54,12 @@ at::Tensor& _index_put_impl_(
     return at::native::_index_put_impl_(self, indices, value, accumulate, unsafe);
   }
 
-  auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+  /*auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
   for (uint64_t i = 0; i < indices.size(); i++) {
     //int size = (indices[i].has_value())? indices[i].size(0) : 0;
       std::string name = "indexput_ori_idx_" + std::to_string(i) + "_" + std::to_string(timestamp) + ".pt";
       torch::save(indices[i], name);
-  }
+  }*/
 
   auto indices_after = op_plugin::AdvanceIndex::npu_expand_tensors(self, indices, true);
   std::vector<at::Tensor> all_defined_indices;
