@@ -37,35 +37,37 @@ at::Tensor& pdist_out_npu_nocheck(
 } // namespace
 
 at::Tensor _pdist_forward(const at::Tensor& self, double p) {
-  at::Tensor result;
-  if (self.size(0) <= 1) {
-    result = npu_preparation::apply_tensor(self, {0});
-  } else {
-    // double is not supported in NPU,  type of P needs to be converted from double to float.
-    float p_float;
-    if (std::isinf(p)) {
-      p_float = std::numeric_limits<float>::infinity();
+    at::Tensor result;
+    if (self.size(0) <= 1) {
+        result = npu_preparation::apply_tensor(self, {0});
     } else {
-      TORCH_CHECK(p <= std::numeric_limits<float>::max(), "npu dose not support float64");
-      p_float = static_cast<float>(p);
+        // double is not supported in NPU,  type of P needs to be converted from double to float.
+        float p_float;
+        if (std::isinf(p)) {
+            p_float = std::numeric_limits<float>::infinity();
+        } else {
+            TORCH_CHECK(p <= std::numeric_limits<float>::max(), "npu dose not support float64"
+                + PTA_ERROR(ErrCode::TYPE));
+            p_float = static_cast<float>(p);
+        }
+        auto output_size = op_infer::pdist_npu_output_size(self, p_float);
+        result = npu_preparation::apply_tensor(self, output_size);
+        if (self.size(1) == 0) {
+            acl_op::fill_(result, 0);
+        } else {
+            pdist_out_npu_nocheck(result, self, p_float);
+        }
     }
-    auto output_size = op_infer::pdist_npu_output_size(self, p_float);
-    result = npu_preparation::apply_tensor(self, output_size);
-    if (self.size(1) == 0) {
-      acl_op::fill_(result, 0);
-    } else {
-      pdist_out_npu_nocheck(result, self, p_float);
-    }
-  }
-  return result;
+    return result;
 }
 
 at::Tensor pdist(const at::Tensor& self, double p) {
-  TORCH_CHECK(self.dim() == 2,
-      "pdist only supports 2D tensors, got: ", self.dim(), "D");
-  TORCH_CHECK(at::isFloatingType(self.scalar_type()), "pdist only supports floating-point dtypes");
-  TORCH_CHECK(p >= 0, "pdist only supports non-negative p values");
+    TORCH_CHECK(self.dim() == 2,
+        "pdist only supports 2D tensors, got: ", self.dim(), "D" + PTA_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(at::isFloatingType(self.scalar_type()), "pdist only supports floating-point dtypes"
+        + PTA_ERROR(ErrCode::TYPE));
+    TORCH_CHECK(p >= 0, "pdist only supports non-negative p values" + PTA_ERROR(ErrCode::VALUE));
 
-  return at::_pdist_forward(self, p);
+    return at::_pdist_forward(self, p);
 }
 } // namespace acl_op
