@@ -41,7 +41,7 @@ namespace op_api
                               at::Tensor const&arg_max,
                               c10::optional<double> top_r_rate)
   {
-    float top_r_rate_value = top_r_rate.value_or(0.5);
+    double top_r_rate_value = top_r_rate.value_or(0.5);
     c10::SmallVector<int64_t, op_infer::SIZE> output_size = tome_unmerge_npu_output_size(
         atten_out, ori_indice_a, ori_indice_b);
     at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(atten_out, output_size);
