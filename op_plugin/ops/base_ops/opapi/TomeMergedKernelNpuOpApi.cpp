@@ -41,7 +41,7 @@ namespace op_api
         at::Tensor unreduce_count = npu_preparation::apply_tensor_without_format(unreduce_count_size, c10::dtype(c10::ScalarType::Float));
 
         EXEC_NPU_CMD(aclnnTomeMerge, token_a, token_b, token_indice, arg_max, top_rate_value, unmerge_token_a, unmerge_token_b, unreduce_count);
-        return std::make_tuple{unmerge_token_a, unmerge_token_b, unreduce_count};
+        return std::make_tuple(unmerge_token_a, unmerge_token_b, unreduce_count);
     }
 
 }
