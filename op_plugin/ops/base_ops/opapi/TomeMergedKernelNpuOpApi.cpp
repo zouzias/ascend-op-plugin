@@ -29,7 +29,7 @@ namespace op_api
         int64_t seq_len_a = token_a.size(1);
         int64_t hidden_size = token_a.size(2);
         int64_t seq_len_b = token_b.size(1);
-        float top_rate_value = top_r_rate.value_or(0.5);
+        float top_rate_value = top_rate.value_or(0.5);
         int64_t topR = static_cast<int64_t>((seq_len_a + seq_len_b) * top_rate_value);
 
         at::SmallVector<int64_t, op_infer::SIZE> unmerge_token_a_size = {batch, seq_len_a - topR, hidden_size};
