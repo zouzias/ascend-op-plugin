@@ -21,9 +21,9 @@ namespace op_api
 {
     using npu_preparation = at_npu::native::OpPreparation;
     const int64_t HEADS = 8;
-    std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_tome_merge(at::Tensor token_a, at::Tensor token_b,
-                                                                              at::Tensor token_indice, at::Tensor arg_max,
-                                                                              c10::optional<double> top_rate)
+    std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_tome_merge(at::Tensor token_a, at::Tensor token_b,
+                                                                  at::Tensor token_indice, at::Tensor arg_max,
+                                                                  c10::optional<double> top_rate)
     {
         int64_t batch = token_a.size(0);
         int64_t seq_len_a = token_a.size(1);
