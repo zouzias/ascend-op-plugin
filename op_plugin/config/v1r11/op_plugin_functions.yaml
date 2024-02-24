@@ -2595,3 +2595,5 @@ custom:
     impl_ns: op_api
   - func: npu_quant_scatter_(Tensor(a!) self, Tensor indices, Tensor updates, Tensor quant_scales, Tensor? quant_zero_points=None, int axis=0, int quant_axis=1, str reduce='update') -> Tensor(a!)
     impl_ns: op_api
+  - func: npu_tome_merge(Tensor token_a, Tensor token_b, Tensor topk_indice, Tensor arg_max, float? top_rate=0.5) -> (Tensor, Tensor, Tensor)
+    impl_ns: op_api
