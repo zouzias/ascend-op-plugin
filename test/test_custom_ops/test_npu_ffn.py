@@ -90,7 +90,7 @@ class TestFFN(TestCase):
         if antiquant_scale1 is not None:
             return torch_npu.npu_ffn(x, weight1, weight2, activation, antiquant_scale1=antiquant_scale1,
                                      antiquant_scale2=antiquant_scale2, antiquant_offset1=antiquant_offset1,
-                                     antiquant_offset2=antiquant_offset2, inner_precise=1)
+                                     antiquant_offset2=antiquant_offset2, inner_precise=1, output_dtype=None)
         elif scale is not None:
             x = x.npu()
             weight1 = weight1.npu()
@@ -100,7 +100,8 @@ class TestFFN(TestCase):
             deq_scale1 = torch.from_numpy(deq_scale1.astype(np.int64)).npu()
             deq_scale2 = torch.from_numpy(deq_scale2.astype(np.int64)).npu()
             return torch_npu.npu_ffn(x, weight1, weight2, activation, scale=scale, offset=offset,
-                                     deq_scale1=deq_scale1, deq_scale2=deq_scale2, inner_precise=1)
+                                     deq_scale1=deq_scale1, deq_scale2=deq_scale2, inner_precise=1,
+                                     output_dtype=torch.float16)
         else:
             return torch_npu.npu_ffn(x, weight1, weight2, activation, inner_precise=1)
 
