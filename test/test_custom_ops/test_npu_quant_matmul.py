@@ -16,7 +16,7 @@ class TestQuantMatmul(TestCase):
         uint32_deq_scale = np.frombuffer(fp32_deq_scale, np.uint32).reshape(deq_scale_shape)
         #与高19位运算，模拟硬件
         uint32_deq_scale &= 0XFFFFE000
-    
+
         if out_dtype != "int8":
             fp32_deq_scale = np.frombuffer(uint32_deq_scale, np.float32)
             uint64_deq_scale = np.zeros(deq_scale_shape, np.uint64)
@@ -34,10 +34,19 @@ class TestQuantMatmul(TestCase):
         x1 = torch.from_numpy(x1).to(torch.int32)
         x2 = torch.from_numpy(x2).to(torch.int32)
         mm_res = torch.matmul(x1, x2)
+        mm_res = torch.add(mm_res, bias)
         uint64_deq_scale_slice = uint64_deq_scale.reshape(1, -1)[:, :mm_res.shape[-1]]
         uint64_deq_scale_slice = torch.from_numpy(uint64_deq_scale_slice)
         output = (mm_res * uint64_deq_scale_slice).numpy().astype(np.float16)
-        output = torch.add(out, bias)
+        return output
+
+    def supported_op_exec_bf16(self, x1, x2, scale):
+        x1 = torch.from_numpy(x1).to(torch.int32)
+        x2 = torch.from_numpy(x2).to(torch.int32)
+        mm_res = torch.matmul(x1, x2)
+        scale_slice = scale.reshape(1, -1)[:, :mm_res.shape[-1]]
+        scale_slice = torch.from_numpy(scale_slice).to(torch.float32)
+        output = (mm_res.to(torch.float32) * scale_slice).to(torch.bfloat16)
         return output
 
     def custom_op_exec(self, x1, x2, uint64_deq_scale, bias):
@@ -58,6 +67,13 @@ class TestQuantMatmul(TestCase):
         custom_output = self.custom_op_exec(x1_clone, x2_clone, uint64_deq_scale, bias)
         self.assertRtolEqual(x1, x1_clone, 0.001)
         self.assertRtolEqual(supported_output, custom_output, 0.001)
+
+        # test bf16
+        scale_bf16 = torch.randn(1, 2560, dtype=torch.bfloat16).npu()
+        supported_output_bf16 = self.supported_op_exec_bf16(x1, x2, scale_bf16)
+        custom_output_bf16 = self.custom_op_exec(x1_clone, x2_clone, scale_bf16)
+        self.assertRtolEqual(x1, x1_clone, 0.001)
+        self.assertRtolEqual(supported_output_bf16, custom_output_bf16, 0.001)
 
 
 if __name__ == "__main__":
