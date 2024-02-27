@@ -69,10 +69,10 @@ at::Tensor npu_nonzero_transpose(const at::Tensor &self)
 }
 
 void save_file(const at::Tensor &self, std::string& name){
-auto pickled = torch::pickle_save(self);
-std::ofstream fout(name, std::ios::out|std::ios::binary);
-fout.write(pickled.data(), pickled.size());
-fout.close();
+    auto pickled = torch::pickle_save(self);
+    std::ofstream fout(name, std::ios::out|std::ios::binary);
+    fout.write(pickled.data(), pickled.size());
+    fout.close();
 }
 
 at::Tensor npu_nonzero_notranspose(const at::Tensor &self, int64_t count, int64_t timestamp)
@@ -254,7 +254,10 @@ std::vector<at::Tensor> AdvanceIndex::npu_expand_tensors(const at::Tensor &self,
                 at::Tensor nonzero;
                 // Replace with nonzeros
                 nonzero = flag_aclnn ? npu_nonzero_notranspose(index, count, timestamp) : npu_nonzero_transpose(index);
-                std::cout << "nonzero input sizes: " << index.sizes() <<  "; output sizes: " <<nonzero.sizes() << std::endl;
+                if (flag_aclnn){
+                    std::cout << "nonzero input sizes: " << index.sizes() <<  "; output sizes: " <<nonzero.sizes() << std::endl;
+                }
+                
                 for (int64_t j = 0; j < index.dim(); j++) {
                     result.emplace_back(nonzero.select(0, j));
                 }
