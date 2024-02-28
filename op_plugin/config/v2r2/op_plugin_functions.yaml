@@ -2413,6 +2413,6 @@ quant:
  - func: _empty_affine_quantized(SymInt[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None, float scale=1, int zero_point=0, MemoryFormat? memory_format=contiguous_format) -> Tensor
    impl_ns: acl_op
   - func: Logit(Tensor x, float eps) -> Tensor
-    impl_ns: acl_op, op_api
+   impl_ns: acl_op, op_api
   - func: LogitGrad(Tensor x, Tensor dy,  float eps) ->  (Tensor,Tensor)
-    impl_ns: acl_op, op_api
+   impl_ns: acl_op, op_api

@@ -2402,3 +2402,8 @@ quant:
    impl_ns: acl_op
  - func: _empty_affine_quantized(SymInt[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None, float scale=1, int zero_point=0, MemoryFormat? memory_format=contiguous_format) -> Tensor
    impl_ns: acl_op
+<<<<<<< HEAD
+=======
+- func: Logit(Tensor x, float eps) -> Tensor
+   impl_ns: acl_op, op_api
+>>>>>>> d53214528a848c9d80b0c3926a7906f2fe0bc338
