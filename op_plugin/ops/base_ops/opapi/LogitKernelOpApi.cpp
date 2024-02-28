@@ -23,8 +23,7 @@ std::tuple<at::Tensor> Logit(
     const at::Tensor& x,
     double eps)
 {
-    DO_COMPATIBILITY(aclnnLogit, acl_op::Logit(x,eps));
-    //at::Tensor y = npu_preparation::apply_tensor_with_format(x.size(), x.options());
+    DO_COMPATIBILITY(aclnnLogit, acl_op::Logit(x, eps));
     at::Tensor y = x.clone();
     EXEC_NPU_CMD(aclnnLogit, x, eps, y);
     return y;

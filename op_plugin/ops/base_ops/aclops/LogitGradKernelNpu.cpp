@@ -21,7 +21,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> logit_grad(const at::Tensor &x, const at::Tensor &dy, double eps)
 {
-    at::Tensor result = x.clone();
+    at::Tensor y = x.clone();
     at_npu::native::OpCommand cmd;
     cmd.Name("LogitGrad")
         .Input(x, "x")

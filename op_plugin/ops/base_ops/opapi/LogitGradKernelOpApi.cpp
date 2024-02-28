@@ -24,10 +24,9 @@ std::tuple<at::Tensor> LogitGrad(
     const at::Tensor& dy,
     double eps)
 {
-    DO_COMPATIBILITY(aclnnLogitGrad, acl_op::LogitGrad(x,dy,eps));
-    //at::Tensor y = npu_preparation::apply_tensor_with_format(x.size(), x.options());
+    DO_COMPATIBILITY(aclnnLogitGrad, acl_op::LogitGrad(x, dy, eps));
     at::Tensor y = x.clone();
-    EXEC_NPU_CMD(aclnnLogitGrad, x,dy, eps, y);
+    EXEC_NPU_CMD(aclnnLogitGrad, x, dy, eps, y);
     return y;
 }
 } // namespace op_api
