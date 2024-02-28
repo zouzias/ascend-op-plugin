@@ -2390,6 +2390,10 @@ custom:
     impl_ns: acl_op
   - func: npu_anti_quant(Tensor x, Tensor scale, *, Tensor? offset=None, ScalarType? dst_dtype=None, ScalarType? src_dtype=None) -> Tensor
     impl_ns: op_api
+  - func: Logit(Tensor x, float eps) -> Tensor
+    impl_ns: acl_op, op_api
+ - func: LogitGrad(Tensor x, Tensor dy,  float eps) ->  (Tensor,Tensor)
+    impl_ns: acl_op, op_api
 
 quant:
  - func: int_repr(Tensor self) -> Tensor
