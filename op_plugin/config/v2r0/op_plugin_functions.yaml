@@ -2534,3 +2534,7 @@ custom:
     tags: nondeterministic_seeded
   - func: npu_quantize(Tensor self, Tensor scales, Tensor? zero_points, ScalarType dtype, int axis=1) -> Tensor
     impl_ns: acl_op
+  - func: Logit(Tensor x, float eps) -> Tensor
+    impl_ns: acl_op, op_api
+  - func: LogitGrad(Tensor x, Tensor dy,  float eps) ->  (Tensor,Tensor)
+    impl_ns: acl_op, op_api
