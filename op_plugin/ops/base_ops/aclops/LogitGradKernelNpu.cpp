@@ -23,7 +23,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> logit_grad(const at::Tensor &x, c
 {
     at::Tensor y = x.clone();
     at_npu::native::OpCommand cmd;
-    cmd.Name("LogitGrad")
+    cmd.Name("logit_grad")
         .Input(x, "x")
         .Input(dy, "dy")
         .Output(y, "y")

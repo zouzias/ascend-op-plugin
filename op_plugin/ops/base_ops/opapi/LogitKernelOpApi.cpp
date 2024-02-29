@@ -19,11 +19,11 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor> Logit(
+std::tuple<at::Tensor> logit(
     const at::Tensor& x,
     double eps)
 {
-    DO_COMPATIBILITY(aclnnLogit, acl_op::Logit(x, eps));
+    DO_COMPATIBILITY(aclnnLogit, acl_op::logit(x, eps));
     at::Tensor y = x.clone();
     EXEC_NPU_CMD(aclnnLogit, x, eps, y);
     return y;

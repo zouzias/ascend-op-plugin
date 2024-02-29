@@ -23,7 +23,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> logit(const at::Tensor &x,  doubl
 {
     at::Tensor y = x.clone();
     at_npu::native::OpCommand cmd;
-    cmd.Name("Logit")
+    cmd.Name("logit")
         .Input(x, "x")
         .Output(y, "y")
         .Attr("eps", static_cast<float>(eps))
