@@ -19,7 +19,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor> logit_grad(
+at::Tensor logit_grad(
     const at::Tensor& x,
     const at::Tensor& dy,
     double eps)

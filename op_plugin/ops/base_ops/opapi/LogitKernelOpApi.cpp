@@ -19,7 +19,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor> logit(
+at::Tensor logit(
     const at::Tensor& x,
     double eps)
 {

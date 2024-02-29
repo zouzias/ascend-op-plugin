@@ -19,7 +19,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> logit(const at::Tensor &x,  double eps)
+at::Tensor logit(const at::Tensor &x,  double eps)
 {
     at::Tensor y = x.clone();
     at_npu::native::OpCommand cmd;
