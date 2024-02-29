@@ -2604,5 +2604,5 @@ custom:
     impl_ns: acl_op
   - func: Logit(Tensor x, float eps) -> Tensor
     impl_ns: acl_op, op_api
-  - func: LogitGrad(Tensor x, Tensor dy,  float eps) ->  (Tensor,Tensor)
+  - func: LogitGrad(Tensor x, Tensor dy,  float eps) -> Tensor
     impl_ns: acl_op, op_api
