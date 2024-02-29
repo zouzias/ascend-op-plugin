@@ -2390,7 +2390,6 @@ custom:
     tags: nondeterministic_seeded
     dispatch:
      CompositeExplicitAutograd: npu_dropout_gen_mask
-    exposed: True
   - func: npu_ciou_backward(Tensor grad, Tensor bboxes, Tensor gtboxes, Tensor? atan_sub, bool trans=False, bool is_cross=True, int mode=0) -> (Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_sign_bits_unpack(Tensor input, int size, ScalarType dtype) -> Tensor
