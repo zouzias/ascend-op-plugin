@@ -23,7 +23,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 static at::Tensor& argmin_exec(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim, at::Tensor& result,
                                bool out_mode) {
     TORCH_CHECK(!(self.numel() == 0 && !(dim.has_value())), "Expected reduction dim to be specified for input.numl()==0"
-        + PTA_ERROR(ErrCode::PARAM))
+        + OPS_ERROR(ErrCode::PARAM))
     at::Tensor input;
     int64_t real_dim = 0;
     bool real_keep_dim = false;

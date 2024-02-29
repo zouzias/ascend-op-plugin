@@ -95,10 +95,10 @@ at::Tensor& _softmax_out(
 
     auto self_dtype = self.scalar_type();
     if (half_to_float) {
-        TORCH_CHECK(self_dtype == at::kHalf, "conversion is supported for Half type only" + PTA_ERROR(ErrCode::TYPE));
+        TORCH_CHECK(self_dtype == at::kHalf, "conversion is supported for Half type only" + OPS_ERROR(ErrCode::TYPE));
     } else {
         TORCH_CHECK(at::isFloatingType(self_dtype), "_softmax_npu not implemented for '", toString(self_dtype),
-            "'" + PTA_ERROR(ErrCode::NOT_SUPPORT));
+            "'" + OPS_ERROR(ErrCode::NOT_SUPPORT));
     }
 
     at::Tensor self_cast = dst_type == self.scalar_type() ? self : at_npu::native::custom_ops::npu_dtype_cast(self, dst_type);

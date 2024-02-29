@@ -100,20 +100,20 @@ std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> slow_conv_dilated2d_backwar
     at::IntArrayRef padding, at::IntArrayRef dilation, std::array<bool, 3> output_mask)
 {
     TORCH_CHECK(kernel_size.size() == 2, "kernel sizes length should be 2, but got ", kernel_size.size(),
-        PTA_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() == 2, "strides length should be 2, but got ", stride.size(),
-        PTA_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.size() == 2, "dilations length should be 2, but got ", dilation.size(),
-        PTA_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() == 2, "pads length should be 2, but got ", padding.size(),
-        PTA_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::PARAM));
 
     TORCH_CHECK(all_positive(kernel_size), "kernel size should be greater than zero, but got ", kernel_size,
-        PTA_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(all_positive(stride), "stride should be greater than zero, but got ", stride,
-        PTA_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(all_positive(dilation), "dilation should be greater than zero, but got ", dilation,
-        PTA_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::PARAM));
     if (output_mask[0]) {
         slow_conv_dilated2d_backward_input_out_nocheck(grad_input, grad_output, self, weight, kernel_size, stride,
                                                        padding, dilation);

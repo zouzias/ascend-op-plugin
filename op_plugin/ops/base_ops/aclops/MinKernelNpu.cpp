@@ -192,7 +192,7 @@ at::Tensor& minimum_out(const at::Tensor& self, const at::Tensor& other, at::Ten
   auto result_type = result.scalar_type();
   TORCH_CHECK(canCast(high_type, result_type), "result type ", high_type,
       " can't be cast to the desired output type ", result_type,
-      PTA_ERROR(ErrCode::TYPE));
+      OPS_ERROR(ErrCode::TYPE));
 
   at::Tensor self_copy = (self.scalar_type() != result_type) ?
       at_npu::native::custom_ops::npu_dtype_cast(self, result_type) : self;

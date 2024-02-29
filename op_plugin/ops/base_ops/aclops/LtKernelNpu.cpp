@@ -79,7 +79,7 @@ if (npu_preparation::IsCPUScalar(other)) {
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
         self.device(), " and ", other.device(),
-        PTA_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::PARAM));
 
     auto calculate_type = get_lt_calculate_type(self, other);
     auto self_cast = op_plugin::utils::get_cast_input(self, calculate_type);
@@ -140,7 +140,7 @@ at::Tensor lt(const at::Tensor& self, const at::Tensor& other) {
     TORCH_CHECK(self.device() == other.device(),
         "Expected all tensors to be on the same device, but found at least two devices, ",
         self.device(), " and ", other.device(),
-        PTA_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::PARAM));
 
     auto calculate_type = get_lt_calculate_type(self, other);
     auto self_cast = op_plugin::utils::get_cast_input(self, calculate_type);

@@ -28,19 +28,19 @@ at::Tensor npu_normalize_batch(
       seq_len.dim() == 1,
       "Non-empty 1D seq_len tensor expected but got a tensor with sizes ",
       seq_len.sizes(),
-      PTA_ERROR(ErrCode::PARAM));
+      OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(
       seq_len.size(0) == self.size(0),
       "seq_len's length should be equal self' num, but got seq_len length ",
       seq_len.size(0),
       "self num ",
       self.size(0),
-      PTA_ERROR(ErrCode::PARAM));
+      OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(
       normalize_type >= 0 && normalize_type <= 1,
       "normalize_type expected to be in range [0, 1], but got ",
       normalize_type,
-      PTA_ERROR(ErrCode::VALUE));
+      OPS_ERROR(ErrCode::VALUE));
 
   at::Tensor result = npu_preparation::apply_tensor(self);
   string normalize_type_str = normalize_type == 0 ? "per_feature" : "all_features";

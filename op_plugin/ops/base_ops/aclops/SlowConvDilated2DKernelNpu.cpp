@@ -29,16 +29,16 @@ at::Tensor slow_conv_dilated2d(
     at::IntArrayRef padding,
     at::IntArrayRef dilation) {
     TORCH_CHECK(dilation.size() >= 2, "slow_conv_dilated2d expected dilation greater than or equal to 2D,"
-        " but input dilation has sizes ", dilation.size(), PTA_ERROR(ErrCode::PARAM));
+        " but input dilation has sizes ", dilation.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() >= 2, "slow_conv_dilated2d expected dilation greater than or equal to 2D,"
-        " but input padding has sizes ", padding.size(), PTA_ERROR(ErrCode::PARAM));
+        " but input padding has sizes ", padding.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() >= 2, "slow_conv_dilated2d expected dilation greater than or equal to 2D,"
-        " but input stride has sizes ", stride.size(), PTA_ERROR(ErrCode::PARAM));
+        " but input stride has sizes ", stride.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride[0] != 0, "slow_conv_dilated2d_npu_output_size: stride[0] can not be zero"
-        + PTA_ERROR(ErrCode::PARAM));
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding[0] >= 0 && padding[1] >= 0,
         "slow_conv_dilated2d_npu_output_size: padding can not be less than zero"
-        + PTA_ERROR(ErrCode::PARAM));
+        + OPS_ERROR(ErrCode::PARAM));
     auto output_size = op_infer::slow_conv_dilated2d_npu_output_size(self, weight, stride, padding, dilation);
     int64_t result_format = self.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;
     at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), result_format);

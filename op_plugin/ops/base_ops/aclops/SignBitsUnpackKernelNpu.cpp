@@ -25,16 +25,16 @@ at::Tensor npu_sign_bits_unpack(
     int64_t size,
     c10::ScalarType dtype) {
     int64_t dim = input.dim();
-    TORCH_CHECK(dim == 1, "input value should be a 1-dimensional tensor" + PTA_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dim == 1, "input value should be a 1-dimensional tensor" + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(input.scalar_type() == at::ScalarType::Byte, "sign_bits_unpack input only supports torch.uint8 "
-        + PTA_ERROR(ErrCode::TYPE));
+        + OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK(size > 0, "The argument 'size' is not valid because it is less than or equal to zero"
-        + PTA_ERROR(ErrCode::PARAM));
+        + OPS_ERROR(ErrCode::PARAM));
 
     int64_t input_size = input.numel();
-    TORCH_CHECK((input_size * 8) % size == 0, "input value length*8 must be multiple of size" + PTA_ERROR(ErrCode::PARAM));
+    TORCH_CHECK((input_size * 8) % size == 0, "input value length*8 must be multiple of size" + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dtype == at::ScalarType::Float || dtype == at::ScalarType::Half, "The argument 'dtype'  must be torch.float32 or torch.float16"
-        + PTA_ERROR(ErrCode::TYPE));
+        + OPS_ERROR(ErrCode::TYPE));
     int64_t m = input_size * 8 / size;
     at::Tensor result = npu_preparation::apply_tensor({size, m}, input.options().dtype(dtype), input);
 

@@ -54,7 +54,7 @@ at::Tensor& normal_out(
     c10::optional<at::Generator> generator,
     at::Tensor& result) {
     TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std,
-        PTA_ERROR(ErrCode::VALUE));
+        OPS_ERROR(ErrCode::VALUE));
 
     npu_preparation::CheckOut({mean}, result, mean);
     if (!npu_utils::check_match(&result)) {
@@ -114,7 +114,7 @@ at::Tensor& normal_out(
     c10::optional<at::Generator> generator,
     at::Tensor& result) {
     TORCH_CHECK(std >= 0.0, "normal_ expects std >= 0.0, but found std=", std,
-        PTA_ERROR(ErrCode::VALUE));
+        OPS_ERROR(ErrCode::VALUE));
     npu_preparation::CheckOut({}, result, result, size);
 
     if (!npu_utils::check_match(&result)) {

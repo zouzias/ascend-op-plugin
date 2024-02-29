@@ -120,7 +120,7 @@ std::tuple<at::Tensor, at::Tensor> get_wb_multi_layer_or_bidirec(const at::Tenso
                                                                  int64_t layers, bool hasBiases)
 {
     TORCH_CHECK(layers > 0, "layers should be greater than 0."
-        + PTA_ERROR(ErrCode::VALUE));
+        + OPS_ERROR(ErrCode::VALUE));
     at::Tensor weight;
     at::Tensor bias;
     if (hasBiases) {
@@ -218,7 +218,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_multi_layer_direc_npu(const 
                                                                           bool bidirectional, bool batch_first)
 {
     TORCH_CHECK(layers > 0, "layers should be greater than 0."
-        + PTA_ERROR(ErrCode::VALUE));
+        + OPS_ERROR(ErrCode::VALUE));
     int64_t num_step = input.size(0);
     at::Tensor y;
     at::Tensor h;
@@ -261,7 +261,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm_multi_layer_bidirec_npu(cons
                                                                             bool bidirectional, bool batch_first)
 {
     TORCH_CHECK(layers > 0, "layers should be greater than 0."
-        + PTA_ERROR(ErrCode::VALUE));
+        + OPS_ERROR(ErrCode::VALUE));
     int64_t num_step = input.size(0);
     // get h and c of first layer
     at::Tensor hL0 = hx[0].slice(0, 0, 2);
@@ -403,7 +403,7 @@ tensor_list3 lstm_onelayer_direc_packseq(const at::Tensor &data, const at::Tenso
 {
     int64_t t_size = batch_sizes.numel();
     TORCH_CHECK(t_size > 0, "lstm_onelayer_direc_packseq: t_size is zero!"
-        + PTA_ERROR(ErrCode::VALUE));
+        + OPS_ERROR(ErrCode::VALUE));
 
     at::Tensor input = data.reshape({t_size, data.size(0) / t_size, data.size(1)});
 
@@ -441,7 +441,7 @@ tensor_list3 lstm_onelayer_bidirec_packseq(const at::Tensor &data, const at::Ten
 {
     int64_t t_size = batch_sizes.numel();
     TORCH_CHECK(t_size > 0, "lstm_onelayer_bidirec_packseq: t_size is zero!"
-        + PTA_ERROR(ErrCode::VALUE));
+        + OPS_ERROR(ErrCode::VALUE));
 
     at::Tensor input = data.reshape({t_size, data.size(0) / t_size, data.size(1)});
     bool batch_first = false;
@@ -485,7 +485,7 @@ tensor_list3 lstm_double_layer_direc_packseq(const at::Tensor &data, const at::T
 {
     int64_t t_size = batch_sizes.numel();
     TORCH_CHECK(t_size > 0, "lstm_double_layer_direc_packseq: t_size is zero!"
-        + PTA_ERROR(ErrCode::VALUE));
+        + OPS_ERROR(ErrCode::VALUE));
 
     at::Tensor input = data.reshape({t_size, data.size(0) / t_size, data.size(1)});
 
@@ -526,7 +526,7 @@ tensor_list3 lstm_double_layer_bidirec_packseq(const at::Tensor &data, const at:
 {
     int64_t t_size = batch_sizes.numel();
     TORCH_CHECK(t_size > 0, "batch_sizes can not be empty."
-        + PTA_ERROR(ErrCode::VALUE));
+        + OPS_ERROR(ErrCode::VALUE));
 
     at::Tensor input = data.reshape({t_size, data.size(0) / t_size, data.size(1)});
     bool batch_first = false;

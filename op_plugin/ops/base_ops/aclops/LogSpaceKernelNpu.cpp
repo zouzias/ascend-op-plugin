@@ -29,7 +29,7 @@ at::Tensor& logspace_out_nocheck(
     int64_t steps,
     double base) {
     TORCH_CHECK(steps >= 0, "logspace requires non-negative steps, given steps is ", steps,
-        PTA_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::PARAM));
     if ((base <= 0) && ((!start.isIntegral(false)) || (!end.isIntegral(false)))) {
         std::cout << "Warning: start and end in logspace should both be int when base <= 0, "
             << "get type " << start.type() << " and" << end.type() << std::endl;
@@ -48,7 +48,7 @@ at::Tensor& logspace_out_nocheck(
         dtype = 1;
     } else {
         TORCH_CHECK(false, "logspace only support float32 and float16, given type is ", result_type,
-            PTA_ERROR(ErrCode::TYPE));
+            OPS_ERROR(ErrCode::TYPE));
     }
     at_npu::native::OpCommand cmd;
     cmd.Name("LogSpaceD")

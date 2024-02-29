@@ -27,7 +27,7 @@ at::Tensor& put_(
     const at::Tensor& source,
     bool accumulate) {
     TORCH_CHECK(index.numel() == source.numel(), "source should have the same number of elements as index"
-        + PTA_ERROR(ErrCode::PARAM));
+        + OPS_ERROR(ErrCode::PARAM));
     if (source.numel() == 0) {
         return self;
     }

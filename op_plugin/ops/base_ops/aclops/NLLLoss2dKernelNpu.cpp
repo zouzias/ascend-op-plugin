@@ -116,13 +116,13 @@ std::tuple<at::Tensor, at::Tensor> nll_loss2d_forward(const at::Tensor &self, co
                                                       int64_t ignore_index)
 {
     TORCH_CHECK(self.dim() == 4, "Expected 4D input (got ", self.dim(), "D input)"
-        + PTA_ERROR(ErrCode::PARAM));
+        + OPS_ERROR(ErrCode::PARAM));
     // Check Target Dtype
     auto scalar_type = target.scalar_type();
     TORCH_CHECK(scalar_type == at::kLong || scalar_type == at::kInt, "Expected object of scalar type ", at::kLong,
         " or ", at::kInt, " but got scalar type ", scalar_type,
         " for argument 'target' in call to nll_loss2d_forward"
-        + PTA_ERROR(ErrCode::TYPE));
+        + OPS_ERROR(ErrCode::TYPE));
     at::Tensor target_cast =
         (scalar_type == at::kLong) ? at_npu::native::custom_ops::npu_dtype_cast(target, at::kInt) : target;
 

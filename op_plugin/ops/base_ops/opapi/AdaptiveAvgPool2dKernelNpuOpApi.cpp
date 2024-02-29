@@ -36,8 +36,8 @@ at::Tensor adaptive_avg_pool2d(const at::Tensor& self, at::IntArrayRef output_si
 at::Tensor _adaptive_avg_pool2d(const at::Tensor& self, at::IntArrayRef output_size) {
     DO_COMPATIBILITY(aclnnAdaptiveAvgPool2d, acl_op::_adaptive_avg_pool2d(self, output_size));
     TORCH_CHECK((self.dim() == 3 || self.dim() == 4), "non-empty 3D or 4D (batch mode) tensor expected for input"
-        + PTA_ERROR(ErrCode::PARAM));
-    TORCH_CHECK((output_size.size() >= 2), "Output size must be at least 2." + PTA_ERROR(ErrCode::PARAM));
+        + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK((output_size.size() >= 2), "Output size must be at least 2." + OPS_ERROR(ErrCode::PARAM));
     auto outputSize = op_infer::array_to_small_vector(self.sizes());
     outputSize[self.dim() - 1] = output_size[1];
     outputSize[self.dim() - 2] = output_size[0];

@@ -25,14 +25,14 @@ namespace {
 inline void max_unpool2d_check(const at::Tensor &self, const at::Tensor &indices, at::IntArrayRef output_size)
 {
     TORCH_CHECK(output_size.size() == 2, "There should be exactly two elements (height, width) in output_size"
-        + PTA_ERROR(ErrCode::PARAM));
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((self.ndimension() == 3 || self.ndimension() == 4),
         "Input to max_unpooling2d should be a 3d or 4d Tensor"
-        + PTA_ERROR(ErrCode::PARAM));
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.sizes() == indices.sizes(), "Shape of indices should match shape of input"
-        + PTA_ERROR(ErrCode::PARAM));
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.numel() > 0, "Input must be non-empty"
-        + PTA_ERROR(ErrCode::PARAM));
+        + OPS_ERROR(ErrCode::PARAM));
 }
 
 at::Tensor &max_unpool2d_out_nocheck(at::Tensor &output, const at::Tensor &self, const at::Tensor &indices,

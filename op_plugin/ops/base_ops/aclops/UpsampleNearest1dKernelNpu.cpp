@@ -26,9 +26,9 @@ c10::SmallVector<int64_t, SIZE> upsample_nearest1d_infer_size(const at::Tensor &
 {
     TORCH_CHECK(input.dim() == 3 && (input.size(1) != 0 && input.size(2) != 0),
                 "Non-empty 3D data tensor expected but got a tensor with sizes ", input.sizes(),
-                PTA_ERROR(ErrCode::PARAM));
+                OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(output_size.size() == 1, "The length of output_size should be equal to 1, but got ",
-                output_size.size(), PTA_ERROR(ErrCode::PARAM));
+                output_size.size(), OPS_ERROR(ErrCode::PARAM));
 
     c10::SmallVector<int64_t, SIZE> output_sizes;
     int64_t N = input.size(0);

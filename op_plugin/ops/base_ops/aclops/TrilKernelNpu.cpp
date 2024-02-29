@@ -58,7 +58,7 @@ at::Tensor tril(const at::Tensor& self, int64_t diagonal) {
 
         return true;
     };
-    TORCH_CHECK(is_last_two_dims(), "tril require tensor should be last two dims" + PTA_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(is_last_two_dims(), "tril require tensor should be last two dims" + OPS_ERROR(ErrCode::PARAM));
     at::Tensor result = npu_preparation::apply_tensor(self);
     tril_out_nocheck(result, self, diagonal);
 

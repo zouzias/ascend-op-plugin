@@ -47,7 +47,7 @@ at::Tensor& linspace_npu_out_nocheck(
 
 at::Tensor& linspace_out(const at::Scalar& start, const at::Scalar& end, int64_t steps, at::Tensor& result) {
     TORCH_CHECK(steps >= 0, "number of steps must be non-negative"
-        + PTA_ERROR(ErrCode::VALUE));
+        + OPS_ERROR(ErrCode::VALUE));
 
     if (result.numel() != steps) {
         result.resize_({steps});
@@ -87,7 +87,7 @@ at::Tensor linspace(
     c10::optional<at::Device> device_opt,
     c10::optional<bool> pin_memory_opt) {
     TORCH_CHECK(steps >= 0, "number of steps must be non-negative"
-        + PTA_ERROR(ErrCode::VALUE));
+        + OPS_ERROR(ErrCode::VALUE));
     auto device = c10::device_or_default(device_opt);
     at::TensorOptions option = c10::TensorOptions()
         .dtype(dtype_opt).layout(layout_opt).device(device).pinned_memory(pin_memory_opt);

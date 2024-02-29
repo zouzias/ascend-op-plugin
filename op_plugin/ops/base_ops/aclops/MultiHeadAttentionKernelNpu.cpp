@@ -40,13 +40,13 @@ tuple_tensor multi_head_attention_nocheck(const at::Tensor &query, const at::Ten
 {
     TORCH_CHECK(tgt_len > 0 && src_len > 0 && attn_head_num > 0 && attn_dim_per_head > 0,
         "tgt_len, src_len, attn_head_num, attn_dim_per_head should not equal zero."
-        + PTA_ERROR(ErrCode::PARAM));
+        + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(tgt_len % FZ_ALIGN_NUM == 0 && src_len % FZ_ALIGN_NUM == 0 && attn_head_num % FZ_ALIGN_NUM == 0 &&
         attn_dim_per_head % FZ_ALIGN_NUM == 0,
         "tgt_len, src_len, attn_head_num, attn_dim_per_head should align to 16."
-        + PTA_ERROR(ErrCode::VALUE));
+        + OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(query.dim() >= 1 && key.dim() >= 1 && value.dim() >= 1, "query, key, value should be at least 1d."
-        + PTA_ERROR(ErrCode::PARAM));
+        + OPS_ERROR(ErrCode::PARAM));
 
     auto query_shape = query.sizes();
     int64_t batch = query_shape[0] / tgt_len;
@@ -140,13 +140,13 @@ tuple_tensors npu_multi_head_attention_backward(
 
     TORCH_CHECK(tgt_len > 0 && src_len > 0 && attn_head_num > 0 && attn_dim_per_head > 0,
         "tgt_len, src_len, attn_head_num, attn_dim_per_head should not equal zero."
-        + PTA_ERROR(ErrCode::VALUE));
+        + OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(tgt_len % FZ_ALIGN_NUM1 == 0 && src_len % FZ_ALIGN_NUM1 == 0 && attn_head_num % FZ_ALIGN_NUM1 == 0 &&
         attn_dim_per_head % FZ_ALIGN_NUM1 == 0,
         "tgt_len, src_len, attn_head_num, attn_dim_per_head should align to 16."
-        + PTA_ERROR(ErrCode::VALUE));
+        + OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(query.dim() >= 1 && key.dim() >= 1 && value.dim() >= 1, "query, key, value should be at least 1d."
-        + PTA_ERROR(ErrCode::PARAM));
+        + OPS_ERROR(ErrCode::PARAM));
     auto query_shape = query.sizes();
     int64_t batch = query_shape[0] / tgt_len;
     auto weight_col = attn_head_num * attn_dim_per_head;

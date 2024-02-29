@@ -54,7 +54,7 @@ at::Tensor npu_rotated_iou(
     bool is_cross,
     double v_threshold,
     double e_threshold) {
-    TORCH_CHECK(boxes.ndimension() == 3 && query_boxes.ndimension() == 3, PTA_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(boxes.ndimension() == 3 && query_boxes.ndimension() == 3, OPS_ERROR(ErrCode::PARAM));
 
     auto origin_dtype = boxes.scalar_type();
 

@@ -64,11 +64,11 @@ at::Tensor& renorm_out_nocheck(
     at::Scalar maxnorm) {
     auto ori_type = self.scalar_type();
     if (ori_type != c10::ScalarType::Half && ori_type != c10::ScalarType::Float) {
-        TORCH_CHECK(false, "Renorm only support float16 or float32 type." + PTA_ERROR(ErrCode::TYPE));
+        TORCH_CHECK(false, "Renorm only support float16 or float32 type." + OPS_ERROR(ErrCode::TYPE));
     }
 
     TORCH_CHECK(result.scalar_type() == ori_type, "result's type must be equal to input's."
-        + PTA_ERROR(ErrCode::TYPE));
+        + OPS_ERROR(ErrCode::TYPE));
 
     dim = op_plugin::utils::make_warp_dim(dim, self.dim());
     auto output_size = renorm_npu_output_size(self, dim);

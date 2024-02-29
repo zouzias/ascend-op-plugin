@@ -30,7 +30,7 @@ at::Tensor one_hot(const at::Tensor& self, int64_t num_classes) {
 
     if (self.numel() == 0) {
         TORCH_CHECK(num_classes > 0, "Can not infer total number of classes from empty tensor."
-            + PTA_ERROR(ErrCode::PARAM));
+            + OPS_ERROR(ErrCode::PARAM));
         depth = num_classes;
     }
 

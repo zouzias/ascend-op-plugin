@@ -61,7 +61,7 @@ at::Tensor& mul_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
   auto calculate_type = at::native::result_type(self, other);
   TORCH_CHECK(canCast(calculate_type, result_type),
       "result type ", calculate_type, " can't be cast to the desired output type ", result_type,
-      PTA_ERROR(ErrCode::TYPE));
+      OPS_ERROR(ErrCode::TYPE));
 
   if (calculate_type == at::kBool) {
     calculate_type = at::kFloat;

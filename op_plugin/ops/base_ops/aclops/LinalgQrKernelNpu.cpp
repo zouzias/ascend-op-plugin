@@ -47,7 +47,7 @@ inline void qr_check(
       self.ndimension() >= 2,
       "Expected nonempty least 2D tensor, but got a tensor with sizes ",
       self.dim(),
-      PTA_ERROR(ErrCode::PARAM));
+      OPS_ERROR(ErrCode::PARAM));
 }
 
 std::tuple<at::Tensor&, at::Tensor&> qr_out_npu_nocheck(

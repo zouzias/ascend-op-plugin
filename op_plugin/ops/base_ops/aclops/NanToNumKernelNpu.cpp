@@ -91,7 +91,7 @@ at::Tensor &nan_to_num_out(const at::Tensor &self, c10::optional<double> nan, c1
 {
     TORCH_CHECK(self.scalar_type() == result.scalar_type(), "nan_to_num: dtype of out: ", result.scalar_type(),
         " should be same as input: ", self.scalar_type(),
-        PTA_ERROR(ErrCode::TYPE));
+        OPS_ERROR(ErrCode::TYPE));
 
     if (isIntegralType(self.scalar_type(), true)) {
         result.resize_(self.sizes());
