@@ -20,32 +20,9 @@
 
 #include "torch_npu/csrc/core/npu/DeviceUtils.h"
 #include "op_plugin/OpInterface.h"
+#include "SparseTensorUtils.h"
 
 namespace sparse {
-at::Tensor flatten_indices_npu_kernel(const at::Tensor& indices, c10::IntArrayRef size)
-{
-    std::vector<int64_t> flatten_size(size.size(), 1);
-    for (int i = size.size() - 1; i > 0; i--) {
-        flatten_size[i - 1] = flatten_size[i - 1] * size[i];
-    }
-    auto tensor_temp = torch::tensor(flatten_size, indices.options().dtype(at::kInt));
-    tensor_temp = torch::unsqueeze(tensor_temp, 0);
-    return torch::squeeze(at::matmul(tensor_temp, indices.to(at::kInt)), 0);
-}
-
-at::Tensor flatten_indices(const at::Tensor& indices, c10::IntArrayRef full_size)
-{
-    int64_t sparse_dim = indices.size(0);
-    if (sparse_dim == 1) {
-        return indices.squeeze(0);
-    } else {
-        if (!indices.numel()) {
-            return at::zeros({indices.size(1)}, indices.options().dtype(at::kLong));
-        }
-        return flatten_indices_npu_kernel(indices, full_size.slice(0, sparse_dim));
-    }
-}
-
 at::Tensor& add_out_dense_sparse_npu(
     at::Tensor& r_,
     const at::Tensor& dense,
@@ -93,7 +70,7 @@ at::Tensor& add_out_dense_sparse_npu(
         return r_;
     }
 
-    at::Tensor indices_1D = flatten_indices(indices, sparse.sizes());
+    at::Tensor indices_1D = flatten_indices(indices, sparse.sizes(), false);
 
     int64_t view_rows = 1;
     int64_t view_columns = 1;
@@ -123,7 +100,64 @@ at::sparse::SparseTensor& add_out_sparse(
         return add_out_dense_sparse_npu(r_, t, src, value);
     }
 
-    TORCH_CHECK(false, "sparse add: NPU sparse-sparse addition does not work yet");
+    TORCH_CHECK(src.is_sparse(), "add(sparse, dense) is not supported. Use add(dense, sparse) instead.");
+
+    TORCH_CHECK(torch_npu::utils::is_npu(t), "add: expected 'self' to be NPU, but got ", t.device());
+    TORCH_CHECK(torch_npu::utils::is_npu(src), "add: expected 'other' to be NPU, but got ", src.device());
+    TORCH_CHECK(torch_npu::utils::is_npu(r_), "add: expected 'out' to be NPU, but got ", r_.device());
+
+    auto common_dtype = at::result_type(t, src);
+    TORCH_CHECK(c10::canCast(common_dtype, r_.scalar_type()), "Can't convert result type ",
+        common_dtype, " to output ", r_.scalar_type());
+
+    TORCH_CHECK(t.sizes().equals(src.sizes()), "add: expected 'self' and 'other' to have same size, but ",
+        t.sizes(), " != ", src.sizes());
+
+    if (src._nnz() == 0) {
+        return at::copy_sparse_to_sparse_(r_, t);
+    }
+    if (t._nnz() == 0) {
+        return mul_out_sparse_scalar(r_, src, value);
+    }
+
+    TORCH_CHECK(at::sparse::is_same_density(t, src),
+        "add: expected 'self' and 'other' to have same density, but 'self' has ",
+        t.sparse_dim(), " sparse dimensions while 'other' has ", src.sparse_dim(), " sparse dimensions");
+
+    // We deliberately choose to simply concat the indices and values tensors
+    // rather than merging them. This removes the need to synchronously fetch nnz
+    // at the end of the operation, at the cost of having a non-coalesced result.
+    // This trade-off is preferable for the common use-case of gradient accumulation.
+    at::Tensor t_indices_ = t._indices();
+    at::Tensor s_indices_ = src._indices();
+
+    at::Tensor t_values_ = t._values().to(common_dtype);
+    at::Tensor s_values_ = src._values().to(common_dtype);
+
+    s_values_ = s_values_.mul(value);
+
+    at::Tensor r_indices_ = at::cat({t_indices_, s_indices_}, 1);
+    at::Tensor r_values_ = at::cat({t_values_, s_values_}, 0);
+
+    if (r_.scalar_type() != common_dtype) {
+        at::sparse::SparseTensor promoted = at::empty({0}, r_.options().dtype(common_dtype));
+        promoted.resize_as_(src);
+        at::sparse::alias_into_sparse(promoted, r_indices_, r_values_);
+        // performs the addition under the common dtype.
+        promoted = promoted.coalesce();
+        r_values_ = promoted._values().to(r_.scalar_type());
+        r_indices_ = promoted._indices();
+    } else {
+        r_.resize_as_(src);
+    }
+
+    alias_into_sparse(r_, r_indices_, r_values_);
+
+    if (r_._nnz() > r_.numel()) {
+        auto c = r_.coalesce();
+        alias_into_sparse(r_, c._indices(), c._values());
+    }
+
     return r_;
 }
 
