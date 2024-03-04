@@ -25,7 +25,7 @@ at::Tensor _log_softmax(const at::Tensor& self, int64_t dim, bool half_to_float)
   at::Tensor result;
   if (half_to_float) {
     result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(),
-                                        self.options().dtype(c10::ScalarType::Float));
+        self.options().dtype(c10::ScalarType::Float));
   } else {
     result = at_npu::native::OpPreparation::apply_tensor_without_format(self);
   }

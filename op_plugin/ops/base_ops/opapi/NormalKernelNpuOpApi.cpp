@@ -151,8 +151,8 @@ at::Tensor normal(double mean, double std,
                   c10::optional<c10::Layout> layout_opt,
                   c10::optional<c10::Device> device_opt,
                   c10::optional<bool> pin_memory_opt) {
-  DO_COMPATIBILITY(aclnnNormalFloatFloat, acl_op::normal(mean, std, size, generator, dtype_opt, 
-                                                                     layout_opt, device_opt, pin_memory_opt));
+  DO_COMPATIBILITY(aclnnNormalFloatFloat, acl_op::normal(mean, std, size, generator, dtype_opt,
+                                                         layout_opt, device_opt, pin_memory_opt));
   c10::TensorOptions option = c10::TensorOptions().dtype(dtype_opt)
                                                   .device(device_opt)
                                                   .layout(layout_opt)

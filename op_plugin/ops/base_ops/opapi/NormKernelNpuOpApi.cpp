@@ -22,7 +22,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-namespace{
+namespace {
 float calculate_p(c10::optional<at::Scalar> p)
 {
     if (p.has_value()) {

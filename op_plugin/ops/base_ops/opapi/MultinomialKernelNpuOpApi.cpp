@@ -65,7 +65,7 @@ at::Tensor multinomial(
   auto shape = op_infer::array_to_small_vector(self.sizes());
   shape[dim-1] = num_samples;
   at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(
-                      shape, self.options().dtype(at::kLong));
+      shape, self.options().dtype(at::kLong));
   multinomial_op_api(result, self, num_samples, replacement, gen);
   return result;
 }

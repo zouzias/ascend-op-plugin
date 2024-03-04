@@ -25,7 +25,7 @@ at::Tensor& _softmax_backward_data_out(const at::Tensor& grad_output,
                                        c10::ScalarType input_dtype, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnSoftmaxBackward,
                    acl_op::_softmax_backward_data_out(grad_output, output, dim, input_dtype, result));
-  at_npu::native::OpPreparation::check_tensor({grad_output, output}, result, grad_output.scalar_type(), 
+  at_npu::native::OpPreparation::check_tensor({grad_output, output}, result, grad_output.scalar_type(),
                                               grad_output.sizes());
   
   EXEC_NPU_CMD(aclnnSoftmaxBackward, grad_output, output, dim, result);

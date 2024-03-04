@@ -87,7 +87,7 @@ static c10::SmallVector<int64_t, op_infer::SIZE> get_output_size(const at::Tenso
 at::Tensor matmul_mat1_backward(const at::Tensor self,
                                 const at::Tensor other,
                                 const at::Tensor grad_output) {
-  /*mat1_grad = grad * mat2^T*/
+  /* mat1_grad = grad * mat2^T */
   at::Tensor mat1 = self;
   at::Tensor mat2 = other;
   at::Tensor grad = grad_output;
@@ -125,7 +125,7 @@ at::Tensor matmul_mat1_backward(const at::Tensor self,
 at::Tensor matmul_mat2_backward(const at::Tensor self,
                                 const at::Tensor other,
                                 const at::Tensor grad_output) {
-  /*mat2_grad = mat1^T * grad*/
+  /* mat2_grad = mat1^T * grad */
   at::Tensor mat1 = self;
   at::Tensor mat2 = other;
   at::Tensor grad = grad_output;

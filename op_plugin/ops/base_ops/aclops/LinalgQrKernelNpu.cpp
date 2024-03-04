@@ -31,7 +31,7 @@ std::tuple<c10::SmallVector<int64_t, N>, c10::SmallVector<int64_t, N>> qr_npu_ou
   auto shape = op_infer::array_to_small_vector(self.sizes());
   c10::SmallVector<int64_t, N> q_size(shape.begin(), shape.end() - 2);
   c10::SmallVector<int64_t, N> r_size(shape.begin(), shape.end() - 2);
-  if(some){
+  if (some) {
     q_size.insert(q_size.end(), {m, k});
     r_size.insert(r_size.end(), {k, n});
   } else {
