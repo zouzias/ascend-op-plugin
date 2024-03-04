@@ -174,7 +174,7 @@ inline aclTensor *ConvertType(const at::Tensor &at_tensor)
 
     if (at_npu::native::OpPreparation::is_scalar_wrapped_to_tensor(at_tensor)) {
         c10::Scalar expScalar = at_tensor.item();
-        at::Tensor aclInput = at_npu::native::OpPreparation::copy_scalar_to_device(expScalar, scalar_data_type);
+        at::Tensor aclInput = at_npu::native::OpPreparation::copy_scalar_to_device(expScalar, scalar_data_type, at_tensor.device());
         return aclCreateTensor(aclInput.sizes().data(), aclInput.sizes().size(), acl_data_type,
                                aclInput.strides().data(), aclInput.storage_offset(), format, storageDims.data(),
                                storageDims.size(), const_cast<void *>(aclInput.storage().data()));
