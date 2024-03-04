@@ -30,12 +30,12 @@ at::Tensor& upsample_bicubic2d_backward_out_nocheck(
     c10::optional<double> scales_h,
     c10::optional<double> scales_w) {
     TORCH_CHECK(output_size.size() == 2,
-      "It is expected output_size equals to 2, but got size ",
-      output_size.size());
+        "It is expected output_size equals to 2, but got size ",
+        output_size.size());
 
     TORCH_CHECK(input_size.size() == 4,
-      "It is expected input_size equals to 4, but got size ",
-      input_size.size());
+        "It is expected input_size equals to 4, but got size ",
+        input_size.size());
 
     float temp_h = 0.0;
     float temp_w = 0.0;
@@ -118,7 +118,7 @@ at::Tensor upsample_bicubic2d_backward(
     auto op_infer_output_size = op_infer::upsample_bicubic2d_backward_npu_output_size(input_size);
     at::Tensor result = npu_preparation::apply_tensor(grad_output, op_infer_output_size);
     upsample_bicubic2d_backward_out_nocheck(result, grad_output, output_size, input_size, align_corners, scales_h, scales_w);
-    
+
     int64_t N = grad_output.size(0);
     int64_t C = grad_output.size(1);
     int64_t H = input_size[2];
