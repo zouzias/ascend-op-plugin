@@ -90,7 +90,7 @@ at::Tensor& cumprod_(
       toString(self.scalar_type()),
       " and ",
       toString(dtype.value()),
-      ".");
+      "." + PTA_ERROR(ErrCode::TYPE));
   return acl_op::cumprod_out(self, dim, dtype, self);
 }
 
