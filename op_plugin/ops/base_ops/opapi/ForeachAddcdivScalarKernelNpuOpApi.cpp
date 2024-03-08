@@ -57,6 +57,7 @@ void _foreach_addcdiv_(const at::TensorList input,
         at::native::has_integral_tensor(input, true)) {
         return at::native::foreach_tensor_addcdiv_scalar_slow_(input, tensors1, tensors2, scalar);
     }
+
     auto scalar_type = input[0].scalar_type();
     if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float) {
         TORCH_CHECK(false, "input must be half or float", OPS_ERROR(ErrCode::TYPE));

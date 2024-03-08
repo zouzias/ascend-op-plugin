@@ -25,6 +25,7 @@ std::vector<at::Tensor> _foreach_add(at::TensorList tensors1, at::TensorList ten
         !at::native::can_use_fast_route({tensors1, tensors2}, alpha)) {
         return at::native::foreach_tensor_add_list_kernel_slow(tensors1, tensors2, alpha);
     }
+
     // construct the output tensorlist of the NPU
     auto scalar_type = tensors1[0].scalar_type();
     std::vector<at::Tensor> result;

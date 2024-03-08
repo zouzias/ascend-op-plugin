@@ -43,6 +43,7 @@ static at::Tensor &sub_out_npu_nocheck(const at::Tensor &self, const at::Tensor 
     } else {
         EXEC_NPU_CMD(aclnnSub, self, other, alpha, result);
     }
+
     return result;
 }
 

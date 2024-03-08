@@ -38,6 +38,7 @@ static at::Tensor& div_out_npu_opapi_nocheck(const at::Tensor& self, const at::T
   } else {
     EXEC_NPU_CMD(aclnnDiv, self, other, result);
   }
+
   return result;
 }
 

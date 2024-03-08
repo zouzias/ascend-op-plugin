@@ -60,6 +60,7 @@ std::vector<at::Tensor> _foreach_minimum(at::TensorList tensors, const at::Scala
         !at::native::can_use_fast_route(tensors, scalar, false)) {
         return at::native::foreach_tensor_clamp_max_scalar_kernel_slow(tensors, scalar);
     }
+
     // construct the output tensorlist of the NPU
     auto scalar_type = tensors[0].scalar_type();
     std::vector<at::Tensor> result;

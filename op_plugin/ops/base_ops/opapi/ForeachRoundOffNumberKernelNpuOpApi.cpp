@@ -37,6 +37,7 @@ void exec_npu_cmd_(at::TensorList self, const char roundMode)
     if (is_integral_tensor_list(self)) {
         return;
     }
+
     at::Tensor round_mode_scalar_tensor = at_npu::native::OpPreparation::copy_scalar_to_device(
         roundMode, at::ScalarType::Char);
     // dispatch hostAPI

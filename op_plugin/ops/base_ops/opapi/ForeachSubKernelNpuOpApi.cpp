@@ -80,6 +80,7 @@ std::vector<at::Tensor> _foreach_sub(at::TensorList self, const at::Scalar &scal
 
     std::vector<at::Tensor> result;
     result.reserve(self.size());
+
     for (const at::Tensor &tensor : self) {
         auto output_size = op_infer::input_same_output_size(tensor);
         result.push_back(

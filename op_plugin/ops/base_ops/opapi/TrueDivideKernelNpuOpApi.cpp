@@ -43,6 +43,7 @@ static at::Tensor self_tensor_to_device(const at::Tensor& tensor, const at::Scal
 at::Tensor true_divide(const at::Tensor &self, const at::Tensor &other) {
   DO_COMPATIBILITY(aclnnDivs, acl_op::true_divide(self, other));
   DO_COMPATIBILITY(aclnnDiv, acl_op::true_divide(self, other));
+
   // calculate the output size
   bool is_self_wrapped = npu_preparation::is_scalar_wrapped_to_tensor(self);
   at::Tensor output_tensor = is_self_wrapped ? other : self;

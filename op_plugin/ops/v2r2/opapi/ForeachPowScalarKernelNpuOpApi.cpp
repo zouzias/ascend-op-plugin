@@ -45,6 +45,7 @@ std::vector<at::Tensor> _foreach_pow(const at::TensorList self, const at::Scalar
 void _foreach_pow_(const at::TensorList self, const at::Scalar& scalar)
 {
     at::native::check_foreach_api_restrictions(self);
+
     if (!at::native::can_use_fast_route(self, scalar, true)) {
         return at::native::foreach_tensor_pow_scalar_kernel_slow_(self, scalar);
     }
