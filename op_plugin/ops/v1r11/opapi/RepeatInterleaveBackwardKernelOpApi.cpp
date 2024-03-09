@@ -50,7 +50,17 @@ at::Tensor repeat_interleave_backward(const at::Tensor& input_grad, const at::Te
     if (!dim.has_value()) {
         dim = -1;
     }
+    int64_t grad_dim = input_grad.dim();
+    if (dim < 0) {
+        dim = dim + grad_dim;
+    }
+    at::SmallVector<int64_t, SIZE> result_shape = input_grad.sizes();
+    result_shape[dim] = repeats.size(0);
 
+    at::Tensor result = npu_preparation::apply_tensor_with_format(result_shape, input_grad.options(), ACL_FORMAT_ND);
+    EXEC_NPU_CMD(aclnnRepeatInterleaveGrad, input_grad, repeats, dim, result);
+    result = result.view(self.sizes());
+    return result;
 }
 
 } // namespace op_api
