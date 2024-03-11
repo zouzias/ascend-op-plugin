@@ -55,7 +55,7 @@ void bias_shape_check(const at::Tensor &x1, const at::Tensor &x2, const at::Tens
     auto bias_first_dim = bias.size(0);
     if (bias_dim_num == 1) {
         TORCH_CHECK(bias_first_dim == x2_n_dim,
-                    "bias_first_dim should be equal to x2 n dim . bias_first_dim is ", bias_first_dim,
+                    "bias_first_dim should be equal to x2 n dim. bias_first_dim is ", bias_first_dim,
                     " and x2_n_dim is ", x2_n_dim);
         return;
     }
@@ -109,6 +109,14 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
     bool transpose1 = false;
     bool transpose2 = false;
 
+    if (*output_dtype == "bfloat16") {
+        TORCH_CHECK(scale.dtype() == at::kBFloat16,
+                    "The scale_dtype should be bfloat16 when output_dtype is bfloat16");
+    } else {
+        TORCH_CHECK(scale.dtype() == at::kFloat || scale.dtype() == at::kLong,
+                    "The scale_dtype should be float32 or int64 when output dtype is ", *output_dtype);
+    }
+
     auto scale_dim_num = scale.dim();
     TORCH_CHECK(scale_dim_num == 1, "The scale dim num should be 1. but scale_dim_num is ", scale_dim_num);
     auto scale_first_dim = scale.size(0);
@@ -116,6 +124,7 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
                 "The scale 1st dim should be 1 or n, but scale_first_dim is ", scale_first_dim);
 
     if (offset.has_value()) {
+        TORCH_CHECK(*output_dtype == "int8",  "The offset only exists when output_dtype is int8");
         auto offset_dim_num = offset_real.dim();
         TORCH_CHECK(offset_dim_num == 1, "The offset dim num should be 1. but offset_dim_num is ", offset_dim_num);
         auto offset_first_dim_value = offset_real.size(0);
