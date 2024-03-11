@@ -70,8 +70,8 @@ void bias_shape_check(const at::Tensor &x1, const at::Tensor &x2, const at::Tens
 }
 
 at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at::Tensor& scale,
-                            const c10::optional<at::Tensor>& offset, const c10::optional<at::Tensor>& bias,
-                            c10::optional<c10::string_view> output_dtype)
+                            const c10::optional<at::Tensor>& offset, const c10::optional<at::Tensor>& pertoken_scale,
+                            const c10::optional<at::Tensor>& bias, c10::optional<c10::string_view> output_dtype)
 {
     auto x1_dim_num = x1.dim();
     TORCH_CHECK(x1_dim_num >= X_MIN_DIM && x1_dim_num <= X_MAX_DIM, "x1 shape dim num should be within 2~6, but it is ",
@@ -80,6 +80,7 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
     TORCH_CHECK(x2_dim_num >= X_MIN_DIM && x2_dim_num <= X_MAX_DIM, "x2 shape dim num should be within 2~6, but it is ",
                 x2_dim_num);
     auto x1_k_dim = x1.size(x1_dim_num - 1);
+    auto x1_m_dim = x1.size(x1_dim_num - 2);
     auto x2_n_dim = x2.size(x2_dim_num - 1);
     auto x2_k_dim = x2.size(x2_dim_num - 2);
     TORCH_CHECK(x1_k_dim == x2_k_dim, "The k of x1 and x2 should be equal. but x1_k_dim is ",
@@ -123,6 +124,14 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
                     "The offset 1st dim should be 1 or n, but offset_first_dim is ", offset_first_dim_value);
     }
 
+    if (pertoken_scale.has_value()) {
+        auto pertoken_scale_dim_num = pertoken_scale.dim();
+        TORCH_CHECK(pertoken_scale_dim_num == 1, "The pertoken_scale dim num should be 1. but pertoken_scale_dim_num is ", pertoken_scale_dim_num);
+        auto pertoken_scale_first_dim = pertoken_scale.size(0);
+        TORCH_CHECK(pertoken_scale_first_dim == 1 || pertoken_scale_first_dim == x1_m_dim,
+                "The pertoken_scale 1st dim should be 1 or m, but pettoken_scale_first_dim is ", pertoken_scale_first_dim);
+    }
+
     if (bias.has_value()) {
         if (bias_real.dim() == 3) {
             TORCH_CHECK(output_size.size() == 3, "when bias dim is 3, output dim need to be 3. but output dim is ",
@@ -131,11 +140,13 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
         bias_shape_check(x1, x2, bias_real, batch_val);
     }
 
-    if (scale.dtype() == at::kFloat) {
+    if (scale.dtype() == at::kFloat && !pertoken_scale.has_value()) {
         const at::Tensor quant_param = op_api::npu_trans_quant_param(scale, offset);
-        EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, quant_param, offset_real, bias_real, transpose1, transpose2, result);
+        EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, quant_param, offset_real, pertoken_scale, bias_real,
+                     transpose1, transpose2, result);
     } else {
-        EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, scale, offset_real, bias_real, transpose1, transpose2, result);
+        EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, scale, offset_real, pertoken_scale, bias_real,
+                     transpose1, transpose2, result);
     }
     return result;
 }
