@@ -106,6 +106,7 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
 
     const at::Tensor &offset_real = offset.value_or(at::Tensor());
+    const at::Tensor &pertoken_scale_real = pertoken_scale.value_or(at::Tensor());
     const at::Tensor &bias_real = bias.value_or(at::Tensor());
     bool transpose1 = false;
     bool transpose2 = false;
@@ -125,9 +126,9 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
     }
 
     if (pertoken_scale.has_value()) {
-        auto pertoken_scale_dim_num = pertoken_scale.dim();
+        auto pertoken_scale_dim_num = pertoken_scale_real.dim();
         TORCH_CHECK(pertoken_scale_dim_num == 1, "The pertoken_scale dim num should be 1. but pertoken_scale_dim_num is ", pertoken_scale_dim_num);
-        auto pertoken_scale_first_dim = pertoken_scale.size(0);
+        auto pertoken_scale_first_dim = pertoken_scale_real.size(0);
         TORCH_CHECK(pertoken_scale_first_dim == 1 || pertoken_scale_first_dim == x1_m_dim,
                 "The pertoken_scale 1st dim should be 1 or m, but pettoken_scale_first_dim is ", pertoken_scale_first_dim);
     }
@@ -142,10 +143,10 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
 
     if (scale.dtype() == at::kFloat && !pertoken_scale.has_value()) {
         const at::Tensor quant_param = op_api::npu_trans_quant_param(scale, offset);
-        EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, quant_param, offset_real, pertoken_scale, bias_real,
+        EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, quant_param, offset_real, pertoken_scale_real, bias_real,
                      transpose1, transpose2, result);
     } else {
-        EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, scale, offset_real, pertoken_scale, bias_real,
+        EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, scale, offset_real, pertoken_scale_real, bias_real,
                      transpose1, transpose2, result);
     }
     return result;
