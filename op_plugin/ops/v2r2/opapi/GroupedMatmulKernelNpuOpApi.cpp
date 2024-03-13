@@ -86,6 +86,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                                            const c10::optional<at::TensorList> antiquant_offset,
                                            c10::OptionalIntArrayRef group_list,
                                            c10::optional<int64_t> split_item,
+                                           c10::optional<int64_t> group_type,
                                            c10::optional<at::ScalarType> output_dtype)
 {
     auto num_x = x.size();
@@ -93,6 +94,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     auto group_list_real = group_list.value_or(at::IntArrayRef{});
     auto num_group_list = group_list_real.size();
     int64_t split_item_value = split_item.value_or(0);
+    int64_t group_type_value = group_type.value_or(-1);
 
     std::vector<at::Tensor> y;
     c10::TensorOptions options = x[0].options().dtype(output_dtype.value_or(x[0].scalar_type()));
@@ -136,7 +138,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     auto antiquant_scale_real = antiquant_scale.value_or(at::TensorList());
     auto antiquant_offset_real = antiquant_offset.value_or(at::TensorList());
     EXEC_NPU_CMD(aclnnGroupedMatmul, x, weight, bias_real, scale_real, offset_real, antiquant_scale_real,
-                 antiquant_offset_real, group_list_real, split_item_value, result);
+                 antiquant_offset, group_list_real, split_item_value, group_type_value, result);
 
     return y;
 }
