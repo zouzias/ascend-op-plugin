@@ -36,6 +36,7 @@ enum class DropOutStatus {
     DROPOUT_ALL
 };
 
+
 DropOutStatus get_dropout_status(double keep_prob)
 {
     if (keep_prob == 0) {
