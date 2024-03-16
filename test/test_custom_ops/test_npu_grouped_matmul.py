@@ -345,5 +345,92 @@ class TestGroupedMatmul(TestCase):
         self.assertRtolEqual(x[0], x_clone[0], 1)
         self.assertRtolEqual(supported_output[0], custom_output[0], 1)
 
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_3_single_weight_tensor(self, device="npu"):
+        torch.manual_seed(0)
+        x1 = torch.normal(mean=0., std=0.1, size=(1792, 1024), dtype=torch.float16)
+        x = [x1]
+        weight1 = torch.normal(mean=0., std=0.1, size=(3, 1024, 256), dtype=torch.float16)
+        weight = [weight1]
+        bias1 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
+        bias2 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
+        bias3 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
+        bias = [bias1, bias2, bias3]
+        group_list = [256, 1280, 1792]
+        split_item = 3
+
+        x_clone = []
+        weight_clone = []
+        bias_clone = []
+        for x_i in x:
+            x_clone.append(x_i.clone().npu())
+        for weight_i in weight:
+            weight_clone.append(weight_i.clone().npu())
+        for bias_i in bias:
+            bias_clone.append(bias_i.clone().npu())
+
+        supported_output = self.supported_op_exec(x, weight, bias=bias, group_list=group_list, split_item=split_item)
+        custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, group_list=group_list,
+                                            split_item=split_item)
+
+        self.assertRtolEqual(x[0], x_clone[0], 0.001)
+        self.assertRtolEqual(supported_output[0], custom_output[0], 0.001)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_3_single_weight_invalid_dim_num(self, device="npu"):
+        torch.manual_seed(0)
+        x1 = torch.normal(mean=0., std=0.1, size=(1792, 1024), dtype=torch.float16)
+        x = [x1]
+        weight1 = torch.normal(mean=0., std=0.1, size=(3, 1024, 256), dtype=torch.float16)
+        weight2 = torch.normal(mean=0., std=0.1, size=(3, 1024, 256), dtype=torch.float16)
+        weight = [weight1, weight2]
+        bias1 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
+        bias2 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
+        bias3 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
+        bias = [bias1, bias2, bias3]
+        group_list = [256, 1280, 1792]
+        split_item = 3
+
+        x_clone = []
+        weight_clone = []
+        bias_clone = []
+        for x_i in x:
+            x_clone.append(x_i.clone().npu())
+        for weight_i in weight:
+            weight_clone.append(weight_i.clone().npu())
+        for bias_i in bias:
+            bias_clone.append(bias_i.clone().npu())
+
+        custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, group_list=group_list,
+                                            split_item=split_item)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_npu_grouped_matmul_3_single_weight_invalid_dims(self, device="npu"):
+        torch.manual_seed(0)
+        x1 = torch.normal(mean=0., std=0.1, size=(1792, 1024), dtype=torch.float16)
+        x = [x1]
+        weight1 = torch.normal(mean=0., std=0.1, size=(1024, 256), dtype=torch.float16)
+        weight2 = torch.normal(mean=0., std=0.1, size=(1024, 256), dtype=torch.float16)
+        weight = [weight1, weight2]
+        bias1 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
+        bias2 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
+        bias3 = torch.normal(mean=0., std=0.1, size=(256,), dtype=torch.float16)
+        bias = [bias1, bias2, bias3]
+        group_list = [256, 1280, 1792]
+        split_item = 3
+
+        x_clone = []
+        weight_clone = []
+        bias_clone = []
+        for x_i in x:
+            x_clone.append(x_i.clone().npu())
+        for weight_i in weight:
+            weight_clone.append(weight_i.clone().npu())
+        for bias_i in bias:
+            bias_clone.append(bias_i.clone().npu())
+
+        custom_output = self.custom_op_exec(x_clone, weight_clone, bias=bias_clone, group_list=group_list,
+                                            split_item=split_item)
+
 if __name__ == "__main__":
     run_tests()
