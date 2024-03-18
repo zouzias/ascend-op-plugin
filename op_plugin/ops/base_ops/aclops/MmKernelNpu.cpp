@@ -205,7 +205,6 @@ int64_t ceil_div(int64_t x, int64_t y)
     return (x + y - 1) / y;
 }
 
-
 at::Tensor &mm_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &mat2)
 {
     const auto self_desc = torch_npu::NPUBridge::GetNpuStorageImpl(self)->npu_desc_;
