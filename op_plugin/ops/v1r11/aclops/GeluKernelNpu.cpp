@@ -21,17 +21,23 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor gelu(const at::Tensor& self) {
-  return gelu_common_nocheck(self);
+    at::Tensor result = at_npu::native::OpPreparation::apply_tensor(self);
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Gelu")
+        .Input(self)
+        .Output(result)
+        .Run();
+    return result;
 }
 
 at::Tensor& gelu_out(const at::Tensor& self, at::Tensor& result) {
-  npu_preparation::CheckOut({self}, result, self);
+    npu_preparation::CheckOut({self}, result, self);
 
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Gelu")
-      .Input(self)
-      .Output(result)
-      .Run();
-  return result;
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Gelu")
+        .Input(self)
+        .Output(result)
+        .Run();
+    return result;
 }
 } // namespace acl_op

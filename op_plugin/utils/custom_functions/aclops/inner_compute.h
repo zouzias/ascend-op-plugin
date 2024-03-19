@@ -21,7 +21,7 @@
 
 namespace acl_op {
 at::Tensor embedding_common_nocheck(const at::Tensor& weight, const at::Tensor& indices);
-at::Tensor gelu_common_nocheck(const at::Tensor& self);
+at::Tensor gelu_common_nocheck(const at::Tensor& self, c10::string_view approximate);
 at::Tensor gelu_backward_common_nocheck(const at::Tensor& grad, const at::Tensor& self);
 std::tuple<at::Tensor, at::Tensor> grid_sampler3d_backward_common_nocheck(const at::Tensor& grad, const at::Tensor& input,
                                                                           const at::Tensor& grid, int64_t interpolation_mode,

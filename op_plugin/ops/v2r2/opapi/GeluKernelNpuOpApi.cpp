@@ -20,10 +20,22 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
+int64_t get_approximate(c10::string_view approximate)
+{
+    if (approximate == "none") {
+        return 0;
+    } else if (approximate == "tanh") {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
 at::Tensor gelu(const at::Tensor& self, c10::string_view approximate) {
-  DO_COMPATIBILITY(aclnnGelu, acl_op::gelu(self));
-  at::Tensor result = npu_preparation::apply_tensor_without_format(self);
-  EXEC_NPU_CMD(aclnnGelu, self, result);
-  return result;
+    DO_COMPATIBILITY(aclnnGeluV2, acl_op::gelu(self));
+    int64_t approximate_mode = get_approximate(approximate);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+    EXEC_NPU_CMD(aclnnGeluV2, self, approximate_mode, result);
+    return result;
 }
 }  // namespace op_api
