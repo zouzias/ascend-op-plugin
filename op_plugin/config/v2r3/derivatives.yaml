@@ -144,3 +144,6 @@
 - name: npu_multi_head_attention_v2(Tensor query, Tensor key, Tensor value, Tensor? atten_mask=None, Tensor? alibi_mask=None, float scale=1.0, int head_num=1, str input_layout="BNSD", float keep_prob=1., int pre_tokens=2147483647, int next_tokens=1, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, int, int, int)
   output_differentiability: [True, False, False, False, False]
   query, key, value: npu_multi_head_attention_v2_grad(grad, query, key, value, result1, result0, atten_mask, alibi_mask, scale, head_num, input_layout, keep_prob, pre_tokens, next_tokens, result2, result3, result4, gen_mask_parallel, sync)
+
+- name: npu_gmm(Tensor[] mat1, Tensor[] mat2, Tensor[] bias, *, int[]? group_list=None, int? split_item=0, int? group_type=-1) -> Tensor[]
+  mat1, mat2, bias: npu_gmm_backward(grad, mat1, mat2, group_list)

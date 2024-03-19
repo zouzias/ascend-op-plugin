@@ -2396,6 +2396,10 @@ custom:
     impl_ns: op_api
   - func: npu_grouped_matmul(Tensor[] x, Tensor[] weight, *, Tensor[]? bias=None, Tensor[]? scale=None, Tensor[]? offset=None, Tensor[]? antiquant_scale=None, Tensor[]? antiquant_offset=None, int[]? group_list=None, int? split_item=0, int? group_type=-1, ScalarType? output_dtype=None) -> Tensor[]
     impl_ns: op_api
+  - func: npu_gmm(Tensor[] mat1, Tensor[] mat2, Tensor[] bias, *, int[]? group_list=None, int? split_item=0, int? group_type=-1) -> Tensor[]
+    impl_ns: op_api
+  - func: npu_gmm_backward(Tensor[] grad, Tensor[] mat1, Tensor[] mat2, int[]? group_list=None) -> (Tensor[], Tensor[], Tensor[])
+    impl_ns: op_api
   - func: npu_weight_quant_batchmatmul(Tensor x, Tensor weight, Tensor antiquant_scale, Tensor? antiquant_offset=None, Tensor? quant_scale=None, Tensor? quant_offset=None, Tensor? bias=None, int antiquant_group_size=0) -> Tensor
     impl_ns: op_api
   - func: npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor
