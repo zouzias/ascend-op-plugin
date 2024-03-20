@@ -38,10 +38,24 @@ void check_params(const at::Tensor &x1, const at::Tensor &x2,
                   const c10::optional<at::Tensor> &dequant_scale)
 {
     // check shape: shape of x1:[s,m,k], shape of x2:[k,n], k_x1 == k_x2
+    TORCH_CHECK(x1.dim() == 2 || x1.dim() == 3, "x1 needs to be 2D or 3D, but got: ", x1.dim(), "D",
+                OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(x2.dim() == 2, "x2 needs to be 2D, but got: ", x2.dim(), "D", OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(x1.size(x1.dim() - 1) == x2.size(0), "K of x1 and x2 should be same, but they are x1_k: ",
                 x1.size(x1.dim() - 1), ", x2_k: ", x2.size(0), OPS_ERROR(ErrCode::VALUE));
-
+    // check m,k,n value in [1, 65535]
+    if (x1.dim() == 2) {
+        TORCH_CHECK(x1.size(0) >= 1 && x1.size(0) <= 65535, "m of x1 should be in [1,65535], but it is x1_m: ",
+                    x1.size(0), OPS_ERROR(ErrCode::VALUE));
+    } else {
+        TORCH_CHECK((x1.size(0) * x1.size(1)) >= 1 && (x1.size(0) * x1.size(1)) <= 65535,
+                    "b*m of x1 should be in [1,65535], but it is x1_b:",
+                    x1.size(0), ", x1_m:", x1.size(1), OPS_ERROR(ErrCode::VALUE));
+    }
+    TORCH_CHECK(x1.size(x1.dim() - 1) >= 1 && x1.size(x1.dim() - 1) <= 65535, "k of x1 should be in [1,65535], but it is x1_k: ",
+                x1.size(x1.dim() - 1), OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(x2.size(1) >= 1 && x2.size(1) <= 65535, "n of x2 should be in [1,65535], but it is x2_n: ",
+                x2.size(1), OPS_ERROR(ErrCode::VALUE));
     // check parameters.
     // aclnn apis for MC2 share one torch_npu api, therefore, each aclnn api only accepts parameters
     // that will be used. Any unused parameter will be seen as illegal. The job must be done here in
