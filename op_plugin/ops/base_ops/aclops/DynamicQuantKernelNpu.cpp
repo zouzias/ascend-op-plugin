@@ -21,8 +21,8 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_quant(const at::Tensor &input)
 {    
-    at::SmallVector<int64_t, op_infer::SIZE> output_size = input.size();
-    at::SmallVector<int64_t, op_infer::SIZE> scale_size = input.size();
+    at::SmallVector<int64_t, op_infer::SIZE> output_size = input.sizes();
+    at::SmallVector<int64_t, op_infer::SIZE> scale_size = input.sizes();
 
     scale_size.pop_back();
 
