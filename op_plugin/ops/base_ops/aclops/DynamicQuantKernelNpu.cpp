@@ -29,7 +29,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_quant(const at::Tenso
     at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, c10::dtype(c10::ScalarType::Char));
     at::Tensor scale = npu_preparation::apply_tensor_without_format(scale_size, c10::dtype(c10::ScalarType::Float));
 
-    EXEC_NPU_CMD(aclnnTomeMerge, input, output, scale);
+    EXEC_NPU_CMD(aclnnDynamicQuant, input, output, scale);
     return std::make_tuple(output, scale);
 }
 }
