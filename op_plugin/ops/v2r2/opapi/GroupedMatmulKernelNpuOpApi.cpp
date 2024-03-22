@@ -78,8 +78,8 @@ void creat_new_tensor_multi_dim(std::vector<at::Tensor> &y, const at::Tensor &x_
 void creat_new_tensor(std::vector<at::Tensor> &y, size_t dim_m, size_t dim_n, c10::TensorOptions options,
                       int64_t group_type_value, size_t num_group_list)
 {
-    auto output_size = (2 == group_type) ? op_infer::array_to_small_vector({num_group_list, dim_m, dim_n})
-                                         : op_infer::array_to_small_vector({dim_m, dim_n});
+    auto output_size = (2 == group_type_value) ? op_infer::array_to_small_vector({num_group_list, dim_m, dim_n})
+                                               : op_infer::array_to_small_vector({dim_m, dim_n});
     y.emplace_back(npu_preparation::apply_tensor_without_format(output_size, options));
 }
 
