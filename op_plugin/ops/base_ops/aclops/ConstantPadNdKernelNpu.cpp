@@ -16,20 +16,49 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/OpApiInterface.h"
 
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
+static const int POSITIVE = 1;
+static const int NEGETIVE = 2;
+static const int SIZE_T_TWICE = 2;
+
 namespace {
-bool is_backward(at::IntArrayRef pad)
+
+void check_negetive(const at::Tensor &self, at::IntArrayRef pad, std::vector<int64_t> &out_shape, int &sign_symbol)
 {
-    for (uint i = 0; i < pad.size(); i++) {
-        if (pad[i] < 0) {
-            return true;
+    auto self_dim = self.dim();
+    auto pad_cover = static_cast<int64_t>(pad.size()) / 2;
+    bool hasZero = false;
+    // pad中每个值都不能让out的shape小于0，如果pad中存在正数，则out的shape中不能有0
+    for (auto i = 0; i < pad_cover; ++i) {
+        auto cur_shape = self.sizes()[self_dim - i -1];
+        auto begin = pad[SIZE_T_TWICE * i];
+        auto end = pad[SIZE_T_TWICE * i + 1];
+        auto newShape = cur_shape + begin + end;
+        auto min = std::min(begin, end);
+        min = std::min(min, begin + end);
+        TORCH_CHECK(cur_shape + min >= 0, "The input size ", cur_shape, "plus padding ", begin, " and ", end,
+                    " resluted in a negative output size, which is invalid. Check dimension ",
+                    self_dim - i - 1, " of yout input." + OPS_ERROR(ErrCode::PARAM));
+        if (begin > 0 || end > 0) {
+            sign_symbol |= POSITIVE;
+        }
+        if (begin < 0 || end < 0) {
+            sign_symbol |= NEGETIVE;
+        }
+        if (newShape == 0) {
+            hasZero = true;
         }
     }
-    return false;
+    if (hasZero && ((sign_symbol & POSITIVE) == POSITIVE)) {
+        TORCH_CHECK(false, "The output size with zero element is invalid, please check your input." + OPS_ERROR(ErrCode::PARAM));
+    }
+    return ;
 }
+
 } // namespace
 
 at::Tensor constant_pad_nd(const at::Tensor &self, at::IntArrayRef pad, const at::Scalar &value)
@@ -37,6 +66,7 @@ at::Tensor constant_pad_nd(const at::Tensor &self, at::IntArrayRef pad, const at
     TORCH_CHECK(pad.size() % 2 == 0, "Length of pad must be even but instead it equals ", pad.size(),
         OPS_ERROR(ErrCode::PARAM));
 
+    int sign_symbol = 0; // 0代表pad全0或没有元素，1代表有正数，2代表有负数，3代表同时有正数和负数
     auto input_sizes = self.sizes();
     auto l_inp = self.dim();
     auto l_pad = static_cast<int64_t>(pad.size()) / 2;
@@ -63,7 +93,11 @@ at::Tensor constant_pad_nd(const at::Tensor &self, at::IntArrayRef pad, const at
         new_shape.emplace_back(new_dim);
     }
 
-    if (is_backward(pad)) {
+    check_negetive(self, pad, new_shape, sign_symbol);
+    if (sign_symbol == (NEGETIVE | POSITIVE)) {
+        return op_api::constant_pad_nd(self, pad, value);
+    }
+    if (sign_symbol == NEGETIVE) {
         TORCH_CHECK(pad.size() % 2 == 0, "Length of pad must be even but instead it equals ", pad.size(),
             OPS_ERROR(ErrCode::PARAM));
 
