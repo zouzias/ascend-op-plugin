@@ -146,3 +146,6 @@
 
 - name: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, int? output_size=None) -> Tensor
   self: repeat_interleave_backward_int(grad, self, repeats, dim)
+
+- name: npu_gmm(Tensor[] mat1, Tensor[] mat2, Tensor[] bias, *, int[]? group_list=None, int? split_item=0, int? group_type=-1) -> Tensor[]
+  mat1, mat2, bias: npu_gmm_backward(grad, mat1, mat2, group_list)
