@@ -23,15 +23,14 @@ const static int64_t IN_NOT_SPLIT_OUT_SPLIT = 2;
 const static int64_t IN_SPLIT_OUT_SPLIT = 3;
 using npu_preparation = at_npu::native::OpPreparation;
 
-bool check_weight_dim(size_t weight_dim_num, size_t num_weight, size_t weight_dim_0, size_t num_group_list,
-                      int64_t sum_group_list)
-{
+bool check_weight_dim(size_t num_weight, size_t dim_num_weight, size_t dim_0_weight, size_t num_group_list,
+                      size_t sum_group_list) {
     bool result = false;
-    if (2 == weight_dim_num && num_weight == num_group_list) {
+    if (2 == dim_num_weight && num_weight == num_group_list) {
         result = true;
-    } else if (3 == weight_dim_num && 1 == num_weight && weight_dim_0 == num_group_list) {
+    } else if (3 == dim_num_weight && 1 == num_weight && dim_0_weight == num_group_list) {
         result = true;
-    } else if (2 == weight_dim_num && 1 == num_weight && weight_dim_0 == sum_group_list) {
+    } else if (2 == dim_num_weight && 1 == num_weight && dim_0_weight == sum_group_list) {
         result = true;
     }
     return result;
