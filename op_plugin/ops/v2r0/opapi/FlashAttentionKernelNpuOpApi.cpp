@@ -61,27 +61,32 @@ at::Tensor format_trans(const at::Tensor &at_tensor)
     return at_tensor;
 }
 
-at::Tensor dropout_gen_mask_impl(const at::Tensor &query, const at::Scalar &keep_prob, const at::Scalar &seed,
+at::Tensor dropout_gen_mask_impl(const at::Tensor &query, double keep_prob, int64_t seed,
     const int64_t offset, const int64_t numels)
 {
     int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
     c10::TensorOptions options = query.options();
     at::Tensor mask = OpPreparation::apply_tensor_without_format(at::IntArrayRef{length + 32}, options.dtype(at::kByte));
-    at::SmallVector<int64_t, ::N> offsetList = {0, offset};
-    const int64_t seed1 = 0;
-    OpCommand cmd;
-    cmd.Name("StatelessDropOutGenMask")
-        .Input(at::IntArrayRef{numels})
-        .Input(keep_prob, query.scalar_type(), CompileType::MEMORY_HOST_COMPILE_DEPENDENT)
-        .Input(seed, at::ScalarType::Int)
-        .Input(at::Scalar(seed1), at::ScalarType::Int)
-        .Input(offsetList, at::kLong, CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
-        .Output(mask)
-        .Run();
+    // at::SmallVector<int64_t, ::N> offsetList = {0, offset};
+    // const int64_t seed1 = 0;
+    // OpCommand cmd;
+    // cmd.Name("StatelessDropOutGenMask")
+    //     .Input(at::IntArrayRef{numels})
+    //     .Input(keep_prob, query.scalar_type(), CompileType::MEMORY_HOST_COMPILE_DEPENDENT)
+    //     .Input(seed, at::ScalarType::Int)
+    //     .Input(at::Scalar(seed1), at::ScalarType::Int)
+    //     .Input(offsetList, at::kLong, CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
+    //     .Output(mask)
+    //     .Run();
+
+    c10::SmallVector<int64_t, SIZE> shapeSize = {numels + 256};
+    at::IntArrayRef shapeArray = at::IntArrayRef(shapeSize);
+    double prob = 1.0 - keep_prob;
+    EXEC_NPU_CMD(aclnnDropoutGenMask, shapeArray, prob, seed, offset, mask);
     return mask;
 }
 
-at::Tensor dropout_gen_mask_dispatch(const at::Tensor &query, const at::Scalar &keep_prob, const at::Scalar &seed,
+at::Tensor dropout_gen_mask_dispatch(const at::Tensor &query, double keep_prob, int64_t seed,
     const int64_t offset, const int64_t numels, const bool gen_mask_parallel, const bool sync)
 {
     at::Tensor mask;
@@ -126,7 +131,7 @@ at::Tensor dropout_gen_mask(const at::Tensor &query, const at::Tensor &key, doub
         auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
         seed = pair.first;
         offset = pair.second;
-        drop_mask = dropout_gen_mask_dispatch(query, at::Scalar(keep_prob), at::Scalar(seed),
+        drop_mask = dropout_gen_mask_dispatch(query, keep_prob, seed,
             offset, numels, gen_mask_parallel, sync);
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
         drop_mask = at::zeros(at::IntArrayRef{length}, query.options().dtype(at::kByte));
@@ -284,7 +289,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     length += 32;
     at::Tensor drop_mask;
     if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
-        drop_mask = dropout_gen_mask_dispatch(query, at::Scalar(keep_prob), at::Scalar(seed), offset, numels, gen_mask_parallel, sync);
+        drop_mask = dropout_gen_mask_dispatch(query, keep_prob, seed, offset, numels, gen_mask_parallel, sync);
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
         drop_mask = at::zeros(at::IntArrayRef{length}, query.options().dtype(at::kByte));
     }
@@ -395,6 +400,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     if (input_layout_str == "TND" && ac_seq_qlen.size() == ac_seq_kvlen.size()) {
         numels = N;
         int64_t accum = ac_seq_qlen[0] * ac_seq_kvlen[0];
+        // int64_t accum = 4096 * 4096;
         for (int64_t i = 1; i < ac_seq_qlen.size(); i++) {
             accum += ((ac_seq_qlen[i] - ac_seq_qlen[i - 1]) * (ac_seq_kvlen[i] - ac_seq_kvlen[i - 1]));
         }
