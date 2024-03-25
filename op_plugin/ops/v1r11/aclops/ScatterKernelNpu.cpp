@@ -15,8 +15,26 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/op_api_common.h"
 
 namespace acl_op {
+using npu_preparation = at_npu::native::OpPreparation;
+
+static inline bool reduce_valid(c10::string_view reduce)
+{
+    return (reduce == "add" || reduce == "multiply");
+}
+
+static int64_t get_reduce(c10::string_view reduce)
+{
+    if (reduce == "add") {
+        return 1;
+    } else if (reduce == "multiply") {
+        return 2;
+    }
+    return 0;
+}
+
 at::Tensor& scatter_out(
     const at::Tensor& self,
     int64_t dim,
@@ -25,7 +43,11 @@ at::Tensor& scatter_out(
     c10::string_view reduce,
     at::Tensor& result)
 {
-    TORCH_CHECK(false, "scatter.reduce_out is not supported.", OPS_ERROR(ErrCode::NOT_SUPPORT));
+    npu_preparation::check_tensor({self, src, index}, result, self);
+    TORCH_CHECK(reduce_valid(reduce), "Reduce should be either add or multiply", OPS_ERROR(ErrCode::PARAM));
+    int64_t reduction = get_reduce(reduce);
+    EXEC_NPU_CMD(aclnnScatter, self, dim, index, src, reduction, result);
+    return result;
 }
 
 at::Tensor& scatter_out(
@@ -36,6 +58,10 @@ at::Tensor& scatter_out(
     c10::string_view reduce,
     at::Tensor& result)
 {
-    TORCH_CHECK(false, "scatter.value_reduce_out is not supported.", OPS_ERROR(ErrCode::NOT_SUPPORT));
+    npu_preparation::check_tensor({self, index}, result, self);
+    TORCH_CHECK(reduce_valid(reduce), "Reduce should be either add or multiply", OPS_ERROR(ErrCode::PARAM));
+    int64_t reduction = get_reduce(reduce);
+    EXEC_NPU_CMD(aclnnScatterValue, self, dim, index, value, reduction, result);
+    return result;
 }
 } // namespace acl_op
