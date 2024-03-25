@@ -10,10 +10,6 @@
   output_differentiability: [True, True, True, True, False, False, False]
   query, key, value, pse: npu_fusion_attention_grad(query, key, value, grad, head_num, input_layout, pse, padding_mask, atten_mask, result1, result2, result3, result0, scale, keep_prob, pre_tockens, next_tockens, inner_precise, result4, result5, result6, prefix, actual_seq_qlen, actual_seq_kvlen, sparse_mode, gen_mask_parallel, sync)
 
-- name: npu_fusion_attention_v3(Tensor x, Tensor weight, int head_num, str input_layout, int head_size, Tensor? bias=None, Tensor? pse=None, Tensor? atten_mask=None, int[]? prefix=None, float scale_qk=1., float scale_q=1., float scale_k=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int sparse_mode=0, int pse_type=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
-  output_differentiability: [True, True, True, True, False, False, False]
-  x, weight, pse, bias: npu_fusion_attention_grad_v3(x, weight, result3, grad, result1, result2, result0, head_num, input_layout, head_size, bias, pse, atten_mask, prefix, scale_qk, scale_q, scale_k, keep_prob, pre_tockens, next_tockens, sparse_mode, pse_type, result4, result5, result6, gen_mask_parallel, sync)
-
 - name: npu_gru(Tensor input, Tensor hx, Tensor weight_input, Tensor weight_hidden, Tensor bias_input, Tensor bias_hidden, Tensor seq_length, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
   output_differentiability: [True, True, False, False, False, False]
   weight_input, weight_hidden, input, bias_input, bias_hidden, hx: npu_gru_backward(grads[0], grads[1], input, weight_input, weight_hidden, bias_input, bias_hidden, seq_length, hx, result0, result1, result2, result3, result4, result5)
@@ -145,5 +141,11 @@
   output_differentiability: [True, False, False, False, False]
   query, key, value: npu_multi_head_attention_v2_grad(grad, query, key, value, result1, result0, atten_mask, alibi_mask, scale, head_num, input_layout, keep_prob, pre_tokens, next_tokens, result2, result3, result4, gen_mask_parallel, sync)
 
-- name: npu_gmm(Tensor[] mat1, Tensor[] mat2, Tensor[] bias, *, int[]? group_list=None, int? split_item=0, int? group_type=-1) -> Tensor[]
-  mat1, mat2, bias: npu_gmm_backward(grad, mat1, mat2, group_list)
+- name: repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None, *, int? output_size=None) -> Tensor
+  self: repeat_interleave_backward_tensor(grad, self, repeats, dim)
+
+- name: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, int? output_size=None) -> Tensor
+  self: repeat_interleave_backward_int(grad, self, repeats, dim)
+
+- name: npu_gmm(Tensor[] x, Tensor[] weight, Tensor[] bias, *, int[]? group_list=None, int? split_item=0, int? group_type=-1) -> Tensor[]
+  x, weight, bias: npu_gmm_backward(grad, x, weight, group_list)

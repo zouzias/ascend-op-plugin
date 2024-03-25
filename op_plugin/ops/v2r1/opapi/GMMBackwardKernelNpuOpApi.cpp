@@ -35,20 +35,20 @@ void _foreach_transpose(at::TensorList tensorList, std::vector<at::Tensor> &tens
 //    auto-generated data type for optional IntList group_list in Torch2.1
 //    is different from those in Torch1.11 and Torch2.0.
 std::tuple<std::vector<at::Tensor>, std::vector<at::Tensor>, std::vector<at::Tensor>> npu_gmm_backward(const at::TensorList grad, 
-                                                                                                       const at::TensorList mat1,
-                                                                                                       const at::TensorList mat2,
+                                                                                                       const at::TensorList x,
+                                                                                                       const at::TensorList weight,
                                                                                                        c10::OptionalIntArrayRef group_list)
 {
-    auto num_mat1 = mat1.size();
-    auto num_mat2 = mat2.size();
+    auto num_x = x.size();
+    auto num_w = weight.size();
     auto group_list_real = group_list.value_or(at::IntArrayRef{});
     auto num_group_list = group_list_real.size();
     
-    std::vector<at::Tensor> mat1t;
-    std::vector<at::Tensor> mat2t;
+    std::vector<at::Tensor> xt;
+    std::vector<at::Tensor> wt;
 
-    std::vector<at::Tensor> mat1_splits = mat1[0].split(group_list_real);
-    at::TensorList mat1_split = mat1_splits;
+    std::vector<at::Tensor> x_splits = x[0].split(group_list_real);
+    at::TensorList x_split = x_splits;
     std::vector<at::Tensor> grad_splits = grad[0].split(group_list_real);
     std::vector<at::Tensor> grad_split;
     for (int i = 0; i < grad_splits.size(); i++) {
@@ -57,11 +57,11 @@ std::tuple<std::vector<at::Tensor>, std::vector<at::Tensor>, std::vector<at::Ten
     }
     at::TensorList grad_real = grad_split;
 
-    _foreach_transpose(mat1_split, mat1t);
-    _foreach_transpose(mat2, mat2t);
+    _foreach_transpose(x_split, xt);
+    _foreach_transpose(weight, wt);
 
-    at::TensorList mat1t_real = at::TensorList(mat1t);
-    at::TensorList mat2t_real = at::TensorList(mat2t);
+    at::TensorList xt_real = at::TensorList(xt);
+    at::TensorList wt_real = at::TensorList(wt);
 
     auto bias_real = at::TensorList();
     auto empty_group_list = at::IntArrayRef{};
@@ -71,17 +71,17 @@ std::tuple<std::vector<at::Tensor>, std::vector<at::Tensor>, std::vector<at::Ten
         grad_contiv.emplace_back(grad[i].contiguous());
     }
     
-    std::vector<at::Tensor> dmat1 = npu_gmm(grad_contiv, mat2t_real, bias_real, group_list_real, 3);
-    std::vector<at::Tensor> dmat2 = npu_gmm(mat1t_real, grad_real, bias_real, empty_group_list, 2);
+    std::vector<at::Tensor> dx = npu_gmm(grad_contiv, wt_real, bias_real, group_list_real, 3);
+    std::vector<at::Tensor> dw = npu_gmm(xt_real, grad_real, bias_real, empty_group_list, 2);
     std::vector<at::Tensor> db;
 
-    std::vector<at::Tensor> dmat2_output;
-    for (int i = 0; i < num_mat2; i++) {
-        at::Tensor dmat2_tensor = dmat2[i].reshape(mat2[i].sizes());
-        dmat2_output.emplace_back(dmat2_tensor);
+    std::vector<at::Tensor> dw_output;
+    for (int i = 0; i < num_w; i++) {
+        at::Tensor dw_tensor = dw[i].reshape(weight[i].sizes());
+        dw_output.emplace_back(dw_tensor);
     }
 
-    return std::tie(dmat1, dmat2_output, db);
+    return std::tie(dx, dw_output, db);
 }
 }  // namespace op_api
 
