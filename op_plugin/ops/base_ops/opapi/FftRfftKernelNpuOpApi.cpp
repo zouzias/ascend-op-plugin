@@ -23,10 +23,11 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-int64_t get_norm_RFFT(c10::string_view norm) {
+int64_t get_norm_RFFT(c10::string_view norm)
+{
     if (norm == "backward") {
         return 1;
-    } 
+    }
     if (norm == "forward") {
         return 2;
     }
@@ -38,11 +39,10 @@ int64_t get_norm_RFFT(c10::string_view norm) {
 }
 
 at::Tensor fft_rfft(const at::Tensor &self, c10::optional<int64_t> n, int64_t dim, c10::optional<c10::string_view> norm)
-{  
+{
     c10::string_view norm1 = norm.has_value() ? norm.value() : "backward";
 
-    if (dim < 0)
-    {
+    if (dim < 0) {
         dim += self.dim();
     }
 
@@ -60,13 +60,11 @@ at::Tensor fft_rfft(const at::Tensor &self, c10::optional<int64_t> n, int64_t di
     
     at::SmallVector<int64_t, op_infer::SIZE> output_shape;
     
-    for (int64_t i = 0; i < dim; i++) 
-    {
+    for (int64_t i = 0; i < dim; i++) {
         output_shape.emplace_back(self.size(i));
     }
     output_shape.emplace_back(length / 2 + 1);
-    for (int64_t i = dim + 1; i < self.dim(); i++) 
-    {
+    for (int64_t i = dim + 1; i < self.dim(); i++) {
         output_shape.emplace_back(self.size(i));
     }
     output_shape.emplace_back(2);
@@ -76,7 +74,7 @@ at::Tensor fft_rfft(const at::Tensor &self, c10::optional<int64_t> n, int64_t di
     EXEC_NPU_CMD(aclRfft1D, self, length, dim, normalize, kernel_result);
     
     resFloat = kernel_result.to(at::ScalarType::Float);
-    result = at::native::view_as_complex(resFloat); 
+    result = at::native::view_as_complex(resFloat);
     return result;
 }
 }
