@@ -28,7 +28,7 @@ std::vector<at::Tensor> _foreach_mul(const at::TensorList self, const at::Scalar
 
     auto scalar_type = self[0].scalar_type();
     if (scalar_type != at::ScalarType::Half && scalar_type != at::ScalarType::Float && scalar_type != at::ScalarType::Int) {
-        TORCH_CHECK(false, "input must be half, float or int32");
+        TORCH_CHECK(false, "input must be half, float or int32", OPS_ERROR(ErrCode::TYPE));
     }
     
     std::vector<at::Tensor> result;
@@ -38,7 +38,7 @@ std::vector<at::Tensor> _foreach_mul(const at::TensorList self, const at::Scalar
         result.push_back(npu_preparation::apply_tensor_without_format(output_size, tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
-    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, self[0].scalar_type());
+    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(scalar, self[0].scalar_type(), self[0].device());
 
     EXEC_NPU_CMD(aclnnForeachMulScalar, self, scalar_tensor, result_);
 

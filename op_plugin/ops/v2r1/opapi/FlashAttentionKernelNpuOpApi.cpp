@@ -1,5 +1,4 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -21,6 +20,9 @@
 
 namespace op_api {
 const static int FLASH_THRESHOLD = 512;
+const static int64_t SOFTMAXMAX_LAST_DIMSHAPE = 8;
+const static int64_t PFA_SPARSE_HIGH_PRECISION_NO_MASK = 10;
+const static int64_t PFA_SPARSE_HIGH_PRECISION_BAND = 14;
 using namespace at_npu::native;
 using npu_preparation = at_npu::native::OpPreparation;
 
@@ -28,6 +30,18 @@ enum class DropOutStatus {
     DROPOUT_NORMAL = 0,
     DROPOUT_NONE,
     DROPOUT_ALL
+};
+
+enum class SparseMode {
+    NO_MASK = 0,
+    ALL_MASK,
+    LEFT_UP_CAUSAL,
+    RIGHT_DOWN_CAUSAL,
+    BAND,
+    PREFIX,
+    PREFIX_COMPRESS,
+    RIGHT_DOWN_CAUSAL_BAND,
+    BAND_LEFT_UP_CAUSAL
 };
 
 namespace {
@@ -45,33 +59,35 @@ DropOutStatus get_dropout_status(double keep_prob)
 at::Tensor format_trans(const at::Tensor &at_tensor)
 {
     if (at_tensor.defined()) {
-        TORCH_CHECK(torch_npu::utils::is_npu(at_tensor), "only npu tensor is supported");
+        TORCH_CHECK(torch_npu::utils::is_npu(at_tensor), "only npu tensor is supported" +
+             OPS_ERROR(ErrCode::NOT_SUPPORT));
         return custom_ops::npu_format_cast(at_tensor, ACL_FORMAT_ND);
     }
     return at_tensor;
 }
 
-at::Tensor dropout_gen_mask_impl(const at::Tensor &query, const at::Scalar &keep_prob, const at::Scalar &seed,
+at::Tensor dropout_gen_mask_impl(const at::Tensor &query, double keep_prob, int64_t seed,
     const int64_t offset, const int64_t numels)
 {
     int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
     c10::TensorOptions options = query.options();
-    at::Tensor mask = OpPreparation::apply_tensor_without_format(at::IntArrayRef{length + 32}, options.dtype(at::kByte));
-    at::SmallVector<int64_t, ::N> offsetList = {0, offset};
-    const int64_t seed1 = 0;
-    OpCommand cmd;
-    cmd.Name("StatelessDropOutGenMask")
-        .Input(at::IntArrayRef{numels})
-        .Input(keep_prob, query.scalar_type(), CompileType::MEMORY_HOST_COMPILE_DEPENDENT)
-        .Input(seed, at::ScalarType::Int)
-        .Input(at::Scalar(seed1), at::ScalarType::Int)
-        .Input(offsetList, at::kLong, CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)
-        .Output(mask)
-        .Run();
+    at::Tensor mask = OpPreparation::apply_tensor_without_format(at::IntArrayRef{length}, options.dtype(at::kByte));
+    c10::SmallVector<int64_t, SIZE> shapeSize = {numels};
+    at::IntArrayRef shapeArray = at::IntArrayRef(shapeSize);
+    double prob;
+    at::Scalar probScalar;
+    if (query.scalar_type() == at::kHalf) {
+        probScalar = at::Scalar(at::Half(1.0)- at::Half(keep_prob));
+    } else {
+        probScalar = at::Scalar(at::BFloat16(1.0)- at::BFloat16(keep_prob));
+    }
+    prob = probScalar.toDouble();
+    aclDataType probDataType = at_npu::native::OpPreparation::convert_to_acl_data_type(query.scalar_type());
+    EXEC_NPU_CMD(aclnnDropoutGenMaskV2, shapeArray, prob, seed, offset, probDataType, mask);
     return mask;
 }
 
-at::Tensor dropout_gen_mask_dispatch(const at::Tensor &query, const at::Scalar &keep_prob, const at::Scalar &seed,
+at::Tensor dropout_gen_mask_dispatch(const at::Tensor &query, double keep_prob, int64_t seed,
     const int64_t offset, const int64_t numels, const bool gen_mask_parallel, const bool sync)
 {
     at::Tensor mask;
@@ -86,7 +102,7 @@ at::Tensor dropout_gen_mask_dispatch(const at::Tensor &query, const at::Scalar &
             c10_npu::SecondaryStreamGuard guard(c10_npu::getCurrentSecondaryStream());
             mask = dropout_gen_mask_impl(query, keep_prob, seed, offset, numels);
             if (sync) {
-                NPU_CHECK_ERROR(c10_npu::acl::AclrtSynchronizeStreamWithTimeout(original_stream));
+                OPS_CHECK_ERROR(c10_npu::acl::AclrtSynchronizeStreamWithTimeout(original_stream));
             }
         }
     } else {
@@ -116,8 +132,7 @@ at::Tensor dropout_gen_mask(const at::Tensor &query, const at::Tensor &key, doub
         auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
         seed = static_cast<int64_t>(pair.first);
         offset = static_cast<int64_t>(pair.second);
-        drop_mask = dropout_gen_mask_dispatch(query, at::Scalar(keep_prob), at::Scalar(seed),
-            offset, numels, gen_mask_parallel, sync);
+        drop_mask = dropout_gen_mask_dispatch(query, keep_prob, seed, offset, numels, gen_mask_parallel, sync);
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
         drop_mask = at::zeros(at::IntArrayRef{length}, query.options().dtype(at::kByte));
     }
@@ -239,25 +254,42 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     bool gen_mask_parallel,
     bool sync)
 {
-    TORCH_CHECK(query.dim() == 3 || query.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ", query.dim(), "-dimensional");
-    TORCH_CHECK(key.dim() == 3 || key.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ", key.dim(), "-dimensional");
-    TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ", value.dim(), "-dimensional");
-    TORCH_CHECK(dy.dim() == 3 || dy.dim() == 4, "The shapes of the input dy should be 3 or 4 dimensional, but got ", dy.dim(), "-dimensional");
-    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
-    TORCH_CHECK(sparse_mode >= 0 && sparse_mode <= 5, "The sparse_mode value must be in range of [0~5], but got ", sparse_mode);
+    TORCH_CHECK(query.dim() == 3 || query.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ",
+        query.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(key.dim() == 3 || key.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ",
+        key.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ",
+        value.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dy.dim() == 3 || dy.dim() == 4, "The shapes of the input dy should be 3 or 4 dimensional, but got ",
+        dy.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob,
+                OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
+    if (input_layout_str == "TND") {
+        TORCH_CHECK((sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
+                    sparse_mode < static_cast<int64_t>(SparseMode::PREFIX)) ||
+                    (sparse_mode > static_cast<int64_t>(SparseMode::PREFIX) &&
+                    sparse_mode <= static_cast<int64_t>(SparseMode::BAND_LEFT_UP_CAUSAL)),
+                    "The sparse_mode value must be in range of [0,5) or (5,8], but got ",
+                    sparse_mode, OPS_ERROR(ErrCode::PARAM));
+    } else {
+        TORCH_CHECK(sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
+                    sparse_mode <= static_cast<int64_t>(SparseMode::PREFIX_COMPRESS),
+                    "The sparse_mode value must be in range of [0,6], but got ",
+                    sparse_mode, OPS_ERROR(ErrCode::PARAM));
+    }
     for (auto &c : input_layout_str) {
         c = toupper(c);
     }
     TORCH_CHECK(input_layout_str == "BSH" || input_layout_str == "SBH" || input_layout_str == "BNSD" ||
         input_layout_str == "BSND" || input_layout_str == "TND",
-        "The input_layout should be BSH/SBH/BNSD/BSND/TND(case-insensitive), but got ", input_layout);
+        "The input_layout should be BSH/SBH/BNSD/BSND/TND(case-insensitive), but got ", input_layout, OPS_ERROR(ErrCode::PARAM));
 
     int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
     length += 32;
     at::Tensor drop_mask;
     if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
-        drop_mask = dropout_gen_mask_dispatch(query, at::Scalar(keep_prob), at::Scalar(seed), offset, numels, gen_mask_parallel, sync);
+        drop_mask = dropout_gen_mask_dispatch(query, keep_prob, seed, offset, numels, gen_mask_parallel, sync);
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
         drop_mask = at::zeros(at::IntArrayRef{length}, query.options().dtype(at::kByte));
     }
@@ -290,18 +322,33 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     auto ac_seq_qlen = actual_seq_qlen.value_or(at::IntArrayRef{});
     auto ac_seq_kvlen = actual_seq_kvlen.value_or(at::IntArrayRef{});
 
-    TORCH_CHECK(query.dim() == 3 || query.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ", query.dim(), "-dimensional");
-    TORCH_CHECK(key.dim() == 3 || key.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ", key.dim(), "-dimensional");
-    TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ", value.dim(), "-dimensional");
-    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
-    TORCH_CHECK(sparse_mode >= 0 && sparse_mode <= 5, "The sparse_mode value must be in range of [0~5], but got ", sparse_mode);
+    TORCH_CHECK(query.dim() == 3 || query.dim() == 4, "The shapes of the input query should be 3 or 4 dimensional, but got ",
+        query.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(key.dim() == 3 || key.dim() == 4, "The shapes of the input key should be 3 or 4 dimensional, but got ",
+        key.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(value.dim() == 3 || value.dim() == 4, "The shapes of the input value should be 3 or 4 dimensional, but got ",
+        value.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1, "The keep_prob value must be in range of [0, 1], but got ", keep_prob, OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
+    if (input_layout_str == "TND") {
+        TORCH_CHECK((sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
+                    sparse_mode < static_cast<int64_t>(SparseMode::PREFIX)) ||
+                    (sparse_mode > static_cast<int64_t>(SparseMode::PREFIX) &&
+                    sparse_mode <= static_cast<int64_t>(SparseMode::BAND_LEFT_UP_CAUSAL)),
+                    "The sparse_mode value must be in range of [0,5) or (5,8], but got ",
+                    sparse_mode, OPS_ERROR(ErrCode::PARAM));
+    } else {
+        TORCH_CHECK(sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
+                    sparse_mode <= static_cast<int64_t>(SparseMode::PREFIX_COMPRESS),
+                    "The sparse_mode value must be in range of [0,6], but got ",
+                    sparse_mode, OPS_ERROR(ErrCode::PARAM));
+    }
     for (auto &c : input_layout_str) {
         c = toupper(c);
     }
     TORCH_CHECK(input_layout_str == "BSH" || input_layout_str == "SBH" || input_layout_str == "BNSD" ||
                 input_layout_str == "BSND" || input_layout_str == "TND",
-        "The input_layout should be BSH/SBH/BNSD/BSND/TND(case-insensitive), but got ", input_layout);
+        "The input_layout should be BSH/SBH/BNSD/BSND/TND(case-insensitive), but got ", input_layout, OPS_ERROR(ErrCode::PARAM));
 
     int64_t B = 0;
     int64_t S0 = 0; // S for query
@@ -356,7 +403,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     if (input_layout_str == "TND" && ac_seq_qlen.size() == ac_seq_kvlen.size()) {
         numels = N;
         int64_t accum = ac_seq_qlen[0] * ac_seq_kvlen[0];
-        for (int64_t i = 1; i < ac_seq_qlen.size(); i++) {
+        for (uint64_t i = 1; i < ac_seq_qlen.size(); i++) {
             accum += ((ac_seq_qlen[i] - ac_seq_qlen[i - 1]) * (ac_seq_kvlen[i] - ac_seq_kvlen[i - 1]));
         }
         numels *= accum;
@@ -368,21 +415,18 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     at::Tensor softmax_sum;
     at::Tensor softmax_out;
 
-    c10::SmallVector<int64_t, SIZE> softmax_sizes = {B, head_num, S0, 8};
-    c10::SmallVector<int64_t, SIZE> softmax_sizes_tnd = {T, N, 8};
     if (input_layout_str != "TND") {
-        softmax_max = OpPreparation::apply_tensor_without_format(softmax_sizes,
+        softmax_max = OpPreparation::apply_tensor_without_format({B, head_num, S0, SOFTMAXMAX_LAST_DIMSHAPE},
             query.options().dtype(at::kFloat)); // [B, N, S0, 8]
-        softmax_sum = OpPreparation::apply_tensor_without_format(softmax_sizes,
+        softmax_sum = OpPreparation::apply_tensor_without_format({B, head_num, S0, SOFTMAXMAX_LAST_DIMSHAPE},
             query.options().dtype(at::kFloat)); // [B, N, S0, 8]
     } else {
-        softmax_max = OpPreparation::apply_tensor_without_format(softmax_sizes_tnd,
+        softmax_max = OpPreparation::apply_tensor_without_format({T, N, SOFTMAXMAX_LAST_DIMSHAPE},
             query.options().dtype(at::kFloat)); // [T, N, 8]
-        softmax_sum = OpPreparation::apply_tensor_without_format(softmax_sizes_tnd,
+        softmax_sum = OpPreparation::apply_tensor_without_format({T, N, SOFTMAXMAX_LAST_DIMSHAPE},
             query.options().dtype(at::kFloat)); // [T, N, 8]
     }
-    c10::SmallVector<int64_t, SIZE> softmax_out_sizes = {0};
-    softmax_out = at::empty(softmax_out_sizes, query.options());
+    softmax_out = at::empty({0}, query.options());
     char* input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
     if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
         EXEC_NPU_NO_FORMAT_CHECK_CMD(
@@ -415,6 +459,11 @@ at::Tensor npu_prompt_flash_attention(
     const c10::optional<at::Tensor> &atten_mask,
     const c10::optional<at::Tensor> &pse_shift,
     c10::OptionalIntArrayRef actual_seq_lengths,
+    const c10::optional<at::Tensor> &deq_scale1,
+    const c10::optional<at::Tensor> &quant_scale1,
+    const c10::optional<at::Tensor> &deq_scale2,
+    const c10::optional<at::Tensor> &quant_scale2,
+    const c10::optional<at::Tensor> &quant_offset2,
     int64_t num_heads, double scale_value,
     int64_t pre_tokens, int64_t next_tokens,
     c10::string_view input_layout, int64_t num_key_value_heads,
@@ -422,7 +471,14 @@ at::Tensor npu_prompt_flash_attention(
     int64_t sparse_mode)
 {
     // construct the output tensor of the NPU
-    auto output = npu_preparation::apply_tensor_without_format(query);
+    at::Tensor output;
+    if (ConvertType(quant_scale2) != nullptr) {
+        output = npu_preparation::apply_tensor_without_format(query.sizes(), c10::dtype(c10::ScalarType::Char));
+    } else if (query.dtype() == at::kChar) {
+        output = npu_preparation::apply_tensor_without_format(query.sizes(), c10::dtype(c10::ScalarType::Half));
+    } else {
+        output = npu_preparation::apply_tensor_without_format(query);
+    }
 
     // convert str
     std::string input_layout_str = std::string(input_layout);
@@ -431,15 +487,17 @@ at::Tensor npu_prompt_flash_attention(
     auto actSeqLen = actual_seq_lengths.value_or(at::IntArrayRef{});
     auto actSeqLenKv = actual_seq_lengths_kv.value_or(at::IntArrayRef{});
 
-    const at::Tensor deq_scale1;
-    const at::Tensor quant_scale1;
-    const at::Tensor deq_scale2;
-    const at::Tensor quant_scale2;
-    const at::Tensor quant_offset2;
+    int64_t inner_precise = 1;
+
+    if (sparse_mode >= PFA_SPARSE_HIGH_PRECISION_NO_MASK && sparse_mode <= PFA_SPARSE_HIGH_PRECISION_BAND) {
+        // for sparse in range [10,14], set inner calculate mode to high-precision
+        inner_precise = 0;
+        sparse_mode -= PFA_SPARSE_HIGH_PRECISION_NO_MASK;
+    }
 
     // dispatch hostAPI
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttentionV2, query, key, value, pse_shift, atten_mask, actSeqLen, actSeqLenKv, deq_scale1, quant_scale1, deq_scale2, quant_scale2, quant_offset2,
-                                 num_heads, scale_value, pre_tokens, next_tokens, input_layout_ptr, num_key_value_heads, sparse_mode, output);
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnPromptFlashAttentionV3, query, key, value, pse_shift, atten_mask, actSeqLen, actSeqLenKv, deq_scale1, quant_scale1, deq_scale2, quant_scale2, quant_offset2,
+                                 num_heads, scale_value, pre_tokens, next_tokens, input_layout_ptr, num_key_value_heads, sparse_mode, inner_precise, output);
     return output;
 }
 
@@ -449,11 +507,21 @@ at::Tensor npu_incre_flash_attention_symint(
     const c10::optional<at::Tensor> &pse_shift,
     c10::OptionalArrayRef<c10::SymInt> actual_seq_lengths, const c10::optional<at::Tensor> &antiquant_scale,
     const c10::optional<at::Tensor> &antiquant_offset, const c10::optional<at::Tensor> &block_table,
+    const c10::optional<at::Tensor> &dequant_scale1, const c10::optional<at::Tensor> &quant_scale1,
+    const c10::optional<at::Tensor> &dequant_scale2, const c10::optional<at::Tensor> &quant_scale2,
+    const c10::optional<at::Tensor> &quant_offset2, const c10::optional<at::Tensor> &kv_padding_size,
     int64_t num_heads, double scale_value, c10::string_view input_layout, int64_t num_key_value_heads,
     int64_t block_size, int64_t inner_precise)
 {
     // construct the output tensor of the NPU
-    auto output = npu_preparation::apply_tensor_without_format(query);
+    at::Tensor output;
+    if (ConvertType(quant_scale2) != nullptr) {
+        output = npu_preparation::apply_tensor_without_format(query.sizes(), c10::dtype(c10::ScalarType::Char));
+    } else if (query.dtype() == at::kChar) {
+        output = npu_preparation::apply_tensor_without_format(query.sizes(), c10::dtype(c10::ScalarType::Half));
+    } else {
+        output = npu_preparation::apply_tensor_without_format(query);
+    }
 
     // convert str
     std::string input_layout_str = std::string(input_layout);
@@ -465,16 +533,11 @@ at::Tensor npu_incre_flash_attention_symint(
     auto actSeqLenMiddle = actual_seq_lengths.value_or(at::ArrayRef<c10::SymInt>{});
     auto actSeqLen = c10::asIntArrayRefUnchecked(actSeqLenMiddle);
 
-    c10::optional<at::Tensor> dequant_scale1;
-    c10::optional<at::Tensor> quant_scale1;
-    c10::optional<at::Tensor> dequant_scale2;
-    c10::optional<at::Tensor> quant_scale2;
-    c10::optional<at::Tensor> quant_offset2;
-
     // dispatch hostAPI
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnIncreFlashAttentionV3, query, keyTensors, valueTensors, pse_shift, atten_mask, actSeqLen,
-        dequant_scale1, quant_scale1, dequant_scale2, quant_scale2, quant_offset2, antiquant_scale, antiquant_offset, block_table,
-        num_heads, scale_value, input_layout_ptr, num_key_value_heads, block_size, inner_precise, output);
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnIncreFlashAttentionV4, query, keyTensors, valueTensors, pse_shift, atten_mask, actSeqLen,
+        dequant_scale1, quant_scale1, dequant_scale2, quant_scale2, quant_offset2, antiquant_scale, antiquant_offset,
+        block_table, kv_padding_size, num_heads, scale_value, input_layout_ptr, num_key_value_heads, block_size,
+        inner_precise, output);
     return output;
 }
 } // namespace op_api

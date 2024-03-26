@@ -1,5 +1,4 @@
 // Copyright (c) 2024 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -25,7 +24,7 @@ c10::SmallVector<int64_t, SIZE> get_rstd_shape(const at::Tensor &self, const at:
 {
     c10::SmallVector<int64_t, SIZE> ret;
     auto rstd_dim = self.dim() - gamma.dim();
-    for (uint64_t i = 0; i < self.dim(); i++) {
+    for (int64_t i = 0; i < self.dim(); i++) {
         if (i < rstd_dim) {
             ret.emplace_back(self.size(i));
         } else {
@@ -39,7 +38,8 @@ c10::SmallVector<int64_t, SIZE> get_rstd_shape(const at::Tensor &self, const at:
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_add_rms_norm(const at::Tensor &x1, const at::Tensor &x2, const at::Tensor &gamma, double epsilon)
 {
-    TORCH_CHECK(x1.dim() >= gamma.dim(), "The gamma shape should not be bigger than self shape.");
+    TORCH_CHECK(x1.dim() >= gamma.dim(), "The gamma shape should not be bigger than self shape."
+        + OPS_ERROR(ErrCode::PARAM));
     at::Tensor y = npu_preparation::apply_tensor(x1.sizes(), x1.options().dtype(gamma.dtype()), x1);
     auto rstd_shape = get_rstd_shape(x1, gamma);
     at::Tensor rstd = npu_preparation::apply_tensor(rstd_shape, x1.options().dtype(at::kFloat), x1);

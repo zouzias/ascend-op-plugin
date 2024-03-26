@@ -1,5 +1,4 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -15,26 +14,11 @@
 // limitations under the License.
 
 #include "op_plugin/AclOpsInterface.h"
-#include "op_plugin/utils/OpAdapter.h"
+#include <ATen/ops/_unsafe_index_native.h>
 
 namespace acl_op {
-at::Tensor& scatter_out(
-    const at::Tensor& self,
-    int64_t dim,
-    const at::Tensor& index,
-    const at::Tensor& src,
-    c10::string_view reduce,
-    at::Tensor& result) {
-  TORCH_CHECK(false, "scatter.reduce_out is not supported.");
-}
-
-at::Tensor& scatter_out(
-    const at::Tensor& self,
-    int64_t dim,
-    const at::Tensor& index,
-    const at::Scalar& value,
-    c10::string_view reduce,
-    at::Tensor& result) {
-  TORCH_CHECK(false, "scatter.value_reduce_out is not supported.");
+at::Tensor _unsafe_index(const at::Tensor &self, const torch::List<c10::optional<at::Tensor>> &indices)
+{
+    return at::native::_unsafe_index(self, indices);
 }
 } // namespace acl_op

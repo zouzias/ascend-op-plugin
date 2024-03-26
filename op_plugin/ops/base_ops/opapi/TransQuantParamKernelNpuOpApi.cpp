@@ -1,5 +1,4 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License (the "License");
@@ -23,10 +22,15 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor npu_trans_quant_param(const at::Tensor &scale, const c10::optional<at::Tensor> &offset)
 {
     auto scale_dim_num = scale.dim();
+    const at::Tensor &offset_real = offset.value_or(at::Tensor());
     auto output_size = op_infer::array_to_small_vector(scale.sizes());
+    // infer out shape for the case that scale dim equals to one
+    if (scale.dim() == 1 && offset.has_value()) {
+        output_size = op_infer::array_to_small_vector((scale.size(0) > offset_real.size(0)) ?
+                                                       scale.sizes() : offset_real.sizes());
+    }
     c10::TensorOptions options = scale.options().dtype(at::kLong);
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
-    const at::Tensor &offset_real = offset.value_or(at::Tensor());
     EXEC_NPU_CMD(aclnnTransQuantParamV2, scale, offset_real, result);
     return result;
 }

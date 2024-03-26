@@ -1,6 +1,17 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
+//
+// Licensed under the BSD 3-Clause License  (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// https://opensource.org/licenses/BSD-3-Clause
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #include <ATen/native/ForeachUtils.h>
 #include "op_plugin/OpApiInterface.h"
@@ -58,7 +69,7 @@ std::vector<at::Tensor> _foreach_minimum(at::TensorList tensors, const at::Scala
                                                                       tensor.options().dtype(scalar_type)));
     }
     at::TensorList result_ = at::TensorList(result);
-    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(scalar, scalar_type);
+    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(scalar, scalar_type, tensors[0].device());
     EXEC_NPU_CMD(aclnnForeachMinimumScalar, tensors, scalar_, result_);
     return result;
     }
@@ -71,7 +82,7 @@ void _foreach_minimum_(at::TensorList tensors, const at::Scalar& scalar)
         return at::native::foreach_tensor_clamp_max_scalar_kernel_slow_(tensors, scalar);
     }
     auto scalar_type = tensors[0].scalar_type();
-    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(scalar, scalar_type);
+    at::Tensor scalar_ = npu_preparation::copy_scalar_to_device(scalar, scalar_type, tensors[0].device());
     EXEC_NPU_CMD(aclnnForeachMinimumScalar, tensors, scalar_, tensors);
     return;
 }

@@ -1,5 +1,4 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -25,7 +24,8 @@ at::Tensor& masked_fill_(at::Tensor& self, const at::Tensor& mask, const at::Ten
     DO_COMPATIBILITY(aclnnInplaceMaskedFillTensor, acl_op::masked_fill_(self, mask, value));
     if (at_npu::native::OpPreparation::IsCPUScalar(value)) {
         at::Scalar scalar = value.item();
-        auto value_cp = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, value.scalar_type());
+        auto value_cp = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, value.scalar_type(),
+                                                                             self.device());
         EXEC_NPU_CMD(aclnnInplaceMaskedFillTensor, self, mask, value_cp);
     } else {
         EXEC_NPU_CMD(aclnnInplaceMaskedFillTensor, self, mask, value);

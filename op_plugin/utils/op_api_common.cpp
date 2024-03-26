@@ -1,5 +1,4 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -28,7 +27,7 @@ typedef void(*AddTensorAddrToCachedList) (void *addr);
 void add_param_to_buf(const at::Tensor &at_tensor)
 {
     static const auto addTensorAddrToCachedListAddr = GetOpApiFuncAddr("AddTensorAddrToCachedList");
-    TORCH_CHECK(addTensorAddrToCachedListAddr != nullptr, "GetOpApiFuncAddr failed.");
+    TORCH_CHECK(addTensorAddrToCachedListAddr != nullptr, "GetOpApiFuncAddr failed.", OPS_ERROR(ErrCode::PTR));
     AddTensorAddrToCachedList addTensorAddrToCachedListFunc =
         reinterpret_cast<AddTensorAddrToCachedList>(addTensorAddrToCachedListAddr);
     if (!at_tensor.defined()) {
@@ -51,7 +50,8 @@ void add_param_to_buf(const at::Tensor &at_tensor)
     aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(st);
     c10::SmallVector<int64_t, 5> storageDims;
     if (acl_data_type != ACL_STRING) {
-        TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.");
+        TORCH_CHECK(at_tensor.itemsize() > 0, "the itemsize of tensor must be greater than 0.",
+            OPS_ERROR(ErrCode::PARAM));
         storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
     }
     MEMCPY_TO_BUF(storageDims.data(), static_cast<int64_t>(storageDims.size() * sizeof(int64_t)));
@@ -314,7 +314,7 @@ void *GetOpApiFuncAddrFromFeatureLib(const char *api_name)
     GET_OP_API_FUNC_FROM_FEATURE_LIB(ops_train_handler, "libaclnn_ops_train.so");
     GET_OP_API_FUNC_FROM_FEATURE_LIB(adv_infer_handler, "libaclnn_adv_infer.so");
     GET_OP_API_FUNC_FROM_FEATURE_LIB(adv_train_handler, "libaclnn_adv_train.so");
-    GET_OP_API_FUNC_FROM_FEATURE_LIB(dvpp_handler, "libacldvpp.so");
+    GET_OP_API_FUNC_FROM_FEATURE_LIB(dvpp_handler, "libacl_dvpp_op.so");
     GET_OP_API_FUNC_FROM_FEATURE_LIB(sparse_handler, "libaclsparse.so");
     GET_OP_API_FUNC_FROM_FEATURE_LIB(optim_handler, "libacloptim.so");
     GET_OP_API_FUNC_FROM_FEATURE_LIB(fft_handler, "libaclfft.so");

@@ -235,19 +235,20 @@ at::Tensor &_index_put_impl_(at::Tensor &self, const c10::List<c10::optional<at:
     if (self.device().type() == at::kCPU) {
         return at::native::_index_put_impl_(self, indices, value, accumulate, unsafe);
     }
-    at::native::checkIndexTensorTypes(indices);
+    bool needCast = op_plugin::AdvanceIndex::checkIndexTensorTypes(indices);
     at::SmallVector<int64_t, N> masks;
     std::vector<at::Tensor> all_defined_indices;
     std::vector<at::Tensor> indices_expand;
     c10::List<c10::optional<at::Tensor>> indices_expand_list;
-    indices_expand = op_plugin::AdvanceIndex::npu_expand_tensors(self, indices);
+    indices_expand = op_plugin::AdvanceIndex::npu_expand_tensors(self, indices, needCast);
     for (at::Tensor index_opt : indices_expand) {
         indices_expand_list.push_back(index_opt);
     }
     auto info = op_plugin::AdvanceIndex::make_info(self, indices_expand_list);
     TORCH_CHECK(op_plugin::AdvanceIndex::is_expandable_to(value.sizes(), info.src.sizes()),
-                "shape mismatch: value tensor of shape ", value.sizes(),
-                " cannot be broadcast to indexing result of shape ", info.src.sizes());
+        "shape mismatch: value tensor of shape ", value.sizes(),
+        " cannot be broadcast to indexing result of shape ", info.src.sizes(),
+        OPS_ERROR(ErrCode::PARAM));
     for (c10::optional<at::Tensor> index_opt : indices_expand) {
         if (index_opt.has_value()) {
             const auto &index = *index_opt;

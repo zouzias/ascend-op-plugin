@@ -1,5 +1,4 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
-// Copyright (c) 2023, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -37,7 +36,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
                                         : npu_preparation::apply_tensor_without_format({0}, self.options().dtype(at::kLong));
     static auto opApiFuncAddr = []() {
         auto ret = GetOpApiFuncAddr("aclGetViewShape");
-        TORCH_CHECK(ret != nullptr);
+        TORCH_CHECK(ret != nullptr, OPS_ERROR(ErrCode::VALUE));
         return ret;
     }();
     using aclGetViewShapeFunc = int (*)(const aclTensor* tensor, int64_t** view_dims, uint64_t* view_dims_num);
@@ -47,7 +46,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
     int64_t* view_dims = nullptr;
     uint64_t view_dim_num = 0;
     auto ret = aclGetViewShape(npuAclParams.Get<4>(), &view_dims, &view_dim_num);
-    TORCH_CHECK(ret == 0, "aclGetViewShape failed.");
+    TORCH_CHECK(ret == 0, "aclGetViewShape failed.", OPS_ERROR(ErrCode::VALUE));
     c10::SmallVector<int64_t, SIZE> output_size(view_dims, view_dims + view_dim_num);
     y.resize_(output_size);
     if (return_counts) {
@@ -62,4 +61,3 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _unique2(
 }
 
 } // namespace op_api
-

@@ -3,8 +3,7 @@ import numpy as np
 import torch
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
-
-DEVICE_NAME = torch_npu.npu.get_device_name(0)[:10]
+from torch_npu.testing.common_utils import SupportedDevices
 
 
 class TestTransQuantParam(TestCase):
@@ -26,14 +25,20 @@ class TestTransQuantParam(TestCase):
         fp32_deq_scale = torch.from_numpy(fp32_deq_scale)
         return torch_npu.npu_trans_quant_param(fp32_deq_scale.npu)
 
-    @unittest.skipIf(DEVICE_NAME != 'Ascend910B',
-        "OP `TransQuantParam` is tested on 910B(support 910B/910C), skip this ut for other device type!")
+    @SupportedDevices(['Ascend910B'])
     def test_npu_transquantparam(self, device="npu"):
         deq_scale_shape = (1,)
         fp32_deq_scale = np.random.uniform(low=2, high=3, size=deq_scale_shape).astype(np.float32)
         supported_output = self.supported_op_exec(deq_scale_shape, fp32_deq_scale)
         custom_output = self.custom_op_exec(fp32_deq_scale)
         self.assertRtolEqual(supported_output, custom_output, 0.001)
+        
+        expect_ret = torch.randint(-1, 1, (4,), dtype=torch.int64).npu()
+        scale = torch.randn(1, dtype=torch.float32).npu()
+        offset = torch.randn(4, dtype=torch.float32).npu()
+        res = torch_npu.npu_trans_quant_param(scale, offset)
+        self.assertTrue(res.shape == expect_ret.shape)
+        self.assertTrue(res.dtype == expect_ret.dtype)
 
 
 if __name__ == "__main__":

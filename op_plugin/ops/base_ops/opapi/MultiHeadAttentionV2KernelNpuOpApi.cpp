@@ -43,7 +43,7 @@ DropOutStatus get_status(double keep_prob)
 at::Tensor tensor_format_trans(const at::Tensor &at_tensor)
 {
     if (at_tensor.defined()) {
-        TORCH_CHECK(torch_npu::utils::is_npu(at_tensor), "only npu tensor is supported");
+        TORCH_CHECK(torch_npu::utils::is_npu(at_tensor), "only npu tensor is supported", OPS_ERROR(ErrCode::PARAM));
         return custom_ops::npu_format_cast(at_tensor, ACL_FORMAT_ND);
     }
     return at_tensor;
@@ -84,7 +84,7 @@ at::Tensor gen_mask_dispatch(const at::Tensor &self, const at::Scalar &keep_prob
             c10_npu::SecondaryStreamGuard guard(c10_npu::getCurrentSecondaryStream());
             mask = gen_mask_impl(self, keep_prob, seed, offset, numels);
             if (sync) {
-                NPU_CHECK_ERROR(c10_npu::acl::AclrtSynchronizeStreamWithTimeout(original_stream));
+                OPS_CHECK_ERROR(c10_npu::acl::AclrtSynchronizeStreamWithTimeout(original_stream));
             }
         }
     } else {
@@ -110,8 +110,8 @@ at::Tensor gen_mask(const at::Tensor &self, double keep_prob,
     if (get_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
         const auto gen = at_npu::detail::getDefaultNPUGenerator();
         auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
-        seed = pair.first;
-        offset = pair.second;
+        seed = static_cast<int64_t>(pair.first);
+        offset = static_cast<int64_t>(pair.second);
         drop_mask = gen_mask_dispatch(self, at::Scalar(keep_prob), at::Scalar(seed),
             offset, numels, gen_mask_parallel, sync);
     } else if (get_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
@@ -196,11 +196,11 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_multi_head_attention_v2_grad(
     bool sync)
 {
     TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1,
-        "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
+        "The keep_prob value must be in range of [0, 1], but got ", keep_prob, OPS_ERROR(ErrCode::VALUE));
 
     std::string input_layout_str = std::string(input_layout);
     TORCH_CHECK(input_layout_str == "BSH" || input_layout_str == "SBH" || input_layout_str == "BNSD",
-        "The input_layout should be BSH/SBH/BNSD(case-insensitive), but got ", input_layout);
+        "The input_layout should be BSH/SBH/BNSD(case-insensitive), but got ", input_layout, OPS_ERROR(ErrCode::PARAM));
 
     int64_t length = (numels + 256 - 1) / 256 * 256 / 8;
     length += 32;
@@ -245,11 +245,11 @@ std::tuple<at::Tensor, at::Tensor, int64_t, int64_t, int64_t> npu_multi_head_att
     const at::Tensor &alibi_mask = alibi_mask_opt.value_or(at::Tensor());
 
     TORCH_CHECK(keep_prob >= 0 && keep_prob <= 1,
-        "The keep_prob value must be in range of [0, 1], but got ", keep_prob);
+        "The keep_prob value must be in range of [0, 1], but got ", keep_prob, OPS_ERROR(ErrCode::VALUE));
 
     std::string input_layout_str = std::string(input_layout);
     TORCH_CHECK(input_layout_str == "BSH" || input_layout_str == "SBH" || input_layout_str == "BNSD",
-        "The input_layout should be BSH/SBH/BNSD(case-insensitive), but got ", input_layout);
+        "The input_layout should be BSH/SBH/BNSD(case-insensitive), but got ", input_layout, OPS_ERROR(ErrCode::PARAM));
     char* input_layout_ptr = const_cast<char *>(input_layout_str.c_str());
 
     int64_t seed;
