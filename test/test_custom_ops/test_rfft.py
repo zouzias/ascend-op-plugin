@@ -2,10 +2,11 @@ import torch
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
 
 class TestRFFT(TestCase):
+    @SupportedDevices(['Ascend910B'])
     def test_npu_rfft_meta(self):
         shape = [64, 64, 1024]
         length = shape[-1]
