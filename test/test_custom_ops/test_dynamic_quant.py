@@ -32,10 +32,9 @@ class TestDynamicQuant(TestCase):
             input = torch.from_numpy(input).to(torch.float16).npu()
         else:
             input = torch.from_numpy(input).to(torch.bfloat16).npu()
-        return [inputNpu]
+        return inputNpu
 
     @SupportedDevices(['Ascend910B'])
-    @SupportedDevices(['Ascend310P'])
     def test_npu_dynamic_quant(self, device="npu"):
         input = self.generate_input([4, 2048, 1024])
 

@@ -17,16 +17,17 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
-namespace acl_op {
+namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_quant(const at::Tensor &input)
 {    
-    at::SmallVector<int64_t, op_infer::SIZE> output_size = input.sizes();
-    at::SmallVector<int64_t, op_infer::SIZE> scale_size = input.sizes();
+    at::SmallVector<int64_t, op_infer::SIZE> scale_size;
+    int scale_dim = input.dim() - 1;
+    for (int i = 0; i < scale_dim; ++i) {
+        scale_size.push_back(input.size(i));
+    }
 
-    scale_size.pop_back();
-
-    at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, c10::dtype(c10::ScalarType::Char));
+    at::Tensor output = npu_preparation::apply_tensor_without_format(input.sizes(), c10::dtype(c10::ScalarType::Char));
     at::Tensor scale = npu_preparation::apply_tensor_without_format(scale_size, c10::dtype(c10::ScalarType::Float));
 
     EXEC_NPU_CMD(aclnnDynamicQuant, input, output, scale);
