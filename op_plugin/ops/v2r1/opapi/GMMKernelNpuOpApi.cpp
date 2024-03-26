@@ -115,33 +115,16 @@ std::vector<at::Tensor> npu_gmm(const at::TensorList x,
     std::vector<at::Tensor> y;
     c10::TensorOptions options = x[0].options().dtype(x[0].scalar_type());
 
-    // Split weight when size of weight is 1 shape of weight is (b, k, n)
-    std::vector<at::Tensor> w_split;
-    at::TensorList w_real;
-    if (num_w == 1) {
-        std::vector<at::Tensor> w_splits = weight[0].split(1);
-        for (int i = 0; i < w_splits.size(); i++) {
-            at::Tensor tensor = w_splits[i].squeeze();
-            if (!tensor.is_contiguous()) {
-                tensor = tensor.contiguous();
-            }
-            w_split.emplace_back(tensor);
-        }
-        w_real = w_split;
-    } else {
-        w_real = weight;
-    }
-    num_w = w_real.size();
-
     if (IN_NOT_SPLIT_OUT_NOT_SPLIT == split_item_value) {
         y.reserve(num_x);
         for (int i = 0; i < num_x; i++) {
-            _creat_new_tensor_multi_dim(y, x[i], w_real[i], options);
+            _creat_new_tensor_multi_dim(y, x[i], weight[i], options);
         }
     } else if (IN_SPLIT_OUT_NOT_SPLIT == split_item_value) {
-        y.reserve(num_w);
-        for (int i = 0; i < num_w; i++) {
-            _creat_new_tensor(y, group_list_real[i], w_real[i].sizes()[1], options,
+        y.reserve(num_group_list);
+        _create_new_tensor(y, group_list_real[0], weight[0].sizes()[1], options, group_type_value, num_group_list);
+        for (int i = 1; i < num_group_list; i++) {
+            _creat_new_tensor(y, group_list_real[i] - group_list_real[i - 1], weight[i].sizes()[1], options,
                               group_type_value, num_group_list);
         }
     } else if (IN_NOT_SPLIT_OUT_SPLIT == split_item_value) {
@@ -149,10 +132,10 @@ std::vector<at::Tensor> npu_gmm(const at::TensorList x,
         for (int i = 0; i < num_x; i++) {
             dim_m += x[i].sizes()[0];
         }
-        _creat_new_tensor(y, dim_m, w_real[0].sizes()[1], options, group_type_value, num_group_list);
+        _creat_new_tensor(y, dim_m, weight[0].sizes()[1], options, group_type_value, num_group_list);
     } else if (IN_SPLIT_OUT_SPLIT == split_item_value) {
-        size_t dim_num_w = w_real[0].sizes().size();
-        _creat_new_tensor(y, x[0].sizes()[0], w_real[0].sizes()[dim_num_w - 1], options, group_type_value,
+        size_t dim_num_w = weight[0].sizes().size();
+        _creat_new_tensor(y, x[0].sizes()[0], weight[0].sizes()[dim_num_w - 1], options, group_type_value,
                           num_group_list);
     }
 
@@ -161,7 +144,7 @@ std::vector<at::Tensor> npu_gmm(const at::TensorList x,
     auto offset_real = at::TensorList();
     auto antiquant_scale_real = at::TensorList();
     auto antiquant_offset_real = at::TensorList();
-    EXEC_NPU_CMD(aclnnGroupedMatmul, x, w_real, bias, scale_real, offset_real, antiquant_scale_real,
+    EXEC_NPU_CMD(aclnnGroupedMatmul, x, weight, bias, scale_real, offset_real, antiquant_scale_real,
                  antiquant_offset_real, group_list_real, split_item_value, group_type_value, result);
 
     return y;

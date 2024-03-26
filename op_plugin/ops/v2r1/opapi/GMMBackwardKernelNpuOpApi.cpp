@@ -47,9 +47,16 @@ std::tuple<std::vector<at::Tensor>, std::vector<at::Tensor>, std::vector<at::Ten
     std::vector<at::Tensor> xt;
     std::vector<at::Tensor> wt;
 
-    std::vector<at::Tensor> x_splits = x[0].split(group_list_real);
+    c10::SmallVector<int64_t, SIZE> group_list_reals;
+    group_list_reals.emplace_back(group_list_real[0]);
+    for (int i = 1; 1 < num_group_list; i++) {
+        group_list_reals.emplace_back(group_list_real[i] - group_list_real[i - 1]);
+    }
+    at::IntArrayRef _group_list_real = at::IntArrayRef(group_list_reals);
+
+    std::vector<at::Tensor> x_splits = x[0].split(_group_list_real);
     at::TensorList x_split = x_splits;
-    std::vector<at::Tensor> grad_splits = grad[0].split(group_list_real);
+    std::vector<at::Tensor> grad_splits = grad[0].split(_group_list_real);
     std::vector<at::Tensor> grad_split;
     for (int i = 0; i < grad_splits.size(); i++) {
         at::Tensor grad_tensor = grad_splits[i].contiguous();
