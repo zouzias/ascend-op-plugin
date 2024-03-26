@@ -19,7 +19,7 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_quant(const at::Tensor &input)
+std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant(const at::Tensor &input)
 {    
     at::SmallVector<int64_t, op_infer::SIZE> scale_size;
     int scale_dim = input.dim() - 1;
