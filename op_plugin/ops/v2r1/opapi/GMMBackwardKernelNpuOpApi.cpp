@@ -22,7 +22,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 void _foreach_transpose(at::TensorList tensorList, std::vector<at::Tensor> &tensors)
 {
     for (int i = 0; i< tensorList.size(); i++) {
-        at::Tensor tensor = tensorList[i].transpose(-1, -2).contiguous();
+        at::Tensor tensor = tensorList[i].transpose(-1, -2);
         tensors.emplace_back(tensor);
     }
 }
@@ -47,39 +47,16 @@ std::tuple<std::vector<at::Tensor>, std::vector<at::Tensor>, std::vector<at::Ten
     std::vector<at::Tensor> xt;
     std::vector<at::Tensor> wt;
 
-    c10::SmallVector<int64_t, SIZE> group_list_reals;
-    group_list_reals.emplace_back(group_list_real[0]);
-    for (int i = 1; 1 < num_group_list; i++) {
-        group_list_reals.emplace_back(group_list_real[i] - group_list_real[i - 1]);
-    }
-    at::IntArrayRef _group_list_real = at::IntArrayRef(group_list_reals);
-
-    std::vector<at::Tensor> x_splits = x[0].split(_group_list_real);
-    at::TensorList x_split = x_splits;
-    std::vector<at::Tensor> grad_splits = grad[0].split(_group_list_real);
-    std::vector<at::Tensor> grad_split;
-    for (int i = 0; i < grad_splits.size(); i++) {
-        at::Tensor grad_tensor = grad_splits[i].contiguous();
-        grad_split.emplace_back(grad_tensor);
-    }
-    at::TensorList grad_real = grad_split;
-
-    _foreach_transpose(x_split, xt);
+    _foreach_transpose(x, xt);
     _foreach_transpose(weight, wt);
 
     at::TensorList xt_real = at::TensorList(xt);
     at::TensorList wt_real = at::TensorList(wt);
 
     auto bias_real = at::TensorList();
-    auto empty_group_list = at::IntArrayRef{};
 
-    std::vector<at::Tensor> grad_contiv;
-    for (int i = 0; i < grad.size(); i++) {
-        grad_contiv.emplace_back(grad[i].contiguous());
-    }
-    
-    std::vector<at::Tensor> dx = npu_gmm(grad_contiv, wt_real, bias_real, group_list_real, 3);
-    std::vector<at::Tensor> dw = npu_gmm(xt_real, grad_real, bias_real, empty_group_list, 2);
+    std::vector<at::Tensor> dx = npu_gmm(grad, wt_real, bias_real, group_list_real, 3);
+    std::vector<at::Tensor> dw = npu_gmm(xt_real, grad, bias_real, group_list_real, 3, 2);
     std::vector<at::Tensor> db;
 
     std::vector<at::Tensor> dw_output;

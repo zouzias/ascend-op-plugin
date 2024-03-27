@@ -101,10 +101,8 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x, const at::Ten
     auto num_group_list = group_list_real.size();
     int64_t split_item_value = split_item.value_or(0);
     int64_t group_type_value = group_type.value_or(-1);
-    int64_t sum_group_list = 0;
-    for (size_t k = 0; k < num_group_list; ++k) {
-        sum_group_list += group_list_real[k];
-    }
+    int64_t sum_group_list = num_group_list > 0 ? group_list_real[num_group_list - 1] : 0;
+
     check_dims(split_item_value, num_x, weight, num_group_list, sum_group_list);
 
     std::vector<at::Tensor> y;

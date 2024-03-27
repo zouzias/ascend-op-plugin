@@ -24,7 +24,7 @@ const static int64_t IN_SPLIT_OUT_SPLIT = 3;
 using npu_preparation = at_npu::native::OpPreparation;
 
 bool _check_w_dim(size_t num_w, size_t dim_num_w, size_t dim_0_w, size_t num_group_list,
-                     size_t sum_group_list)
+                  size_t sum_group_list)
 {
     bool result = false;
     if (2 == dim_num_w && num_w == num_group_list) {
@@ -105,10 +105,7 @@ std::vector<at::Tensor> npu_gmm(const at::TensorList x,
     auto num_group_list = group_list_real.size();
     int64_t split_item_value = split_item.value_or(0);
     int64_t group_type_value = group_type.value_or(-1);
-    int64_t sum_group_list = 0;
-    for (size_t k = 0; k < num_group_list; ++k) {
-        sum_group_list += group_list_real[k];
-    }
+    int64_t sum_group_list = num_group_list > 0 ? group_list_real[num_group_list - 1] : 0;
 
     _check_dims(split_item_value, num_x, weight, num_group_list, sum_group_list);
 
@@ -144,7 +141,7 @@ std::vector<at::Tensor> npu_gmm(const at::TensorList x,
     auto offset_real = at::TensorList();
     auto antiquant_scale_real = at::TensorList();
     auto antiquant_offset_real = at::TensorList();
-    EXEC_NPU_CMD(aclnnGroupedMatmul, x, weight, bias, scale_real, offset_real, antiquant_scale_real,
+    EXEC_NPU_CMD(aclnnGroupedMatmulV2, x, weight, bias, scale_real, offset_real, antiquant_scale_real,
                  antiquant_offset_real, group_list_real, split_item_value, group_type_value, result);
 
     return y;
