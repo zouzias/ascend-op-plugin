@@ -21,7 +21,7 @@ at::Tensor flatten_indices_npu_kernel(const at::Tensor& indices, c10::IntArrayRe
 {
     std::vector<int64_t> flatten_size(size.size(), 1);
     for (int i = size.size() - 1; i > 0; i--) {
-        flatten_size[i - 1] = flatten_size[i - 1] * size[i];
+        flatten_size[i - 1] = flatten_size[i] * size[i];
     }
     auto tensor_temp = torch::tensor(flatten_size, indices.options().dtype(at::kFloat));
     tensor_temp = torch::unsqueeze(tensor_temp, 0);
