@@ -49,6 +49,7 @@ static tensor_list3 _calc_convolution_backward(const at::Tensor &grad_output, co
     /* k == 5 currently unsupported by the binary file
       CheckForbidInternalFormat = False: turn on private format；CheckJitDisable = False: turn on JitCompile
     */
+   std::cout << "xuyifan123 _calc_convolution_backward: " << k << " " << at_npu::native::env::CheckForbidInternalFormat() << " " << at_npu::native::env::CheckJitDisable() << std::endl;
     if (k == 5 || (!at_npu::native::env::CheckForbidInternalFormat() || !at_npu::native::env::CheckJitDisable())) {
         return acl_op::convolution_backward(grad_output, input, weight, bias_sizes_opt, stride, padding, dilation,
                                             transposed, output_padding, groups, output_mask);
