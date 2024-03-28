@@ -2555,6 +2555,14 @@ custom:
     impl_ns: acl_op
   - func: npu_dtype_cast_backward(Tensor grad, ScalarType dtype) -> Tensor
     impl_ns: acl_op, op_api
+  - func: npu_max_pool2d_with_indices(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, int[2] dilation=1, bool ceil_mode=False) -> (Tensor, Tensor)
+    impl_ns: op_api
+  - func: npu_max_pool2d_with_indices_backward(Tensor grad_output, Tensor self, int[2] kernel_size, int[2] stride, int[2] padding, int[2] dilation, bool ceil_mode, Tensor indices) -> Tensor
+    impl_ns: op_api
+  - func: npu_max_pool1d_with_indices(Tensor self, int[1] kernel_size, int[1] stride=[], int[1] padding=0, int[1] dilation=1, bool ceil_mode=False) -> (Tensor, Tensor)
+    impl_ns: op_api
+  - func: npu_max_pool1d_with_indices_backward(Tensor grad_output, Tensor self, int[1] kernel_size, int[1] stride, int[1] padding, int[1] dilation, bool ceil_mode, Tensor indices) -> Tensor
+    impl_ns: op_api
   - func: npu_confusion_transpose_backward(Tensor grad, int[] perm, int[] shape, bool transpose_first) -> Tensor
     impl_ns: acl_op
   - func: npu_max_backward(Tensor grad, int dim, Tensor indices, int[] sizes, bool keepdim) -> Tensor

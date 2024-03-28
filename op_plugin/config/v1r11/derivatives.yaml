@@ -127,6 +127,12 @@
   output_differentiability: [False, False, True]
   x, gx, beta, gamma: npu_deep_norm_backward(grad, x, gx, gamma, result0, result1, alpha)
 
+- name: npu_max_pool2d_with_indices(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, int[2] dilation=1, bool ceil_mode=False) -> (Tensor, Tensor)
+  self: npu_max_pool2d_with_indices_backward(grad, self, kernel_size, stride, padding, dilation, ceil_mode, result1)
+
+- name: npu_max_pool1d_with_indices(Tensor grad_output, Tensor self, int[1] kernel_size, int[1] stride, int[1] padding, int[1] dilation, bool ceil_mode, Tensor indices) -> Tensor
+  self: npu_max_pool1d_with_indices_backward(grad, self, kernel_size, stride, padding, dilation, ceil_mode, result1)
+
 - name: binary_cross_entropy_with_logits(Tensor self, Tensor target, Tensor? weight=None, Tensor? pos_weight=None, int reduction=Mean) -> Tensor
   self: npu_binary_cross_entropy_with_logits_backward(grad, self, target, weight, pos_weight, reduction)
 

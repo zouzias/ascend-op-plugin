@@ -44,7 +44,8 @@ std::tuple<at::Tensor, at::Tensor> exec_max_pool2d_with_indices(
     at::IntArrayRef stride,
     at::IntArrayRef padding,
     at::IntArrayRef dilation,
-    bool ceil_mode)
+    bool ceil_mode,
+    bool isIndicesOut)
 {
     max_pool2d_with_indices_parameter_check(self, kernel_size, stride, padding, dilation);
 
@@ -101,10 +102,17 @@ std::tuple<at::Tensor, at::Tensor> exec_max_pool2d_with_indices(
                 c10::SmallVector<int64_t, SIZE>({n_input_plane, mask_H, mask_W * 32});
 
     at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, self.options());
-    at::Tensor indices = npu_preparation::apply_tensor_without_format(indices_size, self.options().dtype(at::kChar));
+    at::Tensor indices;
 
-    EXEC_NPU_CMD(aclnnMaxPool2dWithMask, self, kernel_sizes,
+    if (isIndicesOut) {
+        indices = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(at::kInt));
+        EXEC_NPU_CMD(aclnnMaxPool2dWithMask, self, kernel_sizes,
                  strides, paddings, dilations, ceil_mode, output, indices);
+    } else {
+        indices = npu_preparation::apply_tensor_without_format(indices_size, self.options().dtype(at::kChar));
+        EXEC_NPU_CMD(aclnnMaxPool2dWithMask, self, kernel_sizes,
+                    strides, paddings, dilations, ceil_mode, output, indices);
+    }
 
     return std::tuple<at::Tensor, at::Tensor>(output, indices);
 }
@@ -121,7 +129,22 @@ std::tuple<at::Tensor, at::Tensor> max_pool2d_with_indices(
                      acl_op::max_pool2d_with_indices(self, kernel_size,
                                                      stride, padding, dilation, ceil_mode));
     
-    return op_api::exec_max_pool2d_with_indices(self, kernel_size, stride, padding, dilation, ceil_mode);
+    return op_api::exec_max_pool2d_with_indices(self, kernel_size, stride, padding, dilation, ceil_mode, false);
+}
+
+std::tuple<at::Tensor, at::Tensor> npu_max_pool2d_with_indices(
+    const at::Tensor& self,
+    at::IntArrayRef kernel_size,
+    at::IntArrayRef stride,
+    at::IntArrayRef padding,
+    at::IntArrayRef dilation,
+    bool ceil_mode)
+{
+    DO_COMPATIBILITY(aclnnMaxPool2dWithIndices,
+                     acl_op::max_pool2d_with_indices(self, kernel_size,
+                                                     stride, padding, dilation, ceil_mode));
+    
+    return op_api::exec_max_pool2d_with_indices(self, kernel_size, stride, padding, dilation, ceil_mode, true);
 }
 
 std::tuple<at::Tensor&, at::Tensor&> max_pool2d_with_indices_out(
