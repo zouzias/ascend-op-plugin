@@ -2384,8 +2384,12 @@ custom:
     impl_ns: op_api
   - func: npu_scatter_list_(Tensor(a!)[] self, Tensor indices, Tensor updates, Tensor? mask=None, str reduce='update', int axis=-2) -> ()
     impl_ns: op_api
-    - func: npu_scatter_nd_update(Tensor self, Tensor indices, Tensor updates) -> Tensor
-
+  - func: npu_scatter_nd_update(Tensor self, Tensor indices, Tensor updates) -> Tensor
+    impl_ns: op_api
+    exposed: True
+  - func: npu_scatter_nd_update_(Tensor(a!) self, Tensor indices, Tensor updates) -> Tensor(a!)
+    impl_ns: op_api
+    exposed: True
   - func: scatter_update(Tensor self, Tensor indices, Tensor updates, int axis) -> Tensor
     impl_ns: acl_op, op_api
   - func: scatter_update_(Tensor(a!) self, Tensor indices, Tensor updates, int axis) -> Tensor(a!)
@@ -2432,6 +2436,7 @@ custom:
     impl_ns: acl_op
   - func: npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor skip1, Tensor? skip2, Tensor bias, Tensor scales, Tensor expanded_src_to_dst_row, Tensor export_for_source_row) -> Tensor
     impl_ns: op_api
+
 quant:
  - func: int_repr(Tensor self) -> Tensor
    impl_ns: acl_op
