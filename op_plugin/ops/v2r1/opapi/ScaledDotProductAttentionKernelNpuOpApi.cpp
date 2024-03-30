@@ -17,16 +17,15 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_api {
 const static int64_t ATTENMASK_LIMIT = 2048;
-const static int64_t B_LIMIT = 2048;
 const static int64_t N_LIMIT = 2048;
-const static int64_t S_LIMIT = 524288;
 const static int64_t D_LIMIT = 512;
+const static int64_t BNSD_DIM = 4;
 const static int64_t TOKEN_MAX = 2147483647;
 const static int64_t LEFT_UP_CAUSAL = 2;
-using npu_preparation = at_npu::native::OpPreparation;
 
 inline void validate_sdpa_input(
     const at::Tensor &query,
@@ -77,6 +76,7 @@ c10::optional<at::Tensor> convert_boolean_attn_mask_math(
 }
 
 c10::optional<at::Tensor> convert_boolean_attn_mask(
+    const at::Tensor &query,
     const c10::optional<at::Tensor> &attn_mask,
     bool is_causal)
 {
@@ -87,11 +87,8 @@ c10::optional<at::Tensor> convert_boolean_attn_mask(
         TORCH_CHECK(!attn_mask.has_value(),
             "The attn_mask should be none when is_causal is true, but got ",
             attn_mask.has_value(), "-value");
-        at::Tensor atten_mask_shape =
-            npu_preparation::apply_tensor_without_format({ATTENMASK_LIMIT, ATTENMASK_LIMIT},
-                                                         c10::dtype(c10::ScalarType::Bool));
-        at::Tensor atten_mask_comp = op_api::logical_not(atten_mask_shape);
-        auto new_attn_mask = op_api::triu(atten_mask_comp, 1);
+        at::Tensor atten_mask_shape = at::ones({ATTENMASK_LIMIT, ATTENMASK_LIMIT}, query.options().dtype(at::kBool));
+        auto new_attn_mask = op_api::triu(atten_mask_shape, 1);
         return new_attn_mask;
     }
     const at::Tensor &atten_mask_in = attn_mask.value_or(at::Tensor());
@@ -122,16 +119,18 @@ at::Tensor scaled_dot_product_attention(
     if (query.requires_grad() && key.requires_grad() && value.requires_grad() &&
         (query.scalar_type() == at::kHalf || query.scalar_type() == at::kBFloat16) &&
         ((attn_mask.has_value() && attn_mask->dtype() == at::kBool) || !attn_mask.has_value()) &&
-        query.size(0) <= B_LIMIT && query.size(1) <= N_LIMIT && query.size(2) <= S_LIMIT &&
-        query.size(3) <= D_LIMIT && key.size(1) <= N_LIMIT && query.size(1) % key.size(1) == 0 &&
-        query.size(1) / key.size(1) > 0) {
+        query.dim() == BNSD_DIM && key.dim() == BNSD_DIM && value.dim() == BNSD_DIM &&
+        query.size(1) <= N_LIMIT && query.size(3) <= D_LIMIT && key.size(1) <= N_LIMIT &&
+        query.size(1) % key.size(1) == 0 && query.size(1) / key.size(1) > 0 &&
+        c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
         /* The implementation of the NPU FlashAttention fusion operator constraints:
            1. The attn_mask supports only the bool data type.
-           2. The shape [B, N1, S1, D] of the query is suppported, where B <= B_LIMIT, N1 <= N_LIMIT,
-              S1 <= S_LIMIT and D <= D_LIMIT.
+           2. The shape [B, N1, S1, D] of the query is suppported, where N1 <= N_LIMIT,
+              D <= D_LIMIT and dim == BNSD_DIM.
            3. For GQA, the key shape is [B, N2, S2, D], where N2 <= N_LIMIT, and N1 is a positive integer
-              multiple of N2. */
-        c10::optional<at::Tensor> atten_mask = convert_boolean_attn_mask(attn_mask, is_causal);
+              multiple of N2.
+           4. It only supports SocVersion after Ascend910B1. */
+        c10::optional<at::Tensor> atten_mask = convert_boolean_attn_mask(query, attn_mask, is_causal);
         int64_t head_num = query.size(1);
         c10::string_view input_layout = "BNSD";
         auto input_scale = calculate_scale(query, scale);
