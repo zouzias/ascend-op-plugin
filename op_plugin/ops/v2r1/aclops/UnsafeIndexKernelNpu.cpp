@@ -17,8 +17,31 @@
 #include <ATen/ops/_unsafe_index_native.h>
 
 namespace acl_op {
+<<<<<<<< HEAD:op_plugin/ops/v2r1/aclops/UnsafeIndexKernelNpu.cpp
 at::Tensor _unsafe_index(const at::Tensor &self, const torch::List<c10::optional<at::Tensor>> &indices)
 {
     return at::native::_unsafe_index(self, indices);
+========
+at::Tensor& scatter_out(
+    const at::Tensor& self,
+    int64_t dim,
+    const at::Tensor& index,
+    const at::Tensor& src,
+    c10::string_view reduce,
+    at::Tensor& result)
+{
+    TORCH_CHECK(false, "scatter.reduce_out is not supported.", OPS_ERROR(ErrCode::NOT_SUPPORT));
+}
+
+at::Tensor& scatter_out(
+    const at::Tensor& self,
+    int64_t dim,
+    const at::Tensor& index,
+    const at::Scalar& value,
+    c10::string_view reduce,
+    at::Tensor& result)
+{
+    TORCH_CHECK(false, "scatter.value_reduce_out is not supported.", OPS_ERROR(ErrCode::NOT_SUPPORT));
+>>>>>>>> 80fec4df (commit open):op_plugin/ops/v1r11/aclops/ScatterKernelNpu.cpp
 }
 } // namespace acl_op
