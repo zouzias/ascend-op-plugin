@@ -16,6 +16,7 @@
 #include <vector>
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace op_api {
 constexpr size_t X_MIN_DIM = 2;
@@ -131,6 +132,15 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
                         output_size.size());
         }
         bias_shape_check(x1, x2, bias_real, batch_val);
+    }
+
+    // set transpose to true in weight nz case
+    auto x2_format = npu_preparation::get_tensor_npu_format(x2);
+    auto soc_version = c10_npu::GetSocVersion();
+    if (soc_version >= c10_npu::SocVersion::Ascend310P1 && soc_version <= c10_npu::SocVersion::Ascend310P4) {
+        if (x2_format == ACL_FORMAT_FRACTAL_NZ) {
+            transpose2 = true;
+        }
     }
 
     if (scale.dtype() == at::kFloat) {

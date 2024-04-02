@@ -37,13 +37,13 @@ class TestQuantMatmul(TestCase):
         uint64_deq_scale_slice = uint64_deq_scale.reshape(1, -1)[:, :mm_res.shape[-1]]
         uint64_deq_scale_slice = torch.from_numpy(uint64_deq_scale_slice)
         output = (mm_res * uint64_deq_scale_slice).numpy().astype(np.float16)
-        output = torch.add(out, bias)
+        output = torch.add(output, bias)
         return output
 
     def custom_op_exec(self, x1, x2, uint64_deq_scale, bias):
         return torch_npu.npu_quant_matmul(x1, x2, uint64_deq_scale, bias=bias)
 
-    @SupportedDevices(['Ascend910B'])
+    @SupportedDevices(['Ascend910B', 'Ascend310P'])
     def test_npu_quant_matmul(self, device="npu"):
         torch.mannal_seed(0)
         x1 = torch.randn(1, 8192, 320, dtype=torch.int8).npu()
@@ -56,9 +56,13 @@ class TestQuantMatmul(TestCase):
 
         supported_output = self.supported_op_exec(x1, x2, uint64_deq_scale, bias)
         custom_output = self.custom_op_exec(x1_clone, x2_clone, uint64_deq_scale, bias)
+        x2_clone_nz = torch_npu.npu_format_cast(x2_clone.transpose(1, 2), 29)
+        custom_output_weight_nz = self.custom_op_exec(x1_clone, x2_clone_nz, uint64_deq_scale, bias)
         self.assertRtolEqual(x1, x1_clone, 0.001)
         self.assertRtolEqual(supported_output, custom_output, 0.001)
 
+        #test weight nz case
+        self.assertRtolEqual(supported_output, custom_output_weight_nz, 0.001)
 
 if __name__ == "__main__":
     run_tests()
