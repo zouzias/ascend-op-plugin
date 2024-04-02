@@ -25,3 +25,4 @@ at::Tensor npu_dropout_gen_mask(const at::Tensor &self, at::IntArrayRef size, do
 }
 }  // namespace native
 }  // namespace at_npu
+
