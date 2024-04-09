@@ -1394,6 +1394,12 @@ official:
    impl_ns: acl_op
  - func: searchsorted.Tensor_out(Tensor sorted_sequence, Tensor self, *, bool out_int32=False, bool right=False, str? side=None, Tensor? sorter=None, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op
+ - func: bucketize.Scalar(Scalar self, Tensor boundaries, *, bool out_int32=False, bool right=False) -> Tensor
+   impl_ns: op_api
+ - func: bucketize.Tensor(Tensor self, Tensor boundaries, *, bool out_int32=False, bool right=False) -> Tensor
+   impl_ns: op_api
+ - func: bucketize.Tensor_out(Tensor self, Tensor boundaries, *, bool out_int32=False, bool right=False, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: op_api
  - func: sgn(Tensor self) -> Tensor
    impl_ns: acl_op
  - func: sgn.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
