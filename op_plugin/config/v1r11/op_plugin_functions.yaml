@@ -2269,6 +2269,9 @@ custom:
   - func: npu_scatter(Tensor self, Tensor indices, Tensor updates, int dim) -> Tensor
     impl_ns: acl_op
     exposed: True
+    func: npu_adaptive_layer_norm(Tensor input, int[] normlized_shape, Tensor scale, Tensor shift, Tensor? weight=None, Tensor? bias=None, float eps=1e-06) -> (Tensor, Tensor, Tensor)
+    impl_ns: op_api
+    exposed: True
   - func: npu_layer_norm_eval(Tensor input, int[] normalized_shape, Tensor? weight=None, Tensor? bias=None, float eps=1e-05) -> Tensor
     impl_ns: acl_op
     exposed: True
