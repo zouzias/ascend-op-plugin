@@ -20,45 +20,57 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_add_layer_norm(
+std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dua_quantize_add_layer_norm(
     const at::Tensor &x1,
     const at::Tensor &x2,
     const at::Tensor &gamma,
     const at::Tensor &beta,
-    const c10::optional<at::Tensor> &bias,
+    const at::Tensor &bias,
+    const at::Tensor &scales1,
+    const at::Tensor &scales2,
+    const c10::optional<at::Tensor> &zero_points1,
+    const c10::optional<at::Tensor> &zero_points2,
+    int64_t data_type,
+    int64_t axis,
     double epsilon,
     bool additional_output)
 {
-    at::SmallVector<int64_t, SIZE> shape;
-    for (int64_t index = 0; index < x1.dim() - gamma.dim(); index++) {
-        shape.emplace_back(x1.size(index));
-    }
-    shape.emplace_back(1);
-
-    at::Tensor y = npu_preparation::apply_tensor(x1);
+    at::Tensor y1 = npu_preparation::apply_tensor(x1, x1.options().dtype(at::kChar));
+    at::Tensor y2 = npu_preparation::apply_tensor(x1, x1.options().dtype(at::kChar));
     at::Tensor x = npu_preparation::apply_tensor(x1);
-    at::Tensor mean = npu_preparation::apply_tensor(shape, x1.options().dtype(at::kFloat), x1);
-    at::Tensor rstd = npu_preparation::apply_tensor(shape, x1.options().dtype(at::kFloat), x1);
-    const at::Tensor& bias_local = c10::value_or_else(bias, [] {return at::Tensor();});
+    const at::Tensor& zero_points_local1 = c10::value_or_else(zero_points1, [] {return at::Tensor();});
+    const at::Tensor& zero_points_local2 = c10::value_or_else(zero_points2, [] {return at::Tensor();});
+
+    string qdtype = "torch.qint8";
+
     at_npu::native::OpCommand cmd;
-    cmd.Name("AddLayerNorm")
+    cmd.Name("DuaQuantizeAddLayerNorm")
         .Input(x1, "x1")
         .Input(x2, "x2")
         .Input(gamma, "gamma")
-        .Input(beta, "beta");
-
-    if (bias_local.defined()) {
-        cmd.Input(bias_local);
+        .Input(beta, "beta")
+        .Input(bias, "bias")
+        .Input(scales1, "scales1")
+        .Input(scales2, "scales2");
+    if (zero_points_local1.defined()) {
+        cmd.Input(zero_points_local1);
     } else {
         cmd.Input();
     }
-    cmd.Output(y, "y")
-    .Output(mean, "mean")
-    .Output(rstd, "rstd")
+    if (zero_points_local2.defined()) {
+        cmd.Input(zero_points_local2);
+    } else {
+        cmd.Input();
+    }
+
+    cmd.Output(y1, "y1")
+    .Output(y2, "y2")
     .Output(x, "x")
+    .Attr("dtype", data_type)
+    .Attr("axis", axis)
     .Attr("epsilon", static_cast<float>(epsilon))
     .Attr("additional_output", additional_output)
     .Run();
-    return std::make_tuple(y, mean, rstd, x);
+    return std::make_tuple(y1, y2, x);
 }
 } // namespace acl_op
