@@ -61,17 +61,17 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
         .Input(beta, "beta");
 
     if (bias_local.defined()) {
-        cmd.Input(bias);
+        cmd.Input(bias_local);
     } else {
         cmd.Input();
     }
     if (scales_local1.defined()) {
-        cmd.Input(scales1);
+        cmd.Input(scales_local1);
     } else {
         cmd.Input();
     }
     if (scales_local2.defined()) {
-        cmd.Input(scales2);
+        cmd.Input(scales_local2);
     } else {
         cmd.Input();
     }
