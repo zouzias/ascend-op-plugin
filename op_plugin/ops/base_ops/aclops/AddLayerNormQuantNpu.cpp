@@ -58,29 +58,30 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
         .Input(x1, "x1")
         .Input(x2, "x2")
         .Input(gamma, "gamma")
-        .Input(beta, "beta")
+        .Input(beta, "beta");
+
     if (bias_local.defined()) {
-        cmd.Input(bias, "bias")
+        cmd.Input(bias, "bias");
     } else {
         cmd.Input();
     }
     if (scales_local1.defined()) {
-        cmd.Input(scales1, "scales1")
+        cmd.Input(scales1, "scales1");
     } else {
         cmd.Input();
     }
     if (scales_local2.defined()) {
-        cmd.Input(scales2, "scales2")
+        cmd.Input(scales2, "scales2");
     } else {
         cmd.Input();
     }
     if (zero_points_local1.defined()) {
-        cmd.Input(zero_points_local1);
+        cmd.Input(zero_points_local1, "zero_points1");
     } else {
         cmd.Input();
     }
     if (zero_points_local2.defined()) {
-        cmd.Input(zero_points_local2);
+        cmd.Input(zero_points_local2, "zero_points2");
     } else {
         cmd.Input();
     }
