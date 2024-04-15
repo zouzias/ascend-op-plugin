@@ -62,4 +62,3 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_add_layer_norm(
     return std::make_tuple(y, mean, rstd, x);
 }
 } // namespace acl_op
-s
