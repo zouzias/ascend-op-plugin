@@ -2621,3 +2621,6 @@ custom:
     impl_ns: acl_op
   - func: npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor skip1, Tensor? skip2, Tensor bias, Tensor scales, Tensor expanded_src_to_dst_row, Tensor export_for_source_row) -> Tensor
     impl_ns: op_api
+  - func: npu_ascend_quant(Tensor x, Tensor scale, *, Tensor? offset=None, ScalarType? dst_dtype=None) -> Tensor
+    impl_ns: op_api
+    exposed: True
