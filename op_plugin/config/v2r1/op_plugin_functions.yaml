@@ -2474,3 +2474,11 @@ custom:
     impl_ns: acl_op
   - func: npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor skip1, Tensor? skip2, Tensor bias, Tensor scales, Tensor expanded_src_to_dst_row, Tensor export_for_source_row) -> Tensor
     impl_ns: op_api
+  - func: add_custom(Tensor x, Tensor y) -> Tensor
+    impl_ns: op_api
+  - func: add_custom1(Tensor x, Tensor y) -> Tensor
+    impl_ns: op_api
+  - func: add_custom2(Tensor x, Tensor y) -> Tensor
+    impl_ns: op_api
+  - func: add_custom3(Tensor x, Tensor y) -> Tensor
+    impl_ns: op_api
