@@ -165,10 +165,7 @@ c10::SmallVector<int64_t, SIZE> addmm_npu_output_size(const at::Tensor &self, co
 c10::SmallVector<int64_t, SIZE> addbmm_npu_output_size(const at::Tensor &self, const at::Tensor &batch1,
                                                        const at::Tensor &batch2, c10::Scalar beta, c10::Scalar alpha)
 {
-    TORCH_CHECK(self.dim() > 1, "tensor self's dimension must be greater than 1, "
-        "but got Tensor of dimension ", self.dim(), OPS_ERROR(ErrCode::PARAM));
-
-    return {self.size(0), self.size(1)};
+    return broadcast_ops_npu_output_size(self.sizes(), {batch1.size(1), batch2.size(2)});
 }
 
 c10::SmallVector<int64_t, SIZE> addmv_npu_output_size(const at::Tensor &self, const at::Tensor &mat,
@@ -1573,7 +1570,7 @@ std::vector<c10::SmallVector<int64_t, SIZE>> rms_norm_npu_output_size(const at::
     auto x_dim_num = self.dim();
     auto gamma_dim_num = gamma.dim();
     c10::SmallVector<int64_t, SIZE> rstd_shape;
-    for (uint64_t i = 0; i < x_dim_num; i++) {
+    for (int64_t i = 0; i < x_dim_num; i++) {
         if (i < x_dim_num - gamma_dim_num) {
             rstd_shape.push_back(x_shape[i]);
         } else {

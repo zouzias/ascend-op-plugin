@@ -258,6 +258,8 @@ official:
    impl_ns: acl_op, op_api
  - func: argmax(Tensor self, int? dim=None, bool keepdim=False) -> Tensor
    impl_ns: acl_op, op_api
+ - func: argmax.out(Tensor self, int? dim=None, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
+   impl_ns: acl_op, op_api
  - func: argmin(Tensor self, int? dim=None, bool keepdim=False) -> Tensor
    impl_ns: acl_op, op_api
  - func: argmin.out(Tensor self, int? dim=None, bool keepdim=False, *, Tensor(a!) out) -> Tensor(a!)
@@ -616,6 +618,8 @@ official:
    impl_ns: acl_op, op_api
  - func: eye.out(int n, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
+ - func: fft_rfft(Tensor self, int? n=None, int dim=-1, str? norm=None) -> Tensor
+   impl_ns: op_api
  - func: fill_.Scalar(Tensor(a!) self, Scalar value) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: fill_.Tensor(Tensor(a!) self, Tensor value) -> Tensor(a!)
@@ -1421,9 +1425,9 @@ official:
  - func: scatter.value_out(Tensor self, int dim, Tensor index, Scalar value, *, Tensor(a!) out) -> Tensor(a!)
    impl_ns: acl_op, op_api
  - func: scatter.reduce_out(Tensor self, int dim, Tensor index, Tensor src, *, str reduce, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
+   impl_ns: op_api
  - func: scatter.value_reduce_out(Tensor self, int dim, Tensor index, Scalar value, *, str reduce, Tensor(a!) out) -> Tensor(a!)
-   impl_ns: acl_op, op_api
+   impl_ns: op_api
  - func: scatter_add(Tensor self, int dim, Tensor index, Tensor src) -> Tensor
    impl_ns: acl_op, op_api
  - func: scatter_add.dimname(Tensor self, Dimname dim, Tensor index, Tensor src) -> Tensor
@@ -2133,6 +2137,10 @@ unsupported:
   - special_zeta.other_scalar_out
 
 custom:
+  - func: repeat_interleave_backward_tensor(Tensor grad, Tensor self, Tensor repeats, int? dim=None) -> Tensor
+    impl_ns: op_api
+  - func: repeat_interleave_backward_int(Tensor grad, Tensor self, int repeats, int? dim=None) -> Tensor
+    impl_ns: op_api
   - func: npu_view_copy(Tensor(a!) self, Tensor other, bool non_blocking) -> Tensor(a!)
     impl_ns: acl_op
   - func: npu_transpose(Tensor self, int[] perm, bool require_contiguous=True) -> Tensor
@@ -2241,7 +2249,7 @@ custom:
     impl_ns: acl_op
     exposed: True
   - func: npu_linear_backward(Tensor grad, Tensor input, Tensor weight) -> (Tensor, Tensor)
-    impl_ns: acl_op
+    impl_ns: acl_op, op_api
   - func: npu_anchor_response_flags(Tensor self, int[2] featmap_size, int[2] stride, int num_base_anchors) -> Tensor
     impl_ns: acl_op
     exposed: True
@@ -2350,10 +2358,6 @@ custom:
     impl_ns: op_api
   - func: npu_flash_attention_grad(Tensor query, Tensor key, Tensor value, Tensor dy, int head_num, str input_layout, *, Tensor? pse=None, Tensor? padding_mask=None, Tensor? atten_mask=None, Tensor? softmax_max=None, Tensor? softmax_sum=None, Tensor? softmax_in=None, Tensor? attention_in=None, float scale_value=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int inner_precise=1, int seed=0, int offset=0, int numels=0, int[]? prefix=None, int[]? actual_seq_qlen=None, int[]? actual_seq_kvlen=None, int sparse_mode=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor)
     impl_ns: op_api
-  - func: npu_fusion_attention_v3(Tensor x, Tensor weight, int head_num, str input_layout, int head_size, Tensor? bias=None, Tensor? pse=None, Tensor? atten_mask=None, int[]? prefix=None, float scale_qk=1., float scale_q=1., float scale_k=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int sparse_mode=0, int pse_type=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor, int, int, int)
-    impl_ns: op_api
-  - func: npu_fusion_attention_grad_v3(Tensor x, Tensor weight, Tensor qkv, Tensor dy, Tensor softmax_max, Tensor softmax_sum, Tensor attention_in, int head_num, str input_layout, int head_size, *, Tensor? bias=None, Tensor? pse=None, Tensor? atten_mask=None, int[]? prefix=None, float scale_qk=1., float scale_q=1., float scale_k=1., float keep_prob=1., int pre_tockens=2147483647, int next_tockens=2147483647, int sparse_mode=0, int pse_type=0, int seed=0, int offset=0, int numels=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor, Tensor)
-    impl_ns: op_api
   - func: npu_geglu(Tensor self, int dim=-1, int approximate=1, bool activate_left=False) -> (Tensor, Tensor)
     impl_ns: op_api
     exposed: True
@@ -2387,14 +2391,15 @@ custom:
     impl_ns: op_api
   - func: npu_scatter_nd_update(Tensor self, Tensor indices, Tensor updates) -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: npu_scatter_nd_update_(Tensor(a!) self, Tensor indices, Tensor updates) -> Tensor(a!)
     impl_ns: op_api
+    exposed: True
   - func: npu_dropout_gen_mask(int[] size, float p, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None) -> Tensor
     impl_ns: acl_op
     tags: nondeterministic_seeded
     dispatch:
      CompositeExplicitAutograd: npu_dropout_gen_mask
-    exposed: True
   - func: npu_ciou_backward(Tensor grad, Tensor bboxes, Tensor gtboxes, Tensor? atan_sub, bool trans=False, bool is_cross=True, int mode=0) -> (Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_sign_bits_unpack(Tensor input, int size, ScalarType dtype) -> Tensor
@@ -2428,6 +2433,8 @@ custom:
     impl_ns: acl_op
   - func: npu_fused_attention_score_fwd(Tensor query_layer, Tensor key_layer, Tensor value_layer, Tensor attention_mask, Scalar scale, float keep_prob, bool query_transpose=False, bool key_transpose=False, bool bmm_score_transpose_a=False, bool bmm_score_transpose_b=False, bool value_transpose=False, bool dx_transpose=False) -> (Tensor, Tensor, Tensor)
     impl_ns: acl_op
+  - func: npu_moe_compute_expert_tokens(Tensor sorted_expert_for_source_row, int num_expert) -> Tensor
+    impl_ns: op_api
   - func: npu_fused_attention_score_grad(Tensor grad_output, Tensor softmax_output, Tensor query_layer, Tensor key_layer, Tensor value_layer, Tensor mask, Scalar scale, float keep_prob, bool query_transpose=False, bool key_transpose=False, bool value_transpose=False, bool dx_transpose=False) -> (Tensor, Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_fused_attention_qkv_grad(Tensor grad_output_query, Tensor grad_output_key, Tensor grad_output_value, Tensor query_kernel, Tensor key_kernel, Tensor value_kernel, Tensor hidden_states, Tensor grad_output_ln) -> Tensor[]
@@ -2460,7 +2467,7 @@ custom:
     impl_ns: acl_op
     exposed: True
   - func: npu_linear(Tensor input, Tensor weight, Tensor? bias=None) -> Tensor
-    impl_ns: acl_op
+    impl_ns: acl_op, op_api
     exposed: True
   - func: _npu_dropout(Tensor self, float p) -> (Tensor, Tensor)
     impl_ns: acl_op, op_api
@@ -2574,22 +2581,28 @@ custom:
     impl_ns: op_api
   - func: npu_mm_all_reduce_base(Tensor x1, Tensor x2, str hcom, *, str reduce_op='sum', Tensor? bias=None, Tensor? antiquant_scale=None, Tensor? antiquant_offset=None, Tensor? x3=None, Tensor? dequant_scale=None, int antiquant_group_size=0, int comm_turn=0) -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: npu_lstm_data_backward(Tensor? grady_opt, Tensor? gradh_opt, Tensor? gradc_opt, Tensor input, Tensor batch_sizes, Tensor weight, Tensor bias, Tensor init_h, Tensor init_c, Tensor y, Tensor h, Tensor c, Tensor i, Tensor j, Tensor f, Tensor o, Tensor tanhc, bool flag_direction) -> (Tensor, Tensor, Tensor, Tensor, Tensor)
     impl_ns: acl_op
   - func: npu_multi_head_attention_v2(Tensor query, Tensor key, Tensor value, Tensor? atten_mask=None, Tensor? alibi_mask=None, float scale=1.0, int head_num=1, str input_layout="BNSD", float keep_prob=1., int pre_tokens=2147483647, int next_tokens=1, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, int, int, int)
     impl_ns: op_api
   - func: npu_multi_head_attention_v2_grad(Tensor attention_score_grad, Tensor query, Tensor key, Tensor value, Tensor softmax_log_max_sum, Tensor attention_score, Tensor? atten_mask=None, Tensor? alibi_mask=None, float scale=1.0, int head_num=1, str input_layout="BNSD", float keep_prob=1., int pre_tokens=2147483647, int next_tokens=1, int seed=0, int offset=0, int numels=0, bool gen_mask_parallel=True, bool sync=False) -> (Tensor, Tensor, Tensor)
     impl_ns: op_api
-  - func: npu_ffn(Tensor x, Tensor weight1, Tensor weight2, str activation, *, int[]? expert_tokens=None, Tensor? bias1=None, Tensor? bias2=None, Tensor? scale=None, Tensor? offset=None, Tensor? deq_scale1=None, Tensor? deq_scale2=None, Tensor? antiquant_scale1=None, Tensor? antiquant_scale2=None, Tensor? antiquant_offset1=None, Tensor? antiquant_offset2=None, int? inner_precise=None, ScalarType? output_dtype=None) -> Tensor
+  - func: npu_ffn(Tensor x, Tensor weight1, Tensor weight2, str activation, *, int[]? expert_tokens=None, int[]? expert_tokens_index=None, Tensor? bias1=None, Tensor? bias2=None, Tensor? scale=None, Tensor? offset=None, Tensor? deq_scale1=None, Tensor? deq_scale2=None, Tensor? antiquant_scale1=None, Tensor? antiquant_scale2=None, Tensor? antiquant_offset1=None, Tensor? antiquant_offset2=None, int? inner_precise=None, ScalarType? output_dtype=None) -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: npu_grouped_matmul(Tensor[] x, Tensor[] weight, *, Tensor[] bias, Tensor[] scale, Tensor[] offset, Tensor[] antiquant_scale, Tensor[] antiquant_offset, int[]? group_list=None, int? split_item=0, ScalarType? output_dtype=None) -> Tensor[]
     impl_ns: op_api
+    exposed: True
   - func: npu_weight_quant_batchmatmul(Tensor x, Tensor weight, Tensor antiquant_scale, Tensor? antiquant_offset=None, Tensor? quant_scale=None, Tensor? quant_offset=None, Tensor? bias=None, int antiquant_group_size=0) -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: npu_trans_quant_param(Tensor scale, Tensor? offset=None) -> Tensor
     impl_ns: op_api
-  - func: npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, Tensor? offset=None, Tensor? bias=None, str? output_dtype=None) -> Tensor
+    exposed: True
+  - func: npu_quant_matmul(Tensor x1, Tensor x2, Tensor scale, *, Tensor? offset=None, Tensor? pertoken_scale=None, Tensor? bias=None, ScalarType? output_dtype=None) -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: _npu_dropout_gen_mask.Tensor(Tensor self, int[] size, float p, int seed, int offset, *, bool? parallel=True, bool? sync=None) -> Tensor
     impl_ns: acl_op
     tags: nondeterministic_seeded
@@ -2601,7 +2614,11 @@ custom:
     impl_ns: acl_op, op_api
   - func: npu_quant_scatter(Tensor self, Tensor indices, Tensor updates, Tensor quant_scales, Tensor? quant_zero_points=None, int axis=0, int quant_axis=1, str reduce='update') -> Tensor
     impl_ns: op_api
+    exposed: True
   - func: npu_quant_scatter_(Tensor(a!) self, Tensor indices, Tensor updates, Tensor quant_scales, Tensor? quant_zero_points=None, int axis=0, int quant_axis=1, str reduce='update') -> Tensor(a!)
     impl_ns: op_api
   - func: _npu_silent_check(Tensor(a!) input_grad, Tensor val, Tensor(b!) pre_val, Tensor(c!) min_val, Tensor(d!) max_val, Tensor val_counter, int c_min_steps, float c_thresh_l1, float c_coeff_l1, float c_thresh_l2, float c_coeff_l2) -> Tensor
     impl_ns: acl_op, op_api
+    impl_ns: acl_op
+  - func: npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor skip1, Tensor? skip2, Tensor bias, Tensor scales, Tensor expanded_src_to_dst_row, Tensor export_for_source_row) -> Tensor
+    impl_ns: op_api

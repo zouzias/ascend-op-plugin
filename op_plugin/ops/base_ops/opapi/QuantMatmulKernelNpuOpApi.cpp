@@ -31,8 +31,8 @@ uint64_t infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::
     auto out_dim_num = std::max(x1_dim_num, x2_dim_num);
     auto &shape_long = x1_dim_num > x2_dim_num ? x1 : x2;
     auto &shape_short = x1_dim_num > x2_dim_num ? x2 : x1;
-    size_t vaild_offset = out_dim_num - std::min(x1_dim_num, x2_dim_num);
-    for (size_t i = 0; i < out_dim_num - LAST_SECOND_DIM_INDEX; i++) {
+    int64_t vaild_offset = out_dim_num - std::min(x1_dim_num, x2_dim_num);
+    for (int64_t i = 0; i < out_dim_num - LAST_SECOND_DIM_INDEX; i++) {
         auto short_dim = i < vaild_offset ? 1 : shape_short.size(i - vaild_offset);
         auto long_dim = shape_long.size(i);
         TORCH_CHECK(!(short_dim > 1 && long_dim > 1 && short_dim != long_dim),
@@ -70,8 +70,8 @@ void bias_shape_check(const at::Tensor &x1, const at::Tensor &x2, const at::Tens
 }
 
 at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at::Tensor& scale,
-                            const c10::optional<at::Tensor>& offset, const c10::optional<at::Tensor>& bias,
-                            c10::optional<c10::string_view> output_dtype)
+                            const c10::optional<at::Tensor>& offset, const c10::optional<at::Tensor>& pertoken_scale,
+                            const c10::optional<at::Tensor>& bias, c10::optional<at::ScalarType> output_dtype)
 {
     auto x1_dim_num = x1.dim();
     TORCH_CHECK(x1_dim_num >= X_MIN_DIM && x1_dim_num <= X_MAX_DIM, "x1 shape dim num should be within 2~6, but it is ",
@@ -91,20 +91,21 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
     auto output_size = op_infer::array_to_small_vector(long_tensor.sizes());
     output_size[long_tensor.dim() - LAST_SECOND_DIM_INDEX] = x1.size(x1_dim_num - LAST_SECOND_DIM_INDEX);
     output_size[long_tensor.dim() - 1] = x2.size(x2_dim_num - 1);
-    for (size_t i = 0; i < long_tensor.dim() - LAST_SECOND_DIM_INDEX; i++) {
-        output_size[i] = batch_record[i];
+    for (int64_t i = 0; i < long_tensor.dim() - LAST_SECOND_DIM_INDEX; i++) {
+        output_size[i] = static_cast<int64_t>(batch_record[i]);
     }
     c10::TensorOptions options;
-    if (!output_dtype.has_value() ||  *output_dtype == "int8") {
+    if (!output_dtype.has_value() ||  output_dtype.value() == at::kChar) {
         options = x1.options().dtype(at::kChar);
-    } else if (*output_dtype == "float16") {
+    } else if (output_dtype == at::kHalf) {
         options = x1.options().dtype(at::kHalf);
-    } else if (*output_dtype == "bfloat16") {
+    } else if (output_dtype == at::kBFloat16) {
         options = x1.options().dtype(at::kBFloat16);
     }
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
 
     const at::Tensor &offset_real = offset.value_or(at::Tensor());
+    const at::Tensor &pertoken_scale_real = pertoken_scale.value_or(at::Tensor());
     const at::Tensor &bias_real = bias.value_or(at::Tensor());
     bool transpose1 = false;
     bool transpose2 = false;
@@ -131,11 +132,13 @@ at::Tensor npu_quant_matmul(const at::Tensor& x1, const at::Tensor& x2, const at
         bias_shape_check(x1, x2, bias_real, batch_val);
     }
 
-    if (scale.dtype() == at::kFloat) {
+    if (scale.dtype() == at::kFloat && !pertoken_scale.has_value()) {
         const at::Tensor quant_param = op_api::npu_trans_quant_param(scale, offset);
-        EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, quant_param, offset_real, bias_real, transpose1, transpose2, result);
+        EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, quant_param, offset_real, pertoken_scale_real, bias_real,
+                     transpose1, transpose2, result);
     } else {
-        EXEC_NPU_CMD(aclnnQuantMatmulV3, x1, x2, scale, offset_real, bias_real, transpose1, transpose2, result);
+        EXEC_NPU_CMD(aclnnQuantMatmulV4, x1, x2, scale, offset_real, pertoken_scale_real, bias_real,
+                     transpose1, transpose2, result);
     }
     return result;
 }

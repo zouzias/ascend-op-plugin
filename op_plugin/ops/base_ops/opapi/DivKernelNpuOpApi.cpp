@@ -27,7 +27,7 @@ static void check_rounding_mode_npu(c10::optional<c10::string_view> rounding_mod
     TORCH_CHECK((!rounding_mode.has_value() || *rounding_mode == "trunc" || *rounding_mode == "floor"),
                 "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
                 "but found '",
-                *rounding_mode, "'", OPS_ERROR(ErrCode::VALUE));
+                *rounding_mode, "'", OPS_ERROR(ErrCode::PARAM));
 }
 
 static at::Tensor& div_out_npu_opapi_nocheck(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
@@ -80,7 +80,7 @@ at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, c10::option
         TORCH_CHECK(false,
                     "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
                     "but found '",
-                    *rounding_mode, "'", OPS_ERROR(ErrCode::VALUE));
+                    *rounding_mode, "'", OPS_ERROR(ErrCode::PARAM));
     }
 
     auto outputSize = op_infer::broadcast_ops_npu_output_size(self, other);
@@ -134,7 +134,7 @@ at::Tensor div(const at::Tensor& self, const at::Tensor& other, c10::optional<c1
         TORCH_CHECK(false,
                     "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
                     "but found '",
-                    *rounding_mode, "'", OPS_ERROR(ErrCode::VALUE));
+                    *rounding_mode, "'", OPS_ERROR(ErrCode::PARAM));
     }
 
     // calculate the output size
