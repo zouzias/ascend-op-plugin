@@ -2608,6 +2608,8 @@ custom:
     tags: nondeterministic_seeded
   - func: npu_quantize(Tensor self, Tensor scales, Tensor? zero_points, ScalarType dtype, int axis=1) -> Tensor
     impl_ns: acl_op
+  - func: npu_tome_merge(Tensor token_a, Tensor token_b, Tensor topk_indice, Tensor arg_max, float? top_rate=0.5) -> (Tensor, Tensor, Tensor)
+    impl_ns: op_api
   - func: scatter_update(Tensor self, Tensor indices, Tensor updates, int axis) -> Tensor
     impl_ns: acl_op, op_api
   - func: scatter_update_(Tensor(a!) self, Tensor indices, Tensor updates, int axis) -> Tensor(a!)

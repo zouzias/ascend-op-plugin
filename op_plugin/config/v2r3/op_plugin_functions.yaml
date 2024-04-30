@@ -2422,6 +2422,8 @@ custom:
     tags: nondeterministic_seeded
   - func: npu_quantize(Tensor self, Tensor scales, Tensor? zero_points, ScalarType dtype, int axis=1) -> Tensor
     impl_ns: acl_op
+  - func: npu_tome_merge(Tensor token_a, Tensor token_b, Tensor topk_indice, Tensor arg_max, float? top_rate=0.5) -> (Tensor, Tensor, Tensor)
+    impl_ns: op_api
   - func: npu_anti_quant(Tensor x, Tensor scale, *, Tensor? offset=None, ScalarType? dst_dtype=None, ScalarType? src_dtype=None) -> Tensor
     impl_ns: op_api
     exposed: True
