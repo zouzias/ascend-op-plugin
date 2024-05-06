@@ -80,6 +80,7 @@ at::Tensor npu_quantize(
     const at::Tensor& zero_points = c10::value_or_else(zero_points_opt, [] { return at::Tensor(); });
     axis = op_plugin::utils::make_warp_dim(axis, self.dim());
     TORCH_CHECK(scales.dim() == 1, "Scales' dim should be equal to 1." + OPS_ERROR(ErrCode::PARAM));
+
     if (zero_points.defined()) {
         TORCH_CHECK(zero_points.dim() == 1, "Zero points' dim should be equal to 1." + OPS_ERROR(ErrCode::PARAM));
         TORCH_CHECK(scales.sizes()[0] == zero_points.sizes()[0], "Scales' size should be equal to zero points' size." + OPS_ERROR(ErrCode::PARAM));
