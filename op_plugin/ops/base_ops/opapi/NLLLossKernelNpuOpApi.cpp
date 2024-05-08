@@ -21,9 +21,9 @@
 namespace op_api {
 
 static std::tuple<at::Tensor&, at::Tensor&> nll_loss_forward_npu_nocheck(at::Tensor& result, at::Tensor& total_weight,
-                                                                    const at::Tensor& self, const at::Tensor& target,
-                                                                    const at::Tensor& weight, int64_t reduction,
-                                                                    int64_t ignore_index) {
+                                                                         const at::Tensor& self, const at::Tensor& target,
+                                                                         const at::Tensor& weight, int64_t reduction,
+                                                                         int64_t ignore_index) {
   at::Tensor weight_tensor = weight.defined() ? weight : at::ones(self.size(-1), self.options());
 
   EXEC_NPU_CMD(aclnnNLLLoss, self, target, weight_tensor, reduction, ignore_index, result, total_weight);

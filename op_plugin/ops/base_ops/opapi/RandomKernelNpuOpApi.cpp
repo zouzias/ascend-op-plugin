@@ -57,7 +57,7 @@ at::Tensor& random_op_api_(at::Tensor& self, int64_t from, int64_t to, c10::opti
 }
 
 at::Tensor& random_(at::Tensor& self, int64_t from, c10::optional<int64_t> to,
-                                             c10::optional<at::Generator> gen_) {
+                    c10::optional<at::Generator> gen_) {
   DO_COMPATIBILITY(aclnnInplaceRandom, acl_op::random_(self, from, to, gen_));
   int64_t to_ = to.value_or(get_dtype_max_value(self.scalar_type()));
   random_op_api_(self, from, to_, gen_);

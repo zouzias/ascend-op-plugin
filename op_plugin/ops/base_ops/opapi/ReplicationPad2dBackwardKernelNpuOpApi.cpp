@@ -21,10 +21,10 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& replication_pad2d_backward_out(
-  const at::Tensor& grad_output,
-  const at::Tensor& self,
-  at::IntArrayRef padding,
-  at::Tensor& grad_input) {
+    const at::Tensor& grad_output,
+    const at::Tensor& self,
+    at::IntArrayRef padding,
+    at::Tensor& grad_input) {
   DO_COMPATIBILITY(aclnnReplicationPad2dBackward,
                    acl_op::replication_pad2d_backward_out(grad_output, self, padding, grad_input));
   npu_preparation::check_tensor({self, grad_output}, grad_input, self);
@@ -34,9 +34,9 @@ at::Tensor& replication_pad2d_backward_out(
 }
 
 at::Tensor replication_pad2d_backward(
-  const at::Tensor& grad_output,
-  const at::Tensor& self,
-  at::IntArrayRef padding) {
+    const at::Tensor& grad_output,
+    const at::Tensor& self,
+    at::IntArrayRef padding) {
   at::Tensor grad_input = npu_preparation::apply_tensor_without_format(self);
   DO_COMPATIBILITY(aclnnReplicationPad2dBackward,
                    acl_op::replication_pad2d_backward(grad_output, self, padding));

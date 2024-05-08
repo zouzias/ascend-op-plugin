@@ -27,7 +27,7 @@ at::Tensor& nll_loss_backward_out(const at::Tensor& grad_output, const at::Tenso
                                   const at::Tensor& total_weight, at::Tensor& grad_input) {
   DO_COMPATIBILITY(aclnnNLLLossBackward,
                    acl_op::nll_loss_backward_out(grad_output, self, target, weight_opt, reduction,
-                                                             ignore_index, total_weight, grad_input));
+                                                 ignore_index, total_weight, grad_input));
   at::Tensor weight_tensor = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
   if (!weight_tensor.defined()) {
     weight_tensor = at::ones(self.size(-1), self.options());

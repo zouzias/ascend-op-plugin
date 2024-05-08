@@ -32,7 +32,7 @@ at::Tensor& binary_cross_entropy_backward_out(const at::Tensor& grad_output, con
                                               const at::Tensor& target, const c10::optional<at::Tensor>& weight_opt,
                                               int64_t reduction, at::Tensor& grad_input) {
   DO_COMPATIBILITY(aclnnBinaryCrossEntropyBackward, acl_op::binary_cross_entropy_backward_out(
-                                                        grad_output, self, target, weight_opt, reduction, grad_input));
+      grad_output, self, target, weight_opt, reduction, grad_input));
   binary_cross_entropy_backward_out_npu_nocheck(grad_input, grad_output, self, target, weight_opt, reduction);
   return grad_input;
 }

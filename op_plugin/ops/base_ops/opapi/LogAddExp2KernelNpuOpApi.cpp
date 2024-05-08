@@ -35,7 +35,7 @@ at::Tensor logaddexp2(const at::Tensor &self, const at::Tensor &other)
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
   at::ScalarType output_type = at::native::result_type(self, other);
   at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(output_size,
-    self.options().dtype(output_type));
+      self.options().dtype(output_type));
   EXEC_NPU_CMD(aclnnLogAddExp2, self, other, result);
 
   return result;

@@ -595,7 +595,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> convolution_backward(
   at::Tensor backend_grad_input, backend_grad_weight, backend_grad_bias;
   auto kernel_size = weight.sizes().slice(2);
 
-  switch(backend) {
+  switch (backend) {
     case at::native::ConvBackend::Empty:
       if (output_mask[0]) {
         backend_grad_input = at::zeros_like(input);
