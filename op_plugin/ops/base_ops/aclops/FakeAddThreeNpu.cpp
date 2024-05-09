@@ -20,15 +20,19 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor npu_fake_add_three(const at::Tensor &x1, const at::Tensor &x2)
+std::tuple<at::Tensor, at::Tensor> npu_fake_add_three(const at::Tensor &x1, const at::Tensor &x2, const at::Tensor &x3, const at::Tensor &x4)
 {
-    at::Tensor y = npu_preparation::apply_tensor(x1);
+    at::Tensor y1 = npu_preparation::apply_tensor(x1);
+    at::Tensor y2 = npu_preparation::apply_tensor(x1);
     at_npu::native::OpCommand cmd;
     cmd.Name("FakeAddThree")
         .Input(x1, "x1")
         .Input(x2, "x2")
-        .Output(y, "y")
+        .Input(x3, "x3")
+        .Input(x4, "x4")
+        .Output(y1, "y1")
+        .Output(y2, "y2")
         .Run();
-    return y;
+    return std::make_tuple(y1, y2);
 }
 } // namespace acl_op
