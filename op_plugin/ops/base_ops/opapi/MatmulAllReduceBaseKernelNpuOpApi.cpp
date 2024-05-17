@@ -64,7 +64,7 @@ void check_params(const at::Tensor &x1, const at::Tensor &x2,
                     "when neither dtype of x1 or dtype of x2 is equal to int8, "
                     "antiquantScale, antiquantOffset and dequantScale should all be null", OPS_ERROR(ErrCode::TYPE));
     } else {
-        TORCH_CHECK(true, "when neither dtype of x1 or dtype of x2 is valid. ", OPS_ERROR(ErrCode::TYPE));
+        TORCH_CHECK(false, "when neither dtype of x1 or dtype of x2 is valid. ", OPS_ERROR(ErrCode::TYPE));
     }
 
     // check x3 dtype and shape
