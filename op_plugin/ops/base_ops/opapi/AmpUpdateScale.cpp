@@ -21,10 +21,9 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& _amp_update_scale_(
-  at::Tensor& self,
   at::Tensor& current_scale,
   at::Tensor& growth_tracker,
-  at::Tensor& found_inf,
+  const at::Tensor& found_inf,
   double growth_factor,
   double backoff_factor,
   int64_t growth_interval,
@@ -32,7 +31,7 @@ at::Tensor& _amp_update_scale_(
 {
   growth_factor = static_cast<float>(growth_factor);
   backoff_factor = static_cast<float>(backoff_factor);
-  EXEC_NPU_CMD(aclnnAmpUpdateScale, self, current_scale, growth_tracker, found_inf, growth_factor, backoff_factor, growth_interval);
+  EXEC_NPU_CMD(aclnnAmpUpdateScale, current_scale, growth_tracker, found_inf, growth_factor, backoff_factor, growth_interval);
 }
 
 }  // namespace op_api
