@@ -52,7 +52,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_instance_norm_ascend(const at
     at::Tensor mean = at_npu::native::OpPreparation::apply_tensor(x, shape);
     at::Tensor variance = at_npu::native::OpPreparation::apply_tensor(x, shape);
 
-    const char* format_chars = format.c_str(),;
+    const char* format_chars = format.c_str();
     EXEC_NPU_CMD(aclnnInstanceNorm, x, gamma, beta, format_chars, epsilon, y, mean, variance);
     return std::tuple<at::Tensor, at::Tensor, at::Tensor>(y, mean, variance);
 }
