@@ -560,8 +560,9 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
         return false;
     }
     void *workspace_addr = nullptr;
+    at::Tensor workspace_tensor;
     if (workspace_size != 0) {
-        auto workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);
+        workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);
         workspace_addr = const_cast<void *>(workspace_tensor.storage().data());
     }
     auto acl_call = [workspace_addr, workspace_size, acl_stream, executor, phrase2]() -> int {
@@ -662,8 +663,9 @@ auto DecodeDevice(Ts&... args) -> at::Device
         TORCH_CHECK(workspace_status == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                \
             OPS_ERROR(ErrCode::INTERNAL));                                                                             \
         void *workspace_addr = nullptr;                                                                                \
+        at::Tensor workspace_tensor;                                                                                   \
         if (workspace_size != 0) {                                                                                     \
-            auto workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);             \
+            workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);                  \
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
         auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]()-> int {             \
@@ -724,8 +726,9 @@ auto DecodeDevice(Ts&... args) -> at::Device
         auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                          \
         TORCH_CHECK(workspace_status == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg());               \
         void *workspace_addr = nullptr;                                                                                \
+        at::Tensor workspace_tensor;                                                                                   \
         if (workspace_size != 0) {                                                                                     \
-            auto workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);             \
+            workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);                  \
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
         auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]()->int {              \
@@ -787,8 +790,9 @@ auto DecodeDevice(Ts&... args) -> at::Device
         TORCH_CHECK(workspace_status == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                \
             OPS_ERROR(ErrCode::INTERNAL));                                                                             \
         void *workspace_addr = nullptr;                                                                                \
+        at::Tensor workspace_tensor;                                                                                   \
         if (workspace_size != 0) {                                                                                     \
-            auto workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);             \
+            workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);                  \
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
         auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]()-> int {             \
@@ -911,8 +915,9 @@ private:
         TORCH_CHECK(workspace_status == 0, "call " #aclnn_api " failed, detail:", aclGetRecentErrMsg(),                \
             OPS_ERROR(ErrCode::INTERNAL));                                                                             \
         void *workspace_addr = nullptr;                                                                                \
+        at::Tensor workspace_tensor;                                                                                   \
         if (workspace_size != 0) {                                                                                     \
-            auto workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);             \
+            workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);                  \
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
         auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor, apiName]()-> int {    \
