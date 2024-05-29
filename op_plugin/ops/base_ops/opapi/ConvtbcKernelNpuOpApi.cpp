@@ -20,8 +20,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor conv_tbc(const at::Tensor &self, const at::Tensor &weight, const at::Tensor &bias,
-                                             int64_t pad) {
+at::Tensor conv_tbc(const at::Tensor &self, const at::Tensor &weight, const at::Tensor &bias, int64_t pad)
+{
   DO_COMPATIBILITY(aclnnConvTbc, acl_op::conv_tbc(self, weight, bias, pad));
 
   // CheckForbidInternalFormat = False: turn on private format；CheckJitDisable = False: turn on JitCompile

@@ -20,7 +20,7 @@
 
 namespace op_api {
 
-namespace{
+namespace {
 at::Tensor npu_dtype_cast_impl_op_api(const at::Tensor& self, at::ScalarType dtype) {
   if (self.dtype() == dtype) {
     return self.clone();

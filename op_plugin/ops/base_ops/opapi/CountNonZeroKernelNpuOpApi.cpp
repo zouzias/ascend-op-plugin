@@ -17,7 +17,7 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
-namespace op_api{
+namespace op_api {
 
 at::Tensor count_nonzero(
     const at::Tensor &self,

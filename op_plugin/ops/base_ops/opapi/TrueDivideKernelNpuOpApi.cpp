@@ -56,7 +56,7 @@ at::Tensor true_divide(const at::Tensor &self, const at::Tensor &other) {
     high_type = at::ScalarType::Float;
   }
   // construct the output tensor of the NPU
-  at::Tensor result = 
+  at::Tensor result =
       npu_preparation::apply_tensor_without_format(output_size, output_tensor.options().dtype(high_type));
 
   // calculate the output result of the NPU
@@ -71,7 +71,7 @@ at::Tensor true_divide(const at::Tensor &self, const at::Scalar &other) {
   if (isIntegralType(high_type, true)) {
     high_type = at::ScalarType::Float;
   }
-  at::Tensor result = 
+  at::Tensor result =
       npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(high_type));
   EXEC_NPU_CMD(aclnnDivs, self, other, result);
   return result;
