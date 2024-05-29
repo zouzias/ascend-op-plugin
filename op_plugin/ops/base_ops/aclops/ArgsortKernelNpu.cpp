@@ -26,8 +26,9 @@ at::Tensor &argsort_out_npu_nocheck(at::Tensor &values, at::Tensor &indices, con
 {
     at_npu::native::OpCommand cmd;
     if (values.dtype() == at::kInt || values.dtype() == at::kLong) {
-    TORCH_NPU_WARN_ONCE("Warning: kernel [ArgSort] can not support dtype int32 or int64 on AiCore, Now this kernel is running on AiCpu.
-                         If you are more concerned about high-performance execution,please cast dtype to float32.");
+        TORCH_NPU_WARN_ONCE("Warning: kernel [ArgSort] can not support dtype int32 or int64 on AiCore, Now this kernel "
+                            "is running on AiCpu."
+                            "If you are more concerned about high-performance execution,please cast dtype to float32.");
     }
     cmd.Name("Sort").Input(self).Output(values).Output(indices).Attr("axis", dim).Attr("descending", descending).Run();
     return indices;
