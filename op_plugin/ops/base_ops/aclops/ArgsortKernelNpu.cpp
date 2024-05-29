@@ -14,7 +14,7 @@
 // limitations under the License.
 
 #include <ATen/NamedTensorUtils.h>
-
+s
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
@@ -22,13 +22,17 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-at::Tensor& argsort_out_npu_nocheck(
+at::Tensor& argsort_out_npu_nocheck( 
     at::Tensor& values,
     at::Tensor& indices,
     const at::Tensor& self,
     int64_t dim,
     bool descending) {
   at_npu::native::OpCommand cmd;
+  if (values.dtype() == at::kInt || values.dtype() == at::kLong) {
+    TORCH_NPU_WARN_ONCE("Warning: kernel [ArgSort] can not support dtype int32 or int64 on AiCore, Now this kernel is running on AiCpu.
+                         If you are more concerned about high-performance execution,please cast dtype to float32.");
+  }
   cmd.Name("Sort")
       .Input(self)
       .Output(values)
