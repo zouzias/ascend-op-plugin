@@ -15,7 +15,6 @@
 // limitations under the License.
 
 #include "op_plugin/OpApiInterface.h"
-#include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
@@ -48,9 +47,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_instance_norm_ascend_binary(c
         }
     }
 
-    at::Tensor y = at_npu::native::OpPreparation::apply_tensor(x);
-    at::Tensor mean = at_npu::native::OpPreparation::apply_tensor(x, shape);
-    at::Tensor variance = at_npu::native::OpPreparation::apply_tensor(x, shape);
+    at::Tensor y = npu_preparation::apply_tensor_without_format(x);
+    at::Tensor mean = npu_preparation::apply_tensor_without_format(x, shape);
+    at::Tensor variance = npu_preparation::apply_tensor_without_format(x, shape);
 
     const char* format_chars = format.c_str();
     EXEC_NPU_CMD(aclnnInstanceNorm, x, gamma, beta, format_chars, epsilon, y, mean, variance);
