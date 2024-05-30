@@ -26,7 +26,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_instance_norm_ascend(const at
     DO_COMPATIBILITY(aclnnInstanceNormAscend, acl_op::npu_instance_norm_ascend(x1, x2, gamma, epsilon));
 
     at::SmallVector<int64_t, SIZE> shape;
-
     string format = std::string(data_format);
     if (format == "NHWC") {
         for (int64_t index = 0; index < x.dim(); index++) {
@@ -59,6 +58,3 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_instance_norm_ascend(const at
     return std::tuple<at::Tensor, at::Tensor, at::Tensor>(y, mean, variance);
 }
 } // namespace op_api
-
-
-
