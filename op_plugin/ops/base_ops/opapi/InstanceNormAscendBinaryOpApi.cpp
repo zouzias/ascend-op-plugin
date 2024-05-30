@@ -21,10 +21,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_instance_norm_ascend(const at::Tensor &x, const at::Tensor &gamma, const at::Tensor &beta, c10::string_view data_format, double epsilon)
+std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_instance_norm_ascend_binary(const at::Tensor &x, const at::Tensor &gamma, const at::Tensor &beta, c10::string_view data_format, double epsilon)
 {
-    DO_COMPATIBILITY(aclnnInstanceNormAscend, acl_op::npu_instance_norm_ascend(x1, x2, gamma, epsilon));
-
     at::SmallVector<int64_t, SIZE> shape;
 
     string format = std::string(data_format);
@@ -55,10 +53,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_instance_norm_ascend(const at
     at::Tensor variance = at_npu::native::OpPreparation::apply_tensor(x, shape);
 
     const char* format_chars = format.c_str();
-    EXEC_NPU_CMD(aclnnInstanceNormAscend, x, gamma, beta, format_chars, epsilon, y, mean, variance);
+    EXEC_NPU_CMD(aclnnInstanceNorm, x, gamma, beta, format_chars, epsilon, y, mean, variance);
     return std::tuple<at::Tensor, at::Tensor, at::Tensor>(y, mean, variance);
 }
 } // namespace op_api
-
-
-
