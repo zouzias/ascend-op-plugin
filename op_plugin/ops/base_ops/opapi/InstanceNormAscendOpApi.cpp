@@ -23,7 +23,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_instance_norm_ascend(const at::Tensor &x, const at::Tensor &gamma, const at::Tensor &beta, c10::string_view data_format, double epsilon)
 {
-    DO_COMPATIBILITY(aclnnInstanceNormAscend, acl_op::npu_instance_norm_ascend(x1, x2, gamma, epsilon));
+    DO_COMPATIBILITY(aclnnInstanceNormAscend, acl_op::npu_instance_norm_ascend(x, gamma, beta, data_format, epsilon));
 
     at::SmallVector<int64_t, SIZE> shape;
     string format = std::string(data_format);
