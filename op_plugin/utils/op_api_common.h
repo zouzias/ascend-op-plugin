@@ -364,7 +364,12 @@ template <typename T> T ConvertType(T value)
     return value;
 }
 
-inline aclTensor *test_ConvertType(const at::Tensor &at_tensor)
+inline aclTensor *test_ConvertType(aclTensor *at_tensor)
+{
+    return at_tensor;
+}
+
+inline aclTensor *test_CopyType(const at::Tensor &at_tensor)
 {
     static const auto aclCreateTensor = GET_OP_API_FUNC(aclCreateTensor);
     if (aclCreateTensor == nullptr) {
@@ -416,12 +421,6 @@ inline aclTensor *test_ConvertType(const at::Tensor &at_tensor)
     return acl_tensor;
 }
 
-inline at::Tensor test_CopyType(const at::Tensor &at_tensor)
-{
-    auto result(at_tensor);
-    return result;
-}
-
 inline aclScalar *test_ConvertType(const at::Scalar &at_scalar)
 {
     static const auto aclCreateScalar = GET_OP_API_FUNC(aclCreateScalar);
@@ -467,8 +466,7 @@ inline aclScalar *test_ConvertType(const at::Scalar &at_scalar)
 
 inline at::Scalar test_CopyType(const at::Scalar &at_scalar)
 {
-    auto result = at_scalar;
-    return result;
+    return at_scalar;
 }
 
 inline aclIntArray *test_ConvertType(const std::vector<int64_t> &at_array)
@@ -484,11 +482,7 @@ inline aclIntArray *test_ConvertType(const std::vector<int64_t> &at_array)
 
 inline std::vector<int64_t> test_CopyType(const at::IntArrayRef &at_array)
 {
-    std::vector<int64_t> at_vec(at_array.size());
-    for (size_t i = 0; i < at_array.size(); i++) {
-        at_vec[i] = at_array[i];
-    }
-    return at_vec;
+    return at_array.vec();
 }
 
 template <std::size_t N> inline aclBoolArray *test_ConvertType(const std::array<bool, N> &value)
@@ -524,15 +518,10 @@ inline aclBoolArray *test_ConvertType(const std::vector<bool> &value)
 
 inline std::vector<bool> test_CopyType(const at::ArrayRef<bool> &value)
 {
-    std::vector<bool> value_vec(value.size());
-    for (size_t i = 0; i < value.size(); i++) {
-        value_vec[i] = value[i];
-    }
-    return value_vec;
+    return value.vec();
 }
 
-// 待修复
-/*inline aclTensorList *test_ConvertType(aclTensorList *at_tensor_list)
+inline aclTensorList *test_ConvertType(aclTensorList *at_tensor_list)
 {
     return at_tensor_list;
 }
@@ -546,35 +535,10 @@ inline aclTensorList *test_CopyType(const at::TensorList &at_tensor_list)
 
     std::vector<const aclTensor *> tensor_list(at_tensor_list.size());
     for (size_t i = 0; i < at_tensor_list.size(); i++) {
-        tensor_list[i] = test_ConvertType(at_tensor_list[i]);
+        tensor_list[i] = ConvertType(at_tensor_list[i]);
     }
     auto acl_tensor_list = aclCreateTensorList(tensor_list.data(), tensor_list.size());
     return acl_tensor_list;
-}*/
-
-inline aclTensorList *test_ConvertType(const std::vector<at::Tensor> &at_tensor_list)
-{
-    static const auto aclCreateTensorList = GET_OP_API_FUNC(aclCreateTensorList);
-    if (aclCreateTensorList == nullptr) {
-        return nullptr;
-    }
-
-    std::vector<const aclTensor *> tensor_list(at_tensor_list.size());
-    for (size_t i = 0; i < at_tensor_list.size(); i++) {
-        tensor_list[i] = test_ConvertType(at_tensor_list[i]);
-    }
-    auto acl_tensor_list = aclCreateTensorList(tensor_list.data(), tensor_list.size());
-    return acl_tensor_list;
-}
-
-inline std::vector<at::Tensor> test_CopyType(const at::TensorList &at_tensor_list)
-{
-    return at_tensor_list.vec();
-    // std::vector<at::Tensor> at_tensor_vec(at_tensor_list.size());
-    // for (size_t i = 0; i < at_tensor_list.size(); i++) {
-    //     at_tensor_vec.emplace_back(at_tensor_list[i]);
-    // }
-    // return at_tensor_vec;
 }
 
 inline aclScalarList *test_ConvertType(const std::vector<at::Scalar> &at_scalar_list)
@@ -594,13 +558,10 @@ inline aclScalarList *test_ConvertType(const std::vector<at::Scalar> &at_scalar_
 
 inline std::vector<at::Scalar> test_CopyType(const at::ArrayRef<at::Scalar> &at_scalar_list)
 {
-    std::vector<at::Scalar> at_scalar_vec(at_scalar_list.size());
-    for (size_t i = 0; i < at_scalar_list.size(); i++) {
-        at_scalar_vec[i] = at_scalar_list[i];
-    }
-    return at_scalar_vec;
+    return at_scalar_list.vec();
 }
 
+/*
 inline aclTensor *test_ConvertType(const std::pair<bool, at::Tensor> &opt_tensor)
 {
     if (opt_tensor.first) {
@@ -608,13 +569,14 @@ inline aclTensor *test_ConvertType(const std::pair<bool, at::Tensor> &opt_tensor
     }
     return nullptr;
 }
+*/
 
-inline std::pair<bool, at::Tensor> test_CopyType(const c10::optional<at::Tensor> &opt_tensor)
+inline aclTensor *test_CopyType(const c10::optional<at::Tensor> &opt_tensor)
 {
     if (opt_tensor.has_value() && opt_tensor.value().defined()) {
-        return std::make_pair(true, test_CopyType(opt_tensor.value()));
+        return ConvertType(opt_tensor.value());
     }
-    return std::make_pair(false, at::Tensor());
+    return nullptr;
 }
 
 inline aclIntArray *test_ConvertType(const std::pair<bool, std::vector<int64_t>> &opt_array)
