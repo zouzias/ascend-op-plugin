@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) 2019, Facebook CORPORATION.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -20,20 +21,17 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> grid_sampler_3d_backward(const at::Tensor& grad, const at::Tensor& input,
-                                                            const at::Tensor& grid, int64_t interpolation_mode,
-                                                            int64_t padding_mode, bool align_corners)
+at::Tensor grid_sampler_3d(const at::Tensor& self, const at::Tensor& grid, int64_t interpolation_mode,
+                           int64_t padding_mode, bool align_corners)
 {
-    DO_COMPATIBILITY(aclnnGridSampler3DBackward, acl_op::grid_sampler_3d_backward(grad, input, grid, interpolation_mode,
-                                                                                  padding_mode, align_corners));
-    at::Tensor dinput = npu_preparation::apply_tensor_without_format(input);
-    at::Tensor dgrid = npu_preparation::apply_tensor_without_format(grid);
-    std::array<bool, 2> output_mask = {true, true};
+    DO_COMPATIBILITY(aclnnGridSampler3D, acl_op::grid_sampler_3d(self, grid, interpolation_mode,
+                                                                 padding_mode, align_corners));
+    auto output_size = {self.size(0), self.size(1), grid.size(1), grid.size(2), grid.size(3)};
     if (interpolation_mode == 1) {
         std::cout << "Warning: If interpolation_mode=1, pytorch1.11's precision may not meet the standard." << std::endl;
     }
-    EXEC_NPU_CMD(aclnnGridSampler3DBackward, grad, input, grid, interpolation_mode, padding_mode, align_corners,
-                 output_mask, dinput, dgrid);
-    return std::tuple<at::Tensor, at::Tensor>(dinput, dgrid);
+    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
+    EXEC_NPU_CMD(aclnnGridSampler3D, self, grid, interpolation_mode, padding_mode, align_corners, result);
+    return result;
 }
 } // namespace op_api
