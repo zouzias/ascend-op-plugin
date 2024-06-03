@@ -22,7 +22,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 namespace{
 bool check_optim(const at::Tensor& self, int64_t dim, const at::Tensor& index) {
-  if (dim == 0 && self.dim() == 2 && index.dim() == 2 && index.stride(0) == 1 && index.stride(1) == 0 &&
+  if (index.dim() == 2 && index.stride(0) == 1 && index.stride(1) == 0 && dim == 0 && self.dim() == 2 &&
       self.size(1) == index.size(1)) {
       return true;
     }
@@ -43,12 +43,12 @@ at::Tensor& gather_out(
       result,
       self.scalar_type(),
       output_size);
-  if (check_optim){
-    at::Tensor sub_index = index.select(1,0);
+  if (!check_optim){
+    EXEC_NPU_CMD(aclnnGather, self, dim, index, result);
+  } else{
+    at::Tensor sub_index = index.select(1,0).clone();
     at::TensorList indices = {sub_index};
     EXEC_NPU_CMD(aclnnIndex, self, indices, result);
-  } else{
-    EXEC_NPU_CMD(aclnnGather, self, dim, index, result);
   }
   return result;
 }
