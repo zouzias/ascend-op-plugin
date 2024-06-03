@@ -46,7 +46,7 @@ at::Tensor& gather_out(
   if (!check_optim){
     EXEC_NPU_CMD(aclnnGather, self, dim, index, result);
   } else{
-    at::Tensor sub_index = index.select(1,0).clone();
+    at::Tensor sub_index = index.select(1,0);
     at::TensorList indices = {sub_index};
     EXEC_NPU_CMD(aclnnIndex, self, indices, result);
   }
